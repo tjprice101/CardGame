@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 52;
+export const CURRENT_VERSION = 53;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -1066,6 +1066,17 @@ const migrations: Record<number, Migration> = {
         trialDeck['trialDivineLightTotal'] = trialDeck['trialOblivionTotal'];
       }
       delete trialDeck['trialOblivionTotal'];
+    }
+    return data;
+  },
+  53: (data) => {
+    // v53 adds Forge of Transcendence: Keys/Shards of Transcendence currency + the permanent unlock flag.
+    const progress = data.progress as unknown as Record<string, unknown> | undefined;
+    if (progress) {
+      if (typeof progress['keysOfTranscendence'] !== 'number') progress['keysOfTranscendence'] = 0;
+      if (typeof progress['shardsOfTranscendence'] !== 'number') progress['shardsOfTranscendence'] = 0;
+      if (!progress['forgeKeyAwarded'] || typeof progress['forgeKeyAwarded'] !== 'object') progress['forgeKeyAwarded'] = {};
+      if (typeof progress['forgeOfTranscendenceUnlocked'] !== 'boolean') progress['forgeOfTranscendenceUnlocked'] = false;
     }
     return data;
   },

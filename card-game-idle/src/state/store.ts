@@ -98,6 +98,7 @@ import {
   type NeutralityTutorialTier,
 } from '@/data/trialDecks';
 import { TRANSCENDENT_SHOP_IDS } from '@/data/ascension/transcendentCards';
+import { FORGE_CALENDAR_BONUS_DAYS, FORGE_EVENT_BOSS_IDS, hasBeatenAllForgeEventBosses, rollShardOfTranscendence } from '@/data/forge/forgeDefinitions';
 
 import { DEFAULT_MAIN_MENU_BACKGROUND_ID } from '@/data/profile/mainMenuBackgrounds';
 import { ABILITY_REGISTRY, getAbilityMaterialCost, meetsAbilityOwnershipGate } from '@/data/abilities/abilityDefinitions';
@@ -266,6 +267,10 @@ const defaultProgress: ProgressState = {
   nullRaidProveUnlocks: {},
   nullRaidAngelMissStreak: {},
   transcendentCollection: {},
+  keysOfTranscendence: 0,
+  shardsOfTranscendence: 0,
+  forgeKeyAwarded: {},
+  forgeOfTranscendenceUnlocked: false,
   eventBossHpSnapshots: {},
   battlegroundStats: { wins: 0, losses: 0, bestScore: 0, totalMatches: 0, claimedMilestones: [], dailyMatchTimestamps: [] },
   socialStats: {
@@ -476,6 +481,8 @@ interface StoreActions {
   recordNullRaidClear: (raidId: string, cooldownMs: number) => void;
   /** Add a Transcendent Card copy to the collection. */
   addTranscendentCard: (definitionId: string) => void;
+  /** Spend a Key of Transcendence to permanently open the Forge. Requires every Forge event boss beaten and 1+ Key. */
+  openForgeOfTranscendence: () => boolean;
   /** Purchase a Transcendent shop card with Entropic Energy. */
   purchaseTranscendentCard: (definitionId: string, cost: number) => boolean;
   /** Finalize raid angel drop outcome and update per-raid pity streak state. */
@@ -1196,7 +1203,8 @@ function completeBossFight(s: Store, victory: boolean): void {
       // Boss Codex personal-best tracking (save v13+).
       if (!s.progress.bossCodex) s.progress.bossCodex = {};
       const entry = s.progress.bossCodex[boss.id] ?? {};
-      if (entry.firstClearAt === undefined) entry.firstClearAt = Date.now();
+      const isFirstClear = entry.firstClearAt === undefined;
+      if (isFirstClear) entry.firstClearAt = Date.now();
       if (elapsedSeconds > 0 && (entry.fastestClearSeconds === undefined || elapsedSeconds < entry.fastestClearSeconds)) {
         entry.fastestClearSeconds = elapsedSeconds;
       }
@@ -1204,6 +1212,21 @@ function completeBossFight(s: Store, victory: boolean): void {
         entry.highestFightDamage = fightDamageTotal;
       }
       s.progress.bossCodex[boss.id] = entry;
+
+      // Forge of Transcendence: award a one-time Key on a Forge-event boss's first-ever clear.
+      if (FORGE_EVENT_BOSS_IDS.includes(boss.id)) {
+        if (!s.progress.forgeKeyAwarded) s.progress.forgeKeyAwarded = {};
+        if (isFirstClear && !s.progress.forgeKeyAwarded[boss.id]) {
+          s.progress.forgeKeyAwarded[boss.id] = true;
+          s.progress.keysOfTranscendence = (s.progress.keysOfTranscendence ?? 0) + 1;
+          pushRewardToast(s, 'Key of Transcendence acquired.');
+        }
+        // Shard of Transcendence only ever drops after the Forge has been opened.
+        if (s.progress.forgeOfTranscendenceUnlocked && rollShardOfTranscendence(activeFightCount)) {
+          s.progress.shardsOfTranscendence = (s.progress.shardsOfTranscendence ?? 0) + 1;
+          pushRewardToast(s, 'A Shard of Transcendence fell from the Forge-touched boss.');
+        }
+      }
       // Award card mastery for every card in the fight deck.
       const bossIdx = Math.max(0, BOSS_DEFINITIONS.findIndex(b => b.id === boss.id));
       const baseMasteryPerCard = getBossFightMasteryPerCard(
@@ -3567,6 +3590,19 @@ export const useStore = create<Store>()(
       });
     },
 
+    openForgeOfTranscendence: () => {
+      const state = get();
+      if (state.progress.forgeOfTranscendenceUnlocked) return false;
+      if (!hasBeatenAllForgeEventBosses(state.progress.bossCodex)) return false;
+      if ((state.progress.keysOfTranscendence ?? 0) < 1) return false;
+      set(s => {
+        s.progress.keysOfTranscendence = (s.progress.keysOfTranscendence ?? 0) - 1;
+        s.progress.forgeOfTranscendenceUnlocked = true;
+        pushRewardToast(s, 'The Forge of Transcendence has opened.');
+      });
+      return true;
+    },
+
     purchaseTranscendentCard: (definitionId, cost) => {
       if (!TRANSCENDENT_SHOP_IDS.has(definitionId)) return false;
       if (cost <= 0) return false;
@@ -3628,6 +3664,11 @@ export const useStore = create<Store>()(
                 s.progress.cardPlayCounts[definitionId] = (s.progress.cardPlayCounts[definitionId] ?? 0) + reward.amount;
               }
             }
+          }
+          // Forge of Transcendence: a handful of calendar days can drop a bonus Shard once the Forge is open.
+          if (s.progress.forgeOfTranscendenceUnlocked && FORGE_CALENDAR_BONUS_DAYS.includes(day) && rollShardOfTranscendence()) {
+            s.progress.shardsOfTranscendence = (s.progress.shardsOfTranscendence ?? 0) + 1;
+            pushRewardToast(s, 'A Shard of Transcendence was tucked into today\'s reward.');
           }
         }
       });
@@ -3717,6 +3758,7 @@ export const useStore = create<Store>()(
       if (state.gardenDungeon.encounterHp > 0) return false;
       const mainReward = encounter.reward?.currency ?? null;
       const nextReward = dungeon.encounters[state.gardenDungeon.encounterIndex + 1]?.reward?.currency ?? null;
+      const isFinalEncounter = state.gardenDungeon.encounterIndex === dungeon.encounters.length - 1;
       const rewards: Partial<Record<GardenRewardCurrency, number>> = {};
       if (mainReward) rewards[mainReward] = nextReward ? 3 : 4;
       if (nextReward) rewards[nextReward] = (rewards[nextReward] ?? 0) + 1;
@@ -3727,6 +3769,11 @@ export const useStore = create<Store>()(
         s.gardenDungeon.phase = 'victory';
         s.gardenDungeon.lastReward = mainReward;
         s.gardenDungeon.lastRewards = rewards;
+        // Forge of Transcendence: final-encounter clears can drop a Shard once the Forge is opened.
+        if (isFinalEncounter && s.progress.forgeOfTranscendenceUnlocked && rollShardOfTranscendence()) {
+          s.progress.shardsOfTranscendence = (s.progress.shardsOfTranscendence ?? 0) + 1;
+          pushRewardToast(s, 'A Shard of Transcendence surfaced from the expedition.');
+        }
       });
       return true;
     },

@@ -88,7 +88,7 @@ describe('card background asset audit', () => {
     expect(ribbons[1]).toBe('#b8861b');
     expect(ribbons[2]).toBe('#32134f');
     expect(ribbons[3]).toBe('#12151e');
-    expect(ribbons[4]).toBe('#7a0f31');
+    expect(ribbons[4]).toBe('#fbfbfd');
 
     expect(getCardNameRibbonStyle('grid').background).toContain('--card-face-ribbon');
     expect(getCardRulesPanelStyle('grid').background).toContain('--card-face-panel');

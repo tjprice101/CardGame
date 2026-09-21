@@ -77,9 +77,14 @@ function chargedSophCard(definition: Extract<CardDefinition, { type: 'Light' | '
 }
 
 const registeredCards = CardRegistry.getAll();
-const lightDefinitions = registeredCards.filter(card => card.type === 'Light');
-const darkDefinitions = registeredCards.filter((card): card is DarkCardDefinition => card.type === 'Dark');
-const asaDefinitions = registeredCards.filter(card => card.type === 'AinSophAur');
+// Forge of Transcendence gallery placeholders are intentionally blank
+// ("[PH] Card N", no attacks/effects that do anything) — they are lore
+// pieces, not playable board cards, so the "every card must produce a
+// runtime effect" assertions below don't apply to them.
+const runtimeTestableCards = registeredCards.filter(card => card.rarity !== 'Transcendent');
+const lightDefinitions = runtimeTestableCards.filter(card => card.type === 'Light');
+const darkDefinitions = runtimeTestableCards.filter((card): card is DarkCardDefinition => card.type === 'Dark');
+const asaDefinitions = runtimeTestableCards.filter(card => card.type === 'AinSophAur');
 
 describe('complete card runtime wiring', () => {
   it('registers every source definition exactly once without ID overwrites', () => {

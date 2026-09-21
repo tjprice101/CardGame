@@ -19,7 +19,8 @@ const PlayerInformationPage = lazy(() => import('@/ui/player/PlayerInformationPa
 const DailyRewardModal = lazy(() => import('@/ui/profile/DailyRewardModal'));
 const QuestsModal = lazy(() => import('@/ui/menus/QuestsModal'));
 const AchievementsModal = lazy(() => import('@/ui/menus/AchievementsModal'));
-const AscensionHub = lazy(() => import('@/ui/ascension/AscensionHub'));
+const ForgeOfTranscendence = lazy(() => import('@/ui/forge/ForgeOfTranscendence'));
+const InventoryModal = lazy(() => import('@/ui/menus/InventoryModal'));
 const NullRaidArena = lazy(() => import('@/ui/ascension/NullRaidArena'));
 const NullRaidResults = lazy(() => import('@/ui/ascension/NullRaidResults'));
 const CardMasteryModal = lazy(() => import('@/ui/menus/CardMasteryModal'));
@@ -191,7 +192,8 @@ export default function App() {
   const [showAchievements, setShowAchievements] = useState(false);
   const [showMastery, setShowMastery] = useState(false);
   const [showFracture, setShowFracture] = useState(false);
-  const [showAscension, setShowAscension] = useState(false);
+  const [showForge, setShowForge] = useState(false);
+  const [showInventory, setShowInventory] = useState(false);
   const [mainMenuSection, setMainMenuSection] = useState<'play' | 'collection' | 'progress'>('play');
   const [showAutosaveIndicator, setShowAutosaveIndicator] = useState(false);
   // Radio state — main menu
@@ -393,9 +395,9 @@ export default function App() {
     } else if (showEternitysWake) {
       label = "Eternity's Wake";
       detail = 'Browsing boss challenges';
-    } else if (showAscension) {
-      label = 'Ascension';
-      detail = 'Running Ascension content';
+    } else if (showForge) {
+      label = 'Forge of Transcendence';
+      detail = 'Browsing the Forge';
     } else if (showPlayerInfo) {
       label = 'Player Profile';
       detail = 'Updating profile and social settings';
@@ -416,7 +418,7 @@ export default function App() {
     showCardStore,
     showInfinitude,
     showEternitysWake,
-    showAscension,
+    showForge,
     showPlayerInfo,
     setPresenceActivity,
   ]);
@@ -519,7 +521,7 @@ export default function App() {
         } else {
           track = 'battle-eternity';
         }
-      } else if (showAscension) {
+      } else if (showForge) {
         track = 'menu-ascension';
       } else if (showCardStore) {
         track = 'menu-shop';
@@ -610,7 +612,7 @@ export default function App() {
     bossFight.kind,
     bossFight.activeBossId,
     showCardStore,
-    showAscension,
+    showForge,
     showInfinitude,
     showEternitysWake,
     turn.phase,
@@ -748,7 +750,8 @@ export default function App() {
         if (showAchievements) { setShowAchievements(false); e.preventDefault(); return; }
         if (showMastery) { setShowMastery(false); e.preventDefault(); return; }
         if (showEnigma) { setShowEnigma(false); e.preventDefault(); return; }
-        if (showAscension) { setShowAscension(false); e.preventDefault(); return; }
+        if (showForge) { setShowForge(false); e.preventDefault(); return; }
+        if (showInventory) { setShowInventory(false); e.preventDefault(); return; }
         if (showDailyReward) { setShowDailyReward(false); e.preventDefault(); return; }
         return;
       }
@@ -765,7 +768,7 @@ export default function App() {
       // an active turn is in play (mulligan OR playing), in regular or boss
       // fight modes.
       if (e.code === controls.swapExtraDeck && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        const anyModalOpen = showTutorial || showSettings || showDeckViewer || showDeckBuilder || showCardStore || showInfinitude || showEternitysWake || showPlayerInfo || showDailyReward || showQuests || showAchievements || showMastery || showEnigma || showCausalityEvent || showAscension;
+        const anyModalOpen = showTutorial || showSettings || showDeckViewer || showDeckBuilder || showCardStore || showInfinitude || showEternitysWake || showPlayerInfo || showDailyReward || showQuests || showAchievements || showMastery || showEnigma || showCausalityEvent || showForge || showInventory;
         if (anyModalOpen) return;
         const phase = useStore.getState().turn.phase;
         if (phase === 'playing' || phase === 'mulligan') {
@@ -782,7 +785,7 @@ export default function App() {
       ];
       for (const [code, slot] of abilitySlotMap) {
         if (e.code === code && !e.ctrlKey && !e.metaKey && !e.altKey) {
-          const anyModalOpen = showTutorial || showSettings || showDeckViewer || showDeckBuilder || showCardStore || showInfinitude || showEternitysWake || showPlayerInfo || showDailyReward || showQuests || showAchievements || showMastery || showEnigma || showCausalityEvent || showAscension;
+          const anyModalOpen = showTutorial || showSettings || showDeckViewer || showDeckBuilder || showCardStore || showInfinitude || showEternitysWake || showPlayerInfo || showDailyReward || showQuests || showAchievements || showMastery || showEnigma || showCausalityEvent || showForge || showInventory;
           if (anyModalOpen) return;
           e.preventDefault();
           useStore.getState().activateAbility(slot);
@@ -792,7 +795,7 @@ export default function App() {
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [showTutorial, showSettings, showDeckViewer, showDeckBuilder, showCardStore, showInfinitude, showEternitysWake, showPlayerInfo, showDailyReward, showQuests, showAchievements, showMastery, showEnigma, showCausalityEvent, showAscension, settings.controls]);
+  }, [showTutorial, showSettings, showDeckViewer, showDeckBuilder, showCardStore, showInfinitude, showEternitysWake, showPlayerInfo, showDailyReward, showQuests, showAchievements, showMastery, showEnigma, showCausalityEvent, showForge, showInventory, settings.controls]);
 
   useEffect(() => {
     if (!hasSeenSaveRef.current) {
@@ -808,7 +811,7 @@ export default function App() {
   const inBossFight = bossFight.mode === 'active';
   const bossResultVisible = bossFight.kind !== 'null_raid' && (bossFight.mode === 'victory' || bossFight.mode === 'defeat');
   const gardenResultVisible = gardenDungeon.phase === 'victory' || gardenDungeon.phase === 'defeat';
-  const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showTutorial || showEternitysWake || showInfinitude || showPlayerInfo || showQuests || showAchievements || showMastery || showEnigma || showCausalityEvent || showBattleground || showGardenOfCards || showAscension || bossResultVisible || gardenResultVisible;
+  const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showTutorial || showEternitysWake || showInfinitude || showPlayerInfo || showQuests || showAchievements || showMastery || showEnigma || showCausalityEvent || showBattleground || showGardenOfCards || showForge || showInventory || bossResultVisible || gardenResultVisible;
   const radioScreenVisible = (scene === 'menu' && !isMenuOpen && radioActive)
     || (scene === 'arena' && !inBossFight && !isMenuOpen && turnRadioActive);
 
@@ -851,7 +854,8 @@ export default function App() {
     setShowAchievements(false);
     setShowMastery(false);
     setShowEnigma(false);
-    setShowAscension(false);
+    setShowForge(false);
+    setShowInventory(false);
     usePartyStore.getState().closeHub();
   }, [bossFight.mode, battleground.mode]);
 
@@ -990,7 +994,8 @@ export default function App() {
             onDailyCalendar={() => { setMainMenuSection('progress'); setShowDailyReward(true); }}
             onFracture={() => { setMainMenuSection('collection'); setShowFracture(true); }}
             onSettings={() => { setMainMenuSection('progress'); setShowSettings(true); }}
-            onAscension={() => { setMainMenuSection('play'); setShowAscension(true); }}
+            onForgeOfTranscendence={() => { setMainMenuSection('play'); setShowForge(true); }}
+            onInventory={() => { setMainMenuSection('collection'); setShowInventory(true); }}
             onBeginTurn={requestBeginTurn}
           />
         </Suspense>
@@ -1075,10 +1080,17 @@ export default function App() {
         </div>
       )}
 
-      {/* Ascension hub modal */}
-      {showAscension && (
+      {/* Forge of Transcendence modal */}
+      {showForge && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'auto' }}>
-          <Suspense fallback={null}><AscensionHub onClose={() => setShowAscension(false)} /></Suspense>
+          <Suspense fallback={null}><ForgeOfTranscendence onClose={() => setShowForge(false)} /></Suspense>
+        </div>
+      )}
+
+      {/* Inventory modal */}
+      {showInventory && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'auto' }}>
+          <Suspense fallback={null}><InventoryModal onClose={() => setShowInventory(false)} /></Suspense>
         </div>
       )}
 

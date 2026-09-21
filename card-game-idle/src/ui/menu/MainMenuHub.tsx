@@ -14,6 +14,7 @@ import {
   type MainMenuBackgroundEntry,
 } from '@/data/profile/mainMenuBackgrounds';
 import { formatCountdown, getCausalityEventCountdown, CAUSALITY_EVENT_ENDS_LABEL } from '@/ui/eventCausality/eventTimer';
+import { FORGE_EVENT_BOSS_IDS, hasBeatenAllForgeEventBosses } from '@/data/forge/forgeDefinitions';
 import { t } from '@/ui/preferences';
 
 interface MainMenuHubProps {
@@ -37,8 +38,10 @@ interface MainMenuHubProps {
   onEventCausality?: () => void;
   /** Opens the Garden of Cards dungeon menu. */
   onBattleground?: () => void;
-  /** Opens the Ascension endgame mode hub. */
-  onAscension?: () => void;
+  /** Opens the Forge of Transcendence. */
+  onForgeOfTranscendence?: () => void;
+  /** Opens the Inventory screen (currencies, materials, collection stats). */
+  onInventory?: () => void;
   /** Triggered by the hero tile — caller starts the turn (store.beginTurn). */
   onBeginTurn: () => void;
 }
@@ -78,6 +81,9 @@ const MAIN_MENU_BANNER_ART = {
   playerProfileFallback: menuAsset('menu-banners/player-profile.png'),
   howToPlay: menuAsset('menu-banners/how-to-play.png'),
   causalityEvent: menuAsset('event-art/causality/Causality Event Banner.png'),
+  // Placeholder — real key art pending; see Midjourney Art/Forge of Transcendence Prompts.md
+  forgeOfTranscendence: menuAsset('menu-banners/ascension.png'),
+  inventory: menuAsset('menu-banners/card-mastery.png'),
 } as const;
 
 /**
@@ -416,7 +422,13 @@ export default function MainMenuHub(props: MainMenuHubProps) {
   const eternitysWakeLocked = uniqueEnigmaticsOwned < 3;
   const enigmaLocked = totalPacksOpened < 10;
   const infinitudeLocked = ownedByRarity.Eternal < 5;
-  const ascensionLocked = ownedByRarity.Infinite < 5;
+  const forgeBossesCleared = useMemo(
+    () => FORGE_EVENT_BOSS_IDS.filter(bossId => progress.bossCodex?.[bossId] !== undefined).length,
+    [progress.bossCodex],
+  );
+  const forgeAllBossesCleared = hasBeatenAllForgeEventBosses(progress.bossCodex);
+  const forgeUnlocked = progress.forgeOfTranscendenceUnlocked === true;
+  const forgeLocked = !forgeUnlocked && !forgeAllBossesCleared;
 
   const [mounted, setMounted] = useState(false);
   const [activeSection, setActiveSection] = useState<MenuSection>(props.initialSection ?? 'play');
@@ -496,10 +508,10 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         art: MAIN_MENU_BANNER_ART.gardenOfCards, onClick: props.onBattleground, tone: 'primary',
       },
       {
-        id: 'ascension', label: 'Ascension', eyebrow: 'Endgame', icon: '△',
-        caption: 'Face high-tier trials and pursue Transcendent rewards.',
-        status: ascensionLocked ? `Requires 5 Infinite cards · ${ownedByRarity.Infinite}/5` : 'Available',
-        art: MAIN_MENU_BANNER_ART.ascension, onClick: props.onAscension, disabled: ascensionLocked,
+        id: 'forge', label: 'Forge of Transcendence', eyebrow: 'Beyond All Sets', icon: '✳',
+        caption: 'A white-fire vault of cards that belong to no set and answer to no master.',
+        status: forgeUnlocked ? 'Open' : `Requires every event boss beaten · ${forgeBossesCleared}/${FORGE_EVENT_BOSS_IDS.length}`,
+        art: MAIN_MENU_BANNER_ART.forgeOfTranscendence, onClick: props.onForgeOfTranscendence, disabled: forgeLocked,
       },
     ],
     collection: [
@@ -528,6 +540,11 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         id: 'fracture', label: 'Card-light Resonance', eyebrow: 'Refine', icon: '✧',
         caption: 'Convert duplicate cards into focused Card-light progression.', status: 'Resonance fast-track',
         art: MAIN_MENU_BANNER_ART.fracture, onClick: props.onFracture,
+      },
+      {
+        id: 'inventory', label: 'Inventory', eyebrow: 'Holdings', icon: '⬢',
+        caption: 'Every currency, material, and collection stat you currently own.', status: 'Full holdings',
+        art: MAIN_MENU_BANNER_ART.inventory, onClick: props.onInventory,
       },
     ],
     progress: [
@@ -701,6 +718,29 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         >
           “{dailyLine}”
         </button>
+
+        {/* Forge standing — fills the dead space below the voiced line. */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
+          padding: '10px 14px',
+          borderRadius: 4,
+          border: '1px solid rgba(200,180,255,0.28)',
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(140,90,255,0.08) 100%)',
+          backdropFilter: 'blur(4px)',
+        }}>
+          <div>
+            <div style={{ fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 1.6, textTransform: 'uppercase', color: '#e2c9ff' }}>
+              Forge Standing
+            </div>
+            <div style={{ marginTop: 3, fontSize: 11, color: uiTheme.textMuted }}>
+              {forgeUnlocked ? 'The Forge lies open.' : `Event bosses beaten: ${forgeBossesCleared}/${FORGE_EVENT_BOSS_IDS.length}`}
+            </div>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontFamily: uiTypography.display, fontSize: 15, color: '#fff' }}>{progress.keysOfTranscendence ?? 0}</div>
+            <div style={{ fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: uiTheme.textMuted }}>Keys</div>
+          </div>
+        </div>
       </div>
 
       {/* ───────── Bottom-left: news / event banners ───────── */}
@@ -708,9 +748,42 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         position: 'absolute',
         left: 'clamp(20px, 3vw, 56px)',
         bottom: 'clamp(22px, 3vh, 38px)',
-        display: 'flex', alignItems: 'flex-end', gap: 12,
+        display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 10,
         maxWidth: 'min(900px, 68vw)',
       }}>
+        {/* Forge of Transcendence — sits above the Causality banner. */}
+        {props.onForgeOfTranscendence && (
+          <button
+            className="menu-tactile-btn"
+            onClick={props.onForgeOfTranscendence}
+            disabled={forgeLocked}
+            style={{
+              position: 'relative',
+              width: 585,
+              minHeight: 64,
+              padding: '10px 20px',
+              borderRadius: 10,
+              border: '1px solid rgba(210,180,255,0.55)',
+              background: 'linear-gradient(90deg, rgba(255,255,255,0.94) 0%, rgba(240,230,255,0.9) 55%, rgba(220,200,255,0.86) 100%)',
+              color: '#15101c',
+              fontFamily: uiTypography.body,
+              textAlign: 'left',
+              boxShadow: '0 10px 26px rgba(150,90,255,0.28)',
+              cursor: forgeLocked ? 'not-allowed' : 'pointer',
+              opacity: forgeLocked ? 0.62 : 1,
+              display: 'flex', alignItems: 'center', gap: 14,
+              overflow: 'hidden',
+            }}
+          >
+            <div aria-hidden style={{ fontSize: 26, background: 'conic-gradient(from 180deg, #ff2fd0, #ff9d3d, #fff35c, #4dffb8, #4d9dff, #b24dff, #ff2fd0)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>✳</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: uiTypography.display, fontSize: 15, letterSpacing: 1.6, textTransform: 'uppercase' }}>Forge of Transcendence</div>
+              <div style={{ marginTop: 2, fontSize: 11, color: 'rgba(20,16,28,0.68)' }}>
+                {forgeUnlocked ? 'Enter the gallery beyond every set.' : `Requires every event boss beaten · ${forgeBossesCleared}/${FORGE_EVENT_BOSS_IDS.length}`}
+              </div>
+            </div>
+          </button>
+        )}
         {props.onEventCausality && (
           <button
             className="menu-tactile-btn causality-event-shimmer"

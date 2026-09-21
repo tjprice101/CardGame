@@ -361,6 +361,14 @@ export interface ProgressState {
   nullRaidAngelMissStreak?: Record<string, number>;
   /** Ascension mode — owned Transcendent Card copies. definitionId → count. Save v21. */
   transcendentCollection?: Record<string, number>;
+  /** Forge of Transcendence — owned Keys of Transcendence, one per first-ever clear of a Forge event boss. Save v53. */
+  keysOfTranscendence?: number;
+  /** Forge of Transcendence — spendable currency used to acquire gallery cards. Save v53. */
+  shardsOfTranscendence?: number;
+  /** Forge of Transcendence — which event bosses have already granted their one-time Key (bossId → true). Save v53. */
+  forgeKeyAwarded?: Record<string, boolean>;
+  /** Forge of Transcendence — permanent, one-time-ever unlock flag set when the player spends a Key to open the Forge. Save v53. */
+  forgeOfTranscendenceUnlocked?: boolean;
   /** Event-boss HP snapshots frozen per cycle. category → {cycleId,hp}. */
   eventBossHpSnapshots?: Record<string, EventBossHpSnapshot>;
   /** Battleground of the Card-born lifetime stats. Save v20. */

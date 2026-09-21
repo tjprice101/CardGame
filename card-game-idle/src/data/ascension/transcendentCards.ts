@@ -1,42 +1,52 @@
 import type { CardDefinition } from '@/types/cards';
 
+// ── Forge of Transcendence — blank-slate placeholders (2026-09) ──────────
+// These 4 definitions are the only live Transcendent-rarity cards. They no
+// longer belong to any playable set/board flow; they are gallery pieces
+// inside the Forge of Transcendence, pending final name/art/lore/effects.
+// IDs are kept stable for save compatibility with `transcendentCollection`.
+// See src/data/forge/forgeDefinitions.ts for lore stubs and
+// "Midjourney Art/Forge of Transcendence Prompts.md" for the art brief.
+
 const transcendentLight: CardDefinition = {
 	definitionId: 'tx-neutral-starbound-glimmer', type: 'Light', rarity: 'Transcendent',
-	name: 'Starbound Glimmer',
-	description: 'Two attacks with triune scaling and a stack-consuming Soph burst.',
+	name: '[PH] Card 1',
+	description: 'To be redesigned.',
 	artKey: 'tx_neutral_starbound_glimmer',
-	ainAttack: { id: 'tx-neutral-starbound-glimmer:ain-attack', label: 'Ain', name: 'Ain Attack', description: '1250 base Divine Light with triune scaling.', baseDivineLight: 1250, cooldownCards: 4, scaling: { kind: 'triune', amount: 900 }, tags: ['transcendent', 'ain-attack'] },
-	sophAttack: { id: 'tx-neutral-starbound-glimmer:soph-attack', label: 'Soph', name: 'Soph Attack', description: '1900 base Divine Light with triune scaling; consumes 5 stacks.', baseDivineLight: 1900, cooldownCards: 5, scaling: { kind: 'triune', amount: 1200 }, stackCost: { kind: 'fixed', value: 5 }, tags: ['transcendent', 'soph-attack'] },
-	sophPlacementEffects: [{ type: 'divine_light_flat', value: 140 }],
-	sacrificeStackRate: 120,
+	sacrificeStackRate: 0,
+	ainAttack: { id: 'tx-neutral-starbound-glimmer:ain-attack', label: 'Ain', name: 'Ain Attack', description: 'To be redesigned.', baseDivineLight: 0, cooldownCards: 99, scaling: { kind: 'constant', value: 0 }, tags: ['transcendent', 'ain-attack'] },
+	sophAttack: { id: 'tx-neutral-starbound-glimmer:soph-attack', label: 'Soph', name: 'Soph Attack', description: 'To be redesigned.', baseDivineLight: 0, cooldownCards: 99, scaling: { kind: 'constant', value: 0 }, tags: ['transcendent', 'soph-attack'] },
 };
 
 const transcendentDark: CardDefinition[] = [
 	{
-		definitionId: 'tx-neutral-null-catalyst', type: 'Dark', rarity: 'Transcendent', name: 'Null Catalyst',
-		description: 'Search a Light card and a Dark card. When activated from the board, this card remains in play and can be used again after its cooldown.', artKey: 'tx_neutral_null_catalyst',
-		sophEffects: [{ type: 'search_deck_distinct_types', filter: ['Light', 'Dark'], takePerType: 1 }], activationCost: { kind: 'fixed', value: 3 }, cooldownCardsPlayed: 3, postActivationFate: 'hand', sacrificeStackRate: 125, persistent: true,
+		definitionId: 'tx-neutral-null-catalyst', type: 'Dark', rarity: 'Transcendent', name: '[PH] Card 2',
+		description: 'To be redesigned.', artKey: 'tx_neutral_null_catalyst',
+		sophEffects: [], activationCost: { kind: 'fixed', value: 0 }, cooldownCardsPlayed: 99, postActivationFate: 'hand', sacrificeStackRate: 0, persistent: true,
 	},
 	{
-		definitionId: 'tx-neutral-void-reliquary', type: 'Dark', rarity: 'Transcendent', name: 'Void Reliquary',
-		description: 'Recover any card from the discard pile. This card remains in play after board activation and can be used again after its cooldown.', artKey: 'tx_neutral_void_reliquary',
-		sophEffects: [{ type: 'salvage_any' }], activationCost: { kind: 'fixed', value: 4 }, cooldownCardsPlayed: 4, postActivationFate: 'deck', sacrificeStackRate: 135, persistent: true,
+		definitionId: 'tx-neutral-void-reliquary', type: 'Dark', rarity: 'Transcendent', name: '[PH] Card 3',
+		description: 'To be redesigned.', artKey: 'tx_neutral_void_reliquary',
+		sophEffects: [], activationCost: { kind: 'fixed', value: 0 }, cooldownCardsPlayed: 99, postActivationFate: 'deck', sacrificeStackRate: 0, persistent: true,
 	},
 ];
 
 const transcendentAur: CardDefinition = {
-	definitionId: 'tx-angel-starbound-null-archangel', type: 'AinSophAur', rarity: 'Transcendent', name: 'Starbound Null Archangel',
-	description: 'Sacrifice 3 back-row cards to summon, then use Bridge the Light for a triune Divine Light payout.', artKey: 'tx_angel_starbound_null_archangel',
-	summonMaterialCount: 3, onSummonEffects: [{ type: 'divine_light_flat', value: 300 }],
+	definitionId: 'tx-angel-starbound-null-archangel', type: 'AinSophAur', rarity: 'Transcendent', name: '[PH] Card 4',
+	description: 'To be redesigned.', artKey: 'tx_angel_starbound_null_archangel',
+	summonMaterialCount: 3, onSummonEffects: [],
 	summonMaterials: [{ cardTypes: ['Light'], count: 2 }, { cardTypes: ['Dark'], count: 1 }],
-	bridgeAttack: { id: 'tx-angel-starbound-null-archangel:bridge-the-light', name: 'Bridge the Light', description: '2400 base Divine Light with triune scaling; consumes 6 stacks.', baseDivineLight: 2400, cooldownCards: 5, scaling: { kind: 'triune', amount: 1800 }, consumesStacks: { kind: 'fixed', value: 6 } },
+	bridgeAttack: { id: 'tx-angel-starbound-null-archangel:bridge-the-light', name: 'Bridge the Light', description: 'To be redesigned.', baseDivineLight: 0, cooldownCards: 99, scaling: { kind: 'constant', value: 0 } },
 };
 
 export const transcendentCardDefinitions: CardDefinition[] = [transcendentLight, ...transcendentDark, transcendentAur];
 export const TRANSCENDENT_ANGEL_IDS: ReadonlySet<string> = new Set(transcendentCardDefinitions.map(card => card.definitionId));
+// Legacy Ascension/Null Raid shop wiring — kept only so store.ts/AscensionHub.tsx
+// keep compiling until that mode is fully removed in a dedicated follow-up pass.
 export const TRANSCENDENT_SHOP_IDS: ReadonlySet<string> = new Set(['tx-neutral-starbound-glimmer', 'tx-neutral-null-catalyst', 'tx-neutral-void-reliquary']);
 export const TRANSCENDENT_SHOP_COSTS: Readonly<Record<string, number>> = {
 	'tx-neutral-starbound-glimmer': 1200,
 	'tx-neutral-null-catalyst': 1000,
 	'tx-neutral-void-reliquary': 1400,
 };
+
