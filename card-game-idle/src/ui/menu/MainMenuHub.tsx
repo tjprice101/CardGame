@@ -80,8 +80,7 @@ const MAIN_MENU_BANNER_ART = {
   playerProfileFallback: menuAsset('menu-banners/player-profile.png'),
   howToPlay: menuAsset('menu-banners/how-to-play.png'),
   causalityEvent: menuAsset('event-art/causality/Causality Event Banner.png'),
-  // Placeholder — real key art pending; see Midjourney Art/Forge of Transcendence Prompts.md
-  forgeOfTranscendence: menuAsset('menu-banners/ascension.png'),
+  forgeOfTranscendence: menuAsset('forge/forge-of-transcendence-menu-banner.png'),
   inventory: menuAsset('menu-banners/card-mastery.png'),
 } as const;
 

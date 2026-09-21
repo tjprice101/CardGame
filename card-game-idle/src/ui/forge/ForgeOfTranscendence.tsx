@@ -146,6 +146,7 @@ export default function ForgeOfTranscendence({ onClose }: Props) {
               className={selectedDef ? getLiveCardShimmerClassName(selectedDef, 'normal', 'front') : undefined}
               style={{
                 width: 200, aspectRatio: '148 / 204', borderRadius: 14, backgroundImage: selectedLore?.bannerGradient,
+                backgroundSize: 'cover', backgroundPosition: 'center',
                 boxShadow: '0 20px 60px rgba(120,60,220,0.35)', border: '2px solid rgba(255,255,255,0.9)',
               }}
             />

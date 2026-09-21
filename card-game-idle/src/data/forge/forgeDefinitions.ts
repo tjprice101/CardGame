@@ -40,6 +40,8 @@ export interface ForgeCardLore {
 const RAINBOW_BANNER =
   'conic-gradient(from 180deg at 50% 50%, #ff2fd0, #ff9d3d, #fff35c, #4dffb8, #4d9dff, #b24dff, #ff2fd0)';
 
+const forgeAsset = (file: string): string => `url('${import.meta.env.BASE_URL}assets/forge/${file}')`;
+
 /**
  * Lore for the 4 Forge gallery cards. See
  * "Midjourney Art/Forge of Transcendence Prompts.md" for the art brief and
@@ -51,24 +53,24 @@ export const FORGE_CARD_LORE: readonly ForgeCardLore[] = [
     displayName: 'Light Before the First Star',
     tagline: 'The first light that was not born of any star.',
     lore: 'Before sets, before suits, before a single card bore a name, there was a glimmer that refused to belong. It answers to no house and casts no shadow of allegiance.',
-    bannerGradient: RAINBOW_BANNER,
-    splashGradient: 'radial-gradient(circle at 50% 30%, #ffffff 0%, #e8d8ff 22%, #101018 78%)',
+    bannerGradient: forgeAsset('forge-card-1-art.png'),
+    splashGradient: forgeAsset('forge-card-1-splash.png'),
   },
   {
     definitionId: 'tx-neutral-null-catalyst',
     displayName: 'The First Catalyst',
     tagline: 'The catalyst that first taught cause to have an effect.',
     lore: 'It is said this card was present at the first shuffle, the moment chance itself learned to matter.',
-    bannerGradient: RAINBOW_BANNER,
-    splashGradient: 'radial-gradient(circle at 50% 30%, #ffffff 0%, #d8f2ff 22%, #0c1018 78%)',
+    bannerGradient: forgeAsset('forge-card-2-art.png'),
+    splashGradient: forgeAsset('forge-card-2-splash.png'),
   },
   {
     definitionId: 'tx-neutral-void-reliquary',
     displayName: 'The Reliquary of All and Nothing',
     tagline: 'A reliquary that holds nothing, and therefore holds everything.',
     lore: 'What it contains has never been seen by any who kept it.',
-    bannerGradient: RAINBOW_BANNER,
-    splashGradient: 'radial-gradient(circle at 50% 30%, #ffffff 0%, #ffe8f4 22%, #14101a 78%)',
+    bannerGradient: forgeAsset('forge-card-3-art.png'),
+    splashGradient: forgeAsset('forge-card-3-splash.png'),
   },
   {
     definitionId: 'tx-angel-starbound-null-archangel',
