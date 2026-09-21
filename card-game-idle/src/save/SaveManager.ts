@@ -1076,6 +1076,7 @@ const migrations: Record<number, Migration> = {
       if (typeof progress['keysOfTranscendence'] !== 'number') progress['keysOfTranscendence'] = 0;
       if (typeof progress['shardsOfTranscendence'] !== 'number') progress['shardsOfTranscendence'] = 0;
       if (!progress['forgeKeyAwarded'] || typeof progress['forgeKeyAwarded'] !== 'object') progress['forgeKeyAwarded'] = {};
+      if (typeof progress['forgeKeyRewardClaimed'] !== 'boolean') progress['forgeKeyRewardClaimed'] = false;
       if (typeof progress['forgeOfTranscendenceUnlocked'] !== 'boolean') progress['forgeOfTranscendenceUnlocked'] = false;
     }
     return data;

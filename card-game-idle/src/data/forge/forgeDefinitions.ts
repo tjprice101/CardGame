@@ -41,40 +41,40 @@ const RAINBOW_BANNER =
   'conic-gradient(from 180deg at 50% 50%, #ff2fd0, #ff9d3d, #fff35c, #4dffb8, #4d9dff, #b24dff, #ff2fd0)';
 
 /**
- * Placeholder lore for the 4 Forge gallery cards. Real names/art/lore are
- * pending final design — see Midjourney Art/Forge of Transcendence Prompts.md
- * for the art-generation brief once these are ready to be drawn.
+ * Lore for the 4 Forge gallery cards. See
+ * "Midjourney Art/Forge of Transcendence Prompts.md" for the art brief and
+ * src/data/ascension/transcendentCards.ts for each card's rules text.
  */
 export const FORGE_CARD_LORE: readonly ForgeCardLore[] = [
   {
     definitionId: 'tx-neutral-starbound-glimmer',
-    displayName: '[PH] Card 1',
+    displayName: 'Light Before the First Star',
     tagline: 'The first light that was not born of any star.',
-    lore: 'Before sets, before suits, before a single card bore a name, there was a glimmer that refused to belong. It answers to no house and casts no shadow of allegiance. Placeholder lore — full myth pending final design.',
+    lore: 'Before sets, before suits, before a single card bore a name, there was a glimmer that refused to belong. It answers to no house and casts no shadow of allegiance.',
     bannerGradient: RAINBOW_BANNER,
     splashGradient: 'radial-gradient(circle at 50% 30%, #ffffff 0%, #e8d8ff 22%, #101018 78%)',
   },
   {
     definitionId: 'tx-neutral-null-catalyst',
-    displayName: '[PH] Card 2',
+    displayName: 'The First Catalyst',
     tagline: 'The catalyst that first taught cause to have an effect.',
-    lore: 'It is said this card was present at the first shuffle, the moment chance itself learned to matter. Placeholder lore — full myth pending final design.',
+    lore: 'It is said this card was present at the first shuffle, the moment chance itself learned to matter.',
     bannerGradient: RAINBOW_BANNER,
     splashGradient: 'radial-gradient(circle at 50% 30%, #ffffff 0%, #d8f2ff 22%, #0c1018 78%)',
   },
   {
     definitionId: 'tx-neutral-void-reliquary',
-    displayName: '[PH] Card 3',
+    displayName: 'The Reliquary of All and Nothing',
     tagline: 'A reliquary that holds nothing, and therefore holds everything.',
-    lore: 'What it contains has never been seen by any who kept it. Placeholder lore — full myth pending final design.',
+    lore: 'What it contains has never been seen by any who kept it.',
     bannerGradient: RAINBOW_BANNER,
     splashGradient: 'radial-gradient(circle at 50% 30%, #ffffff 0%, #ffe8f4 22%, #14101a 78%)',
   },
   {
     definitionId: 'tx-angel-starbound-null-archangel',
-    displayName: '[PH] Card 4',
+    displayName: 'The Bridge Between Light and Life',
     tagline: 'The one that bridged the light so life could exist at all.',
-    lore: 'Not summoned, not drafted, not owned — it simply arrived once, and the world began. Placeholder lore — full myth pending final design.',
+    lore: 'Not summoned, not drafted, not owned — it simply arrived once, and the world began.',
     bannerGradient: RAINBOW_BANNER,
     splashGradient: 'radial-gradient(circle at 50% 30%, #ffffff 0%, #fff6d8 22%, #181410 78%)',
   },

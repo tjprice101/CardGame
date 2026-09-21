@@ -20,7 +20,6 @@ import { t } from '@/ui/preferences';
 interface MainMenuHubProps {
   initialSection?: MenuSection;
   onCardStore: () => void;
-  onCardBoundCoop: () => void;
   onEternitysWake: () => void;
   onInfinitude: () => void;
   onDeckViewer: () => void;
@@ -459,6 +458,20 @@ export default function MainMenuHub(props: MainMenuHubProps) {
     return () => { cancelled = true; };
   }, []);
 
+  // Debug shortcut: typing "key" on the main menu marks every Forge event boss as defeated.
+  useEffect(() => {
+    let typed = '';
+    function onKeyDown(e: KeyboardEvent) {
+      const target = e.target as HTMLElement | null;
+      const isTyping = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target?.isContentEditable;
+      if (isTyping || e.key.length !== 1) return;
+      typed = (typed + e.key.toLowerCase()).slice(-3);
+      if (typed === 'key') useStore.getState().debugMarkForgeBossesDefeated();
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
   const uiTheme = useMemo(
     () => getEffectiveThemePalette(
       profile.uiThemeId || DEFAULT_UI_THEME_ID,
@@ -498,20 +511,9 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         onClick: props.onEternitysWake, disabled: eternitysWakeLocked,
       },
       {
-        id: 'coop', label: 'Card-bound Co-op', eyebrow: 'Multiplayer', icon: '◇',
-        caption: 'Form a party and challenge synchronized boss encounters.', status: 'Online parties',
-        art: MAIN_MENU_BANNER_ART.cardBoundCoop, onClick: props.onCardBoundCoop,
-      },
-      {
         id: 'garden', label: 'Garden of Cards', eyebrow: 'Expeditions', icon: '⌁',
         caption: 'Enter material expeditions, dungeons, and the Valley of Null.', status: 'Expedition hub',
         art: MAIN_MENU_BANNER_ART.gardenOfCards, onClick: props.onBattleground, tone: 'primary',
-      },
-      {
-        id: 'forge', label: 'Forge of Transcendence', eyebrow: 'Beyond All Sets', icon: '✳',
-        caption: 'A white-fire vault of cards that belong to no set and answer to no master.',
-        status: forgeUnlocked ? 'Open' : `Requires every event boss beaten · ${forgeBossesCleared}/${FORGE_EVENT_BOSS_IDS.length}`,
-        art: MAIN_MENU_BANNER_ART.forgeOfTranscendence, onClick: props.onForgeOfTranscendence, disabled: forgeLocked,
       },
     ],
     collection: [
@@ -790,8 +792,8 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             onClick={props.onEventCausality}
             style={{
               position: 'relative',
-              width: 585,
-              minHeight: 297,
+              width: 468,
+              minHeight: 237,
               padding: '27px 36px 32px',
               borderRadius: 14,
               border: '1px solid rgba(138, 221, 255, 0.72)',

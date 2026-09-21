@@ -51,18 +51,14 @@ export default function PartyHub() {
   }, [profile.uiThemeId, profile.customUiTheme, progress, themeNowMs]);
   const modeAccent = mode === 'battleground'
     ? '#ff9f8f'
-    : mode === 'null_raid'
-      ? '#cdb2ff'
-      : mode === 'eternity_boss'
-        ? '#ffb0b0'
-        : uiTheme.textMuted;
+    : mode === 'eternity_boss'
+      ? '#ffb0b0'
+      : uiTheme.textMuted;
   const modeCaption = mode === 'battleground'
     ? 'PvP Command'
-    : mode === 'null_raid'
-      ? 'Null Raid Command'
-      : mode === 'eternity_boss'
-        ? "Eternity's Wake Command"
-        : 'General Party';
+    : mode === 'eternity_boss'
+      ? "Eternity's Wake Command"
+      : 'General Party';
   const visibleFriends = useMemo(() => friends.filter(f => !members.some(m => m.userId === f.other.id)), [friends, members]);
   const localMemberId = me ?? (members.length === 1 ? members[0]?.userId ?? null : null);
 

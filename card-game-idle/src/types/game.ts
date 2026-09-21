@@ -365,8 +365,10 @@ export interface ProgressState {
   keysOfTranscendence?: number;
   /** Forge of Transcendence — spendable currency used to acquire gallery cards. Save v53. */
   shardsOfTranscendence?: number;
-  /** Forge of Transcendence — which event bosses have already granted their one-time Key (bossId → true). Save v53. */
+  /** Forge of Transcendence — which event bosses have been cleared at least once. Save v53. */
   forgeKeyAwarded?: Record<string, boolean>;
+  /** Forge of Transcendence — final single reward already claimed after clearing every event boss. */
+  forgeKeyRewardClaimed?: boolean;
   /** Forge of Transcendence — permanent, one-time-ever unlock flag set when the player spends a Key to open the Forge. Save v53. */
   forgeOfTranscendenceUnlocked?: boolean;
   /** Event-boss HP snapshots frozen per cycle. category → {cycleId,hp}. */

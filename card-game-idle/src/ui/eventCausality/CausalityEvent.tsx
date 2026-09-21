@@ -12,6 +12,7 @@ import { uiTypography } from '@/ui/theme';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
 import { BOSS_DEFINITIONS, getBossDisplayHp } from '@/data/bosses/bossDefinitions';
 import { formatCountdown, getCausalityEventCountdown, CAUSALITY_EVENT_ENDS_LABEL } from '@/ui/eventCausality/eventTimer';
+import { hasBeatenAllForgeEventBosses } from '@/data/forge/forgeDefinitions';
 
 interface Props {
   onClose: () => void;
@@ -62,6 +63,7 @@ export default function CausalityEvent({ onClose, onCardStore, onEternitysWake }
   const C = getEventTheme();
   const shards = useStore(s => s.progress.aberratedShards);
   const progress = useStore(s => s.progress);
+  const claimForgeKeyReward = useStore(s => s.claimForgeKeyReward);
   const [activeTab, setActiveTab] = useState<'story' | 'mechanic' | 'packs' | 'bosses'>('story');
   const [nowMs, setNowMs] = useState<number>(() => Date.now());
 
@@ -71,6 +73,8 @@ export default function CausalityEvent({ onClose, onCardStore, onEternitysWake }
   }, []);
 
   const eventCountdown = formatCountdown(getCausalityEventCountdown(nowMs));
+  const allCausalityBossesDefeated = hasBeatenAllForgeEventBosses(progress.bossCodex);
+  const keyRewardClaimed = progress.forgeKeyRewardClaimed === true;
 
   const causalityPack = PACK_DEFINITIONS.find(p => p.id === 'pack-causality');
   const causalityBosses = BOSS_DEFINITIONS.filter(boss => boss.category === 'Causality');
@@ -292,6 +296,27 @@ export default function CausalityEvent({ onClose, onCardStore, onEternitysWake }
                   </div>
                 </div>
               ))
+            )}
+            {allCausalityBossesDefeated && !keyRewardClaimed && (
+              <button
+                onClick={() => claimForgeKeyReward()}
+                style={{
+                  marginTop: 8, padding: '10px 22px', borderRadius: 8, fontSize: 13, cursor: 'pointer',
+                  fontFamily: uiTypography.display, letterSpacing: 1.2,
+                  background: 'linear-gradient(135deg, rgba(255,232,160,0.5), rgba(255,140,196,0.4))',
+                  border: `1px solid ${C.accent}`,
+                  color: '#fffdf8',
+                  boxShadow: '0 0 18px rgba(255, 222, 112, 0.58)',
+                  animation: 'pulseGlow 1.4s ease-in-out infinite',
+                }}
+              >
+                Claim the “Key of Transcendence”
+              </button>
+            )}
+            {allCausalityBossesDefeated && keyRewardClaimed && (
+              <div style={{ marginTop: 8, color: C.success, fontSize: 13, letterSpacing: 1.1, textTransform: 'uppercase' }}>
+                Key of Transcendence claimed
+              </div>
             )}
             <button
               onClick={onEternitysWake}

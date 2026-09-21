@@ -530,6 +530,49 @@ function ProgressionBody() {
 
 // --- Modal -------------------------------------------------------------------
 
+function ForgeBody() {
+  return (
+    <>
+      <div style={cardStyle}>
+        <div style={sectionHeadingStyle}>Unlocking the Forge</div>
+        <div style={bodyTextStyle}>
+          The Forge of Transcendence is a permanent, one-time-ever gallery that belongs to no set and no
+          master. It opens once every boss belonging to the current live event (currently <Tag>Causality</Tag>,
+          its five Eternity's Wake bosses) has been beaten at least once, and you have spent 1{' '}
+          <Tag>Key of Transcendence</Tag> to open it. Once opened, it stays open forever on that save.
+        </div>
+      </div>
+
+      <div style={{ ...cardAltStyle, marginTop: 10 }}>
+        <div style={sectionHeadingStyle}>Key of Transcendence</div>
+        <div style={bodyTextStyle}>
+          Clearing every event boss for the first time claims a single Key of Transcendence automatically.
+          Only one Key is ever awarded this way &mdash; it is what you spend to open the Forge.
+        </div>
+      </div>
+
+      <div style={{ ...cardStyle, marginTop: 10 }}>
+        <div style={sectionHeadingStyle}>Shards of Transcendence</div>
+        <div style={bodyTextStyle}>
+          Shards only ever drop after the Forge has been opened. Once unlocked, they can fall from:
+        </div>
+        <ListItem label="Boss clears">Any Eternity's Wake boss victory has a small chance to drop a Shard.</ListItem>
+        <ListItem label="Login Calendar">Certain bonus days on the Monthly Login Calendar can also drop a Shard.</ListItem>
+        <ListItem label="Rift of Causality">The final encounter of the Rift of Causality expedition can drop a Shard.</ListItem>
+      </div>
+
+      <div style={{ ...cardAltStyle, marginTop: 10 }}>
+        <div style={sectionHeadingStyle}>The 4 Transcendent Cards</div>
+        <div style={bodyTextStyle}>
+          Every Transcendent card carries the same innate <Tag>Transcendent Ability</Tag>: if it is anywhere in
+          your deck or Extra Deck, your maximum hand size becomes 10 instead of 8. Beyond that shared passive,
+          each of the 4 cards has its own attack or effect with the single highest numbers in the game.
+        </div>
+      </div>
+    </>
+  );
+}
+
 function buildSections(): Section[] {
   const bodyMap: Record<string, React.ReactNode> = {
     'overview':       <OverviewBody />,
@@ -542,6 +585,7 @@ function buildSections(): Section[] {
     'modes':          <ModesBody />,
     'card-born-tier': <CardBornTierBody />,
     'progression':    <ProgressionBody />,
+    'forge':          <ForgeBody />,
   };
   return TUTORIAL_SECTIONS.map(s => ({ ...s, body: bodyMap[s.id] ?? null }));
 }

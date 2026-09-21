@@ -103,9 +103,12 @@ export function evaluateDailyLogin(
     : dl.monthlyTrackKey === undefined && lastDay === today
       ? [dayOfMonth]
       : [];
+  const nextSequentialDay = lastDay < 0 ? 1 : Math.max(1, previousStreak + 1);
   const monthlyClaimableDay = legacyAlreadyClaimedToday
     ? undefined
-    : Array.from({ length: dayOfMonth }, (_, index) => index + 1).find(day => !claimedDays.includes(day));
+    : !claimedDays.includes(nextSequentialDay)
+      ? nextSequentialDay
+      : undefined;
 
   if (lastDay < 0) {
     return {
@@ -118,9 +121,8 @@ export function evaluateDailyLogin(
   }
   if (lastDay === today) {
     return {
-      // A daily login can only be claimed once per UTC day. The monthly
-      // track may still show a catch-up reward, but it cannot be claimed
-      // again until the next real login day.
+      // This is a daily-login event: each successful login claims the next event step,
+      // not every missed day. Claiming is therefore blocked until the player logs in on a new UTC day.
       claimable: false,
       pendingStreak: previousStreak,
       previousStreak,
@@ -128,7 +130,8 @@ export function evaluateDailyLogin(
       monthlyTrackKey: trackKey, monthlyDay: monthlyClaimableDay, monthlyReward: monthlyClaimableDay ? monthlyRewardForDay(monthlyClaimableDay, now) : undefined,
     };
   }
-  const pendingStreak = lastDay === today - 1 ? previousStreak + 1 : previousStreak;
+
+  const pendingStreak = previousStreak + 1;
   return {
     claimable: true,
     pendingStreak,

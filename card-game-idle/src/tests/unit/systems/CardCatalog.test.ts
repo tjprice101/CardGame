@@ -212,10 +212,11 @@ describe('Ain/Soph card catalog', () => {
     expect(premiumCosts.get('btei-temporal-ruin')).toBe(2);
     expect(premiumCosts.get('btei-null-edict')).toBe(2);
     expect(premiumCosts.get('enig-neutral-null-catechism')).toBe(1);
-    // tx-* Forge of Transcendence gallery placeholders are intentionally
-    // blank-slated (0 cost, no effects) — see src/data/ascension/transcendentCards.ts.
-    expect(premiumCosts.get('tx-neutral-null-catalyst')).toBe(0);
-    expect(premiumCosts.get('tx-neutral-void-reliquary')).toBe(0);
+    // tx-* Forge of Transcendence gallery cards use a higher Light Stack
+    // activation cost befitting their endgame rarity — see
+    // src/data/ascension/transcendentCards.ts.
+    expect(premiumCosts.get('tx-neutral-null-catalyst')).toBe(3);
+    expect(premiumCosts.get('tx-neutral-void-reliquary')).toBe(3);
   });
 
   it('keeps authored attack values intentionally distinct across the catalog', () => {

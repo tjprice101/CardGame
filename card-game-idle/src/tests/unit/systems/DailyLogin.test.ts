@@ -94,7 +94,7 @@ describe('dailyLogin.evaluateDailyLogin', () => {
     expect(result.claimable).toBe(false);
     expect(result.pendingStreak).toBe(3);
     expect(result.previousStreak).toBe(3);
-    expect(result.monthlyDay).toBe(2);
+    expect(result.monthlyDay).toBe(4);
     expect(result.monthlyReward).toBeDefined();
   });
 
@@ -134,7 +134,17 @@ describe('dailyLogin.evaluateDailyLogin', () => {
       now,
     );
     expect(result.claimable).toBe(true);
-    expect(result.pendingStreak).toBe(6);
+    expect(result.pendingStreak).toBe(7);
     expect(result.previousStreak).toBe(6);
+  });
+
+  it('only exposes the next day in the login event when the player returns after a gap', () => {
+    const result = evaluateDailyLogin(
+      makeProgress({ lastClaimedDayIndex: today - 4, streak: 2, monthlyTrackKey: getMonthlyTrackKey(now) }),
+      now,
+    );
+    expect(result.claimable).toBe(true);
+    expect(result.monthlyDay).toBe(3);
+    expect(result.pendingReward.shards).toBe(35);
   });
 });

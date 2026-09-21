@@ -11,7 +11,6 @@ const SettingsPanel = lazy(() => import('@/ui/settings/SettingsPanel'));
 const EternitysWake = lazy(() => import('@/ui/eternitysWake/EternitysWake'));
 const BossFightArena = lazy(() => import('@/ui/eternitysWake/BossFightArena'));
 const BossResultModal = lazy(() => import('@/ui/eternitysWake/BossResultModal'));
-const CardBoundCoopHub = lazy(() => import('@/ui/menu/CardBoundCoopHub'));
 const Infinitude = lazy(() => import('@/ui/infinitude/Infinitude'));
 const CausalityEvent = lazy(() => import('@/ui/eventCausality/CausalityEvent'));
 const TutorialModal = lazy(() => import('@/ui/menus/TutorialModal'));
@@ -21,8 +20,6 @@ const QuestsModal = lazy(() => import('@/ui/menus/QuestsModal'));
 const AchievementsModal = lazy(() => import('@/ui/menus/AchievementsModal'));
 const ForgeOfTranscendence = lazy(() => import('@/ui/forge/ForgeOfTranscendence'));
 const InventoryModal = lazy(() => import('@/ui/menus/InventoryModal'));
-const NullRaidArena = lazy(() => import('@/ui/ascension/NullRaidArena'));
-const NullRaidResults = lazy(() => import('@/ui/ascension/NullRaidResults'));
 const CardMasteryModal = lazy(() => import('@/ui/menus/CardMasteryModal'));
 const FractureModal = lazy(() => import('@/ui/menus/FractureModal'));
 const EnigmaModal = lazy(() => import('@/ui/menus/EnigmaModal'));
@@ -182,7 +179,6 @@ export default function App() {
   const [showEternitysWake, setShowEternitysWake] = useState(false);
   const [showBattleground, setShowBattleground] = useState(false);
   const [showGardenOfCards, setShowGardenOfCards] = useState(false);
-  const [showCardBoundCoop, setShowCardBoundCoop] = useState(false);
   const [showInfinitude, setShowInfinitude] = useState(false);
   const [showCausalityEvent, setShowCausalityEvent] = useState(false);
   const [showPlayerInfo, setShowPlayerInfo] = useState(false);
@@ -340,19 +336,6 @@ export default function App() {
   }, [battleground.mode, battleground.timeRemaining]);
 
   useEffect(() => {
-    const onOpenPartyHub = (e: Event) => {
-      const detail = (e as CustomEvent<{ draft?: { type: 'battleground' | 'null_raid' | 'eternity_boss'; label: string; raidId?: string; bossId?: string; deckId?: string } }>).detail;
-      if (detail?.draft) {
-        usePartyStore.getState().setActivityDraft(detail.draft as any);
-      }
-      setShowCardBoundCoop(true);
-      usePartyStore.getState().openHub(detail?.draft as any ?? null);
-    };
-    window.addEventListener('open-card-bound-coop', onOpenPartyHub as EventListener);
-    return () => window.removeEventListener('open-card-bound-coop', onOpenPartyHub as EventListener);
-  }, []);
-
-  useEffect(() => {
     void usePartyStore.getState().connectRealtime();
     return () => { usePartyStore.getState().disconnectRealtime(); };
   }, []);
@@ -374,9 +357,7 @@ export default function App() {
       label = 'Title Screen';
       detail = 'At the title screen';
     } else if (bossFight.mode === 'active' && activeBoss) {
-      label = bossFight.kind === 'null_raid'
-        ? 'Null Raid'
-        : 'Boss Fight';
+      label = 'Boss Fight';
       detail = `Fighting ${activeBoss.name}`;
       bossId = activeBoss.id;
       bossName = activeBoss.name;
@@ -508,19 +489,7 @@ export default function App() {
     let track: MusicTrackId | null = null;
     if (scene !== 'splash' && scene !== 'title') {
       if (bossFight.mode === 'active') {
-        if (bossFight.kind === 'null_raid') {
-          if (bossFight.activeBossId === 'nr-neutrality-event-horizon-arbiter') {
-            track = 'battle-null-raid-event-horizon-arbiter';
-          } else if (bossFight.activeBossId === 'nr-neutrality-verdant-null') {
-            track = 'battle-null-raid-verdant-null';
-          } else if (bossFight.activeBossId === 'nr-pyroabyss-ember-eventide-tyrant') {
-            track = 'battle-null-raid-ember-eventide-tyrant';
-          } else {
-            track = 'battle-null-raid';
-          }
-        } else {
-          track = 'battle-eternity';
-        }
+        track = 'battle-eternity';
       } else if (showForge) {
         track = 'menu-ascension';
       } else if (showCardStore) {
@@ -809,7 +778,7 @@ export default function App() {
 
   const idlePhase = turn.phase === 'idle';
   const inBossFight = bossFight.mode === 'active';
-  const bossResultVisible = bossFight.kind !== 'null_raid' && (bossFight.mode === 'victory' || bossFight.mode === 'defeat');
+  const bossResultVisible = bossFight.mode === 'victory' || bossFight.mode === 'defeat';
   const gardenResultVisible = gardenDungeon.phase === 'victory' || gardenDungeon.phase === 'defeat';
   const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showTutorial || showEternitysWake || showInfinitude || showPlayerInfo || showQuests || showAchievements || showMastery || showEnigma || showCausalityEvent || showBattleground || showGardenOfCards || showForge || showInventory || bossResultVisible || gardenResultVisible;
   const radioScreenVisible = (scene === 'menu' && !isMenuOpen && radioActive)
@@ -845,7 +814,6 @@ export default function App() {
     setShowTutorial(false);
     setShowEternitysWake(false);
     setShowBattleground(false);
-    setShowCardBoundCoop(false);
     setShowInfinitude(false);
     setShowCausalityEvent(false);
     setShowPlayerInfo(false);
@@ -880,7 +848,7 @@ export default function App() {
   // Unified Eternity's Wake background overlay during any active boss fight (matches selection menu).
   const showBossBackdrop = inBossFight && BOSS_DEFINITIONS.some(b => b.id === bossFight.activeBossId);
   const showGardenBackdrop = gardenDungeon.phase === 'active';
-  const showPartyShell = showCardBoundCoop || partyHubOpen || partyActiveId !== null || partyIncomingInvite !== null;
+  const showPartyShell = partyHubOpen || partyActiveId !== null || partyIncomingInvite !== null;
   const ETERNITYS_WAKE_BG = 'radial-gradient(circle at 50% -8%, rgba(255, 108, 108, 0.22) 0%, rgba(255, 108, 108, 0) 35%), radial-gradient(circle at 18% 86%, rgba(149, 62, 95, 0.22) 0%, rgba(149, 62, 95, 0) 44%), repeating-linear-gradient(126deg, rgba(255, 130, 130, 0.08) 0px, rgba(255, 130, 130, 0.08) 1px, rgba(0, 0, 0, 0) 1px, rgba(0, 0, 0, 0) 24px), linear-gradient(180deg, rgba(8, 4, 12, 0.985) 0%, rgba(18, 9, 20, 0.985) 100%)';
   const GARDEN_DUNGEON_BG = 'radial-gradient(circle at 50% -10%, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 45%), radial-gradient(circle at 50% 110%, rgba(180, 200, 230, 0.12) 0%, rgba(0, 0, 0, 0) 50%), repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0px, rgba(255, 255, 255, 0.035) 1px, rgba(0, 0, 0, 0) 1px, rgba(0, 0, 0, 0) 28px), linear-gradient(180deg, rgba(5, 6, 10, 0.99) 0%, rgba(9, 11, 17, 0.99) 100%)';
 
@@ -936,8 +904,7 @@ export default function App() {
       )}
 
       {/* Boss fight HP bar overlay - hidden while full-screen menus are open */}
-      {!isMenuOpen && scene === 'arena' && bossFight.kind !== 'null_raid' && <Suspense fallback={null}><BossFightArena /></Suspense>}
-      {scene === 'arena' && bossFight.kind === 'null_raid' && bossFight.mode === 'active' && <Suspense fallback={null}><NullRaidArena /></Suspense>}
+      {!isMenuOpen && scene === 'arena' && <Suspense fallback={null}><BossFightArena /></Suspense>}
 
       {/* Battleground match HUD overlay (timer + scores) */}
       {!isMenuOpen && battleground.mode === 'active' && (
@@ -978,7 +945,6 @@ export default function App() {
           <MainMenuHub
             initialSection={mainMenuSection}
             onCardStore={() => { setMainMenuSection('collection'); setShowCardStore(true); }}
-            onCardBoundCoop={() => { setMainMenuSection('play'); setShowCardBoundCoop(true); usePartyStore.getState().openHub(); }}
             onEternitysWake={() => { setMainMenuSection('play'); setShowEternitysWake(true); }}
             onBattleground={() => { setMainMenuSection('play'); setShowGardenOfCards(true); }}
             onInfinitude={() => { setMainMenuSection('collection'); setShowInfinitude(true); }}
@@ -1053,13 +1019,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Card-bound Co-op home */}
-      {showCardBoundCoop && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'auto' }}>
-          <Suspense fallback={null}><CardBoundCoopHub onClose={() => setShowCardBoundCoop(false)} /></Suspense>
-        </div>
-      )}
-
       {/* Infinitude modal */}
       {showInfinitude && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'auto' }}>
@@ -1110,11 +1069,6 @@ export default function App() {
             <Suspense fallback={null}><GardenResultModal /></Suspense>
           </div>
         </div>
-      )}
-
-      {/* Null Raid results overlay */}
-      {bossFight.kind === 'null_raid' && (bossFight.mode === 'victory' || bossFight.mode === 'defeat') && (
-        <Suspense fallback={null}><NullRaidResults /></Suspense>
       )}
 
       {/* Emergency end turn removed — End Turn is now driven exclusively by

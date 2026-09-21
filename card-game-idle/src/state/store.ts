@@ -97,7 +97,7 @@ import {
   isNeutralityTutorialTrialPackId,
   type NeutralityTutorialTier,
 } from '@/data/trialDecks';
-import { TRANSCENDENT_SHOP_IDS } from '@/data/ascension/transcendentCards';
+import { TRANSCENDENT_SHOP_IDS, TRANSCENDENT_ANGEL_IDS } from '@/data/ascension/transcendentCards';
 import { FORGE_CALENDAR_BONUS_DAYS, FORGE_EVENT_BOSS_IDS, hasBeatenAllForgeEventBosses, rollShardOfTranscendence } from '@/data/forge/forgeDefinitions';
 
 import { DEFAULT_MAIN_MENU_BACKGROUND_ID } from '@/data/profile/mainMenuBackgrounds';
@@ -187,11 +187,18 @@ function resolveStackCost(cost: { kind: 'fixed' | 'percentage' | 'range'; value?
 }
 
 function enforceHandCap(s: Store): void {
-  const overflow = s.deck.hand.length - 8;
+  const overflow = s.deck.hand.length - getMaxHandSize(s.deck);
   if (overflow <= 0) return;
   const pending: PendingEffect = { type: 'discard_choice', count: overflow, sourceCard: 'hand_overflow' };
   if (s.turn.pendingEffect === null) s.turn.pendingEffect = pending;
   else s.turn.pendingEffectQueue = [...(s.turn.pendingEffectQueue ?? []), pending];
+}
+
+/** Base max hand size is 8; any Transcendent card in the deck or Extra Deck raises it to 10 (its Transcendent Ability). */
+function getMaxHandSize(deck: Store['deck']): number {
+  const hasTranscendent = deck.deckList.some(entry => TRANSCENDENT_ANGEL_IDS.has(entry.definitionId))
+    || deck.extraDeck.some(entry => TRANSCENDENT_ANGEL_IDS.has(entry.definitionId));
+  return hasTranscendent ? 10 : 8;
 }
 
 const defaultProgress: ProgressState = {
@@ -270,6 +277,7 @@ const defaultProgress: ProgressState = {
   keysOfTranscendence: 0,
   shardsOfTranscendence: 0,
   forgeKeyAwarded: {},
+  forgeKeyRewardClaimed: false,
   forgeOfTranscendenceUnlocked: false,
   eventBossHpSnapshots: {},
   battlegroundStats: { wins: 0, losses: 0, bestScore: 0, totalMatches: 0, claimedMilestones: [], dailyMatchTimestamps: [] },
@@ -483,6 +491,10 @@ interface StoreActions {
   addTranscendentCard: (definitionId: string) => void;
   /** Spend a Key of Transcendence to permanently open the Forge. Requires every Forge event boss beaten and 1+ Key. */
   openForgeOfTranscendence: () => boolean;
+  /** Claim the single final reward for clearing every Forge event boss. */
+  claimForgeKeyReward: () => boolean;
+  /** Debug shortcut: marks every Forge event boss as defeated without fighting them. */
+  debugMarkForgeBossesDefeated: () => void;
   /** Purchase a Transcendent shop card with Entropic Energy. */
   purchaseTranscendentCard: (definitionId: string, cost: number) => boolean;
   /** Finalize raid angel drop outcome and update per-raid pity streak state. */
@@ -1213,14 +1225,10 @@ function completeBossFight(s: Store, victory: boolean): void {
       }
       s.progress.bossCodex[boss.id] = entry;
 
-      // Forge of Transcendence: award a one-time Key on a Forge-event boss's first-ever clear.
+      // Forge of Transcendence: the Key is claimed only after all event bosses are defeated.
       if (FORGE_EVENT_BOSS_IDS.includes(boss.id)) {
         if (!s.progress.forgeKeyAwarded) s.progress.forgeKeyAwarded = {};
-        if (isFirstClear && !s.progress.forgeKeyAwarded[boss.id]) {
-          s.progress.forgeKeyAwarded[boss.id] = true;
-          s.progress.keysOfTranscendence = (s.progress.keysOfTranscendence ?? 0) + 1;
-          pushRewardToast(s, 'Key of Transcendence acquired.');
-        }
+        s.progress.forgeKeyAwarded[boss.id] = true;
         // Shard of Transcendence only ever drops after the Forge has been opened.
         if (s.progress.forgeOfTranscendenceUnlocked && rollShardOfTranscendence(activeFightCount)) {
           s.progress.shardsOfTranscendence = (s.progress.shardsOfTranscendence ?? 0) + 1;
@@ -3136,7 +3144,7 @@ export const useStore = create<Store>()(
 
         s.deck = normalizeDeckInstanceIds(s.deck);
 
-        const overflow = s.deck.hand.length - 8;
+        const overflow = s.deck.hand.length - getMaxHandSize(s.deck);
         if (overflow > 0) {
           pendingQueue.push({ type: 'discard_choice', count: overflow, sourceCard: 'hand_overflow' });
         }
@@ -3577,11 +3585,10 @@ export const useStore = create<Store>()(
       return true;
     },
 
-    recordNullRaidClear: (raidId, cooldownMs) => {
-      set(s => {
-        s.progress.nullRaidClears = { ...(s.progress.nullRaidClears ?? {}), [raidId]: ((s.progress.nullRaidClears ?? {})[raidId] ?? 0) + 1 };
-        s.progress.nullRaidCooldowns = { ...(s.progress.nullRaidCooldowns ?? {}), [raidId]: Date.now() + cooldownMs };
-      });
+    recordNullRaidClear: () => {
+      // Phase 3: Null Raid is disabled from the active game flow. Keep legacy
+      // save fields and migration data intact, but make any runtime record
+      // attempts inert so the old mode cannot be reactivated accidentally.
     },
 
     addTranscendentCard: (definitionId) => {
@@ -3603,6 +3610,31 @@ export const useStore = create<Store>()(
       return true;
     },
 
+    claimForgeKeyReward: () => {
+      const state = get();
+      if (state.progress.forgeKeyRewardClaimed) return false;
+      if (!hasBeatenAllForgeEventBosses(state.progress.bossCodex)) return false;
+      set(s => {
+        if (s.progress.forgeKeyRewardClaimed) return;
+        s.progress.forgeKeyRewardClaimed = true;
+        s.progress.keysOfTranscendence = (s.progress.keysOfTranscendence ?? 0) + 1;
+        pushRewardToast(s, 'Key of Transcendence claimed.');
+      });
+      return true;
+    },
+
+    debugMarkForgeBossesDefeated: () => {
+      set(s => {
+        if (!s.progress.bossCodex) s.progress.bossCodex = {};
+        for (const bossId of FORGE_EVENT_BOSS_IDS) {
+          const entry = s.progress.bossCodex[bossId] ?? {};
+          if (entry.firstClearAt === undefined) entry.firstClearAt = Date.now();
+          s.progress.bossCodex[bossId] = entry;
+        }
+        pushRewardToast(s, 'Debug: every Forge event boss marked as defeated.');
+      });
+    },
+
     purchaseTranscendentCard: (definitionId, cost) => {
       if (!TRANSCENDENT_SHOP_IDS.has(definitionId)) return false;
       if (cost <= 0) return false;
@@ -3618,16 +3650,10 @@ export const useStore = create<Store>()(
       return true;
     },
 
-    finalizeNullRaidAngelOutcome: (raidId, dropped, pityConsumed) => {
-      set(s => {
-        const missStreak = { ...(s.progress.nullRaidAngelMissStreak ?? {}) };
-        if (dropped || pityConsumed) {
-          missStreak[raidId] = 0;
-        } else {
-          missStreak[raidId] = (missStreak[raidId] ?? 0) + 1;
-        }
-        s.progress.nullRaidAngelMissStreak = missStreak;
-      });
+    finalizeNullRaidAngelOutcome: () => {
+      // Phase 3 guard: legacy Null Raid angel-state data remains preserved,
+      // but the old runtime path is intentionally inert while the app is
+      // being cleaned up in stages.
     },
 
     // ─── Daily login ──────────────────────────────────────────────────────
@@ -4574,123 +4600,16 @@ export const useStore = create<Store>()(
       }
     },
 
-    startNullRaidProveYourself: (raidId, savedDeckId) => {
-      const state = get();
-      if (state.bossFight.mode !== 'idle') return false;
-
-      const raidDef = NULL_RAID_DEFINITIONS.find(r => r.id === raidId);
-      if (!raidDef) return false;
-
-      const savedDeck = state.progress.savedDecks.find(d => d.id === savedDeckId);
-      if (!savedDeck) return false;
-
-      const firstBossId = raidDef.encounterBossIds[0];
-      if (!firstBossId) return false;
-      const firstBoss = NULL_RAID_BOSS_MAP.get(firstBossId);
-      if (!firstBoss) return false;
-
-      set(s => {
-        const savedState: SavedGameState = {
-          deck: cloneState(s.deck),
-          board: cloneState(s.board),
-          turn: cloneState(s.turn),
-          progress: cloneState(s.progress),
-          settings: { ...s.settings },
-        };
-
-        s.deck = createDeckState(savedDeck.deckList, savedDeck.extraDeck ?? []);
-        s.board = { frontSlots: [null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
-        s.turn = { ...defaultTurn, phase: 'idle' };
-        s.bossFight = {
-          mode: 'active',
-          activeBossId: firstBossId,
-          bossCurrentHp: firstBoss.hp,
-          bossMaxHp: firstBoss.hp,
-          damageDealtThisFight: 0,
-          damageDealtFirstMinute: 0,
-          fightTimeRemaining: NULL_RAID_PROVE_YOURSELF_SECONDS,
-          cooldowns: s.bossFight.cooldowns,
-          savedGameState: savedState,
-          kind: 'null_raid',
-          nullRaidId: raidId,
-          nullRaidEncounterBossIds: [firstBossId],
-          nullRaidEncounterIndex: 0,
-          nullRaidAccumulatedEntropy: 0,
-          nullRaidAccumulatedShards: 0,
-          nullRaidBestDamageFirstMinute: 0,
-          nullRaidProvingOnly: true,
-          fightCount: 1,
-          rewardSummary: null,
-        };
-        recompute(s);
-      });
-
-      return true;
+    startNullRaidProveYourself: () => {
+      // Phase 3 guard: Null Raid attempts are intentionally blocked while the
+      // legacy code remains available for later cleanup.
+      return false;
     },
 
-    startNullRaid: (raidId, savedDeckId) => {
-      const state = get();
-      if (state.bossFight.mode !== 'idle') return false;
-
-      const raidDef = NULL_RAID_DEFINITIONS.find(r => r.id === raidId);
-      if (!raidDef) return false;
-
-      // Cooldown gate.
-      const now = Date.now();
-      const cooldown = state.progress.nullRaidCooldowns?.[raidId];
-      if (cooldown && cooldown > now) return false;
-
-      // Prove Yourself gate.
-      if (state.progress.nullRaidProveUnlocks?.[raidId] !== true) return false;
-
-      // Deck must exist.
-      const savedDeck = state.progress.savedDecks.find(d => d.id === savedDeckId);
-      if (!savedDeck) return false;
-
-      // First encounter boss must exist.
-      const firstBossId = raidDef.encounterBossIds[0];
-      if (!firstBossId) return false;
-      const firstBoss = NULL_RAID_BOSS_MAP.get(firstBossId);
-      if (!firstBoss) return false;
-
-      set(s => {
-        // Save current game state so we can restore it after the raid.
-        const savedState: SavedGameState = {
-          deck: cloneState(s.deck),
-          board: cloneState(s.board),
-          turn: cloneState(s.turn),
-          progress: cloneState(s.progress),
-          settings: { ...s.settings },
-        };
-
-        s.deck = createDeckState(savedDeck.deckList, savedDeck.extraDeck ?? []);
-        s.board = { frontSlots: [null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
-        s.turn = { ...defaultTurn, phase: 'idle' };
-        s.bossFight = {
-          mode: 'active',
-          activeBossId: firstBossId,
-          bossCurrentHp: firstBoss.hp,
-          bossMaxHp: firstBoss.hp,
-          damageDealtThisFight: 0,
-          damageDealtFirstMinute: 0,
-          fightTimeRemaining: NULL_RAID_ENCOUNTER_SECONDS,
-          cooldowns: s.bossFight.cooldowns,
-          savedGameState: savedState,
-          kind: 'null_raid',
-          nullRaidId: raidId,
-          nullRaidEncounterBossIds: raidDef.encounterBossIds,
-          nullRaidEncounterIndex: 0,
-          nullRaidAccumulatedEntropy: 0,
-          nullRaidAccumulatedShards: 0,
-          nullRaidBestDamageFirstMinute: 0,
-          nullRaidProvingOnly: false,
-          fightCount: 1,
-          rewardSummary: null,
-        };
-        recompute(s);
-      });
-
-      return true;
+    startNullRaid: () => {
+      // Phase 3 guard: keep the old Null Raid data and save schema intact, but
+      // disable all active launch paths so the mode cannot be re-entered.
+      return false;
     },
 
     tickBossTimer: (deltaSeconds) => {
