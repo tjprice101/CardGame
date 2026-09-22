@@ -140,11 +140,11 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
                     <img
                       src={rewardIconUrl(item.meta.artAssetKey)}
                       alt={item.meta.name}
-                      width={44}
-                      height={44}
+                      width={64}
+                      height={64}
                       style={{
-                        width: 44,
-                        height: 44,
+                        width: 64,
+                        height: 64,
                         borderRadius: 8,
                         objectFit: 'cover',
                         border: '1px solid rgba(255,255,255,0.4)',
@@ -358,7 +358,7 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
                 <div style={{ display: 'grid', gap: 8 }}>
                   {selected.encounters.map((encounter, index) => encounter.reward && (
                     <div key={encounter.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }}>
-                      <img src={rewardIconUrl(encounter.reward.artAssetKey)} alt="" width={36} height={36} style={{ width: 36, height: 36, borderRadius: 6, border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 10px rgba(255,255,255,0.25)', flexShrink: 0 }} />
+                      <img src={rewardIconUrl(encounter.reward.artAssetKey)} alt="" width={54} height={54} style={{ width: 54, height: 54, borderRadius: 6, border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 10px rgba(255,255,255,0.25)', flexShrink: 0 }} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 12, fontWeight: 700, color: '#ffffff' }}>Encounter {index + 1}: {encounter.name}</div>
                         <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 11, marginTop: 1 }}>

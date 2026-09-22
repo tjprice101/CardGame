@@ -48,11 +48,11 @@ export default function GardenDungeonHUD() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 8px', borderRadius: 6, background: 'rgba(50, 110, 76, 0.28)', border: '1px solid rgba(141, 230, 141, 0.55)', color: '#b9ffbf', fontSize: 10, fontWeight: 700, whiteSpace: 'nowrap', boxShadow: '0 0 12px rgba(100, 220, 130, 0.18)' }}>
-            <span aria-hidden="true">✦</span> {turn.limitlessLightStacks.toLocaleString()} Light Stacks
+            <span aria-hidden="true">✦</span> {turn.limitlessLightStacks.toLocaleString()} Limitless Light Stacks
           </div>
           {encounter.reward && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '2px 7px', borderRadius: 5, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}>
-              <img src={rewardIconUrl(encounter.reward.artAssetKey)} alt="" aria-hidden="true" width={18} height={18} style={{ width: 18, height: 18, objectFit: 'cover', borderRadius: 3 }} />
+              <img src={rewardIconUrl(encounter.reward.artAssetKey)} alt="" aria-hidden="true" width={27} height={27} style={{ width: 27, height: 27, objectFit: 'cover', borderRadius: 3 }} />
               <span style={{ fontSize: 9, color: '#d8f0ff' }}>+{nextReward ? 3 : 4} {GARDEN_REWARD_LABELS[encounter.reward.currency]}{nextReward ? ` · +1 ${GARDEN_REWARD_LABELS[nextReward]}` : ''}</span>
             </div>
           )}

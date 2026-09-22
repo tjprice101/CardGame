@@ -17,7 +17,7 @@ interface Props {
 }
 
 const RAINBOW_TEXT: React.CSSProperties = {
-  backgroundImage: 'conic-gradient(from 180deg, #ff2fd0, #ff9d3d, #fff35c, #4dffb8, #4d9dff, #b24dff, #ff2fd0)',
+  backgroundImage: 'linear-gradient(90deg, #8f102f 0%, #d51f52 38%, #ff2f92 68%, #9d1239 100%)',
   WebkitBackgroundClip: 'text',
   backgroundClip: 'text',
   color: 'transparent',
@@ -106,7 +106,7 @@ export default function ForgeOfTranscendence({ onClose }: Props) {
             style={{
               marginTop: 10, padding: '14px 40px', borderRadius: 999,
               border: '1px solid rgba(160,90,255,0.6)',
-              background: canOpen ? 'conic-gradient(from 180deg, #ff2fd0, #ff9d3d, #fff35c, #4dffb8, #4d9dff, #b24dff, #ff2fd0)' : 'rgba(20,10,30,0.08)',
+              background: canOpen ? 'linear-gradient(90deg, #8f102f, #d51f52 45%, #ff2f92 72%, #9d1239)' : 'rgba(20,10,30,0.08)',
               color: canOpen ? '#15101c' : 'rgba(20,10,30,0.4)',
               fontFamily: uiTypography.display, fontSize: 14, letterSpacing: 2, textTransform: 'uppercase',
               cursor: canOpen ? 'pointer' : 'not-allowed',

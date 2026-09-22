@@ -31,26 +31,6 @@ function formatCount(value: number, singular: string, plural = `${singular}s`): 
   return `${value} ${Math.abs(value) === 1 ? singular : plural}`;
 }
 
-function formatScaling(expression: LightCardDefinition['ainAttack']['scaling']): string {
-  switch (expression.kind) {
-    case 'constant': return `fixed ${formatExactValue(expression.value)}`;
-    case 'linear': {
-      const source = expression.reads === 'limitlessLightStacks'
-        ? 'Limitless Light Stacks'
-        : expression.reads === 'asaFrontCount' ? 'Ain Soph Aur count' : 'collection power';
-      const sign = expression.multiplier >= 0 ? '+' : '';
-      return `${sign}${formatExactValue(expression.multiplier)} per ${source}${expression.offset ? `, ${expression.offset >= 0 ? '+' : ''}${formatExactValue(expression.offset)} offset` : ''}`;
-    }
-    case 'stepped': {
-      const source = expression.reads === 'limitlessLightStacks'
-        ? 'Limitless Light Stacks'
-        : expression.reads === 'asaFrontCount' ? 'Ain Soph Aur count' : 'collection power';
-      return `+${formatExactValue(expression.amount)} per ${expression.step} ${source}`;
-    }
-    case 'custom': return `bespoke scaling (${expression.fnId})`;
-  }
-}
-
 function formatStackCost(cost: LightCardDefinition['sophAttack']['stackCost'] | DarkCardDefinition['activationCost']): string | null {
   if (!cost) return null;
   if (cost.kind === 'fixed' && (cost.value ?? 0) === 0) return null;
@@ -236,7 +216,10 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
     pushSummarySection(sections, 'Source', ['Neutrality Card Pack']);
   }
 
-  pushSummarySection(sections, 'Effect', [authoredDescription]);
+  pushSummarySection(sections, 'Effect', [authoredDescription
+    .replace(/ with (?:extreme |increased |overwhelming )?Collection Power scaling/gi, '')
+    .replace(/Collection Power-scaled /gi, '')
+    .replace(/; scales with Collection Power/gi, '')]);
 
   if (card.type === 'Light') {
     const light = card as LightCardDefinition;
@@ -245,12 +228,11 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
     ]);
     pushSummarySection(sections, 'Ain Attack', [
       `${light.ainAttack.baseDivineLight} base Divine Light`,
-      formatScaling(light.ainAttack.scaling),
       `Cooldown: ${formatCount(light.ainAttack.cooldownCards, 'card played', 'cards played')}`,
     ]);
     pushSummarySection(sections, 'Soph Attack', [
       `${light.sophAttack.baseDivineLight} base Divine Light`,
-      `${formatScaling(light.sophAttack.scaling)}${formatStackCost(light.sophAttack.stackCost) ? `; costs ${formatStackCost(light.sophAttack.stackCost)}` : ''}`,
+      ...(formatStackCost(light.sophAttack.stackCost) ? [`Costs ${formatStackCost(light.sophAttack.stackCost)}`] : []),
       `Cooldown: ${formatCount(light.sophAttack.cooldownCards, 'card played', 'cards played')}`,
     ]);
     pushSummarySection(sections, 'Charge', [
@@ -291,7 +273,7 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
     if (bridge) {
       pushSummarySection(sections, 'Bridge the Light', [
         `${bridge.baseDivineLight} base Divine Light`,
-        `${formatScaling(bridge.scaling)}${formatStackCost(bridge.consumesStacks) ? `; costs ${formatStackCost(bridge.consumesStacks)}` : ''}`,
+        ...(formatStackCost(bridge.consumesStacks) ? [`Costs ${formatStackCost(bridge.consumesStacks)}`] : []),
         `Cooldown: ${formatCount(bridge.cooldownCards, 'card played', 'cards played')}`,
       ]);
     }

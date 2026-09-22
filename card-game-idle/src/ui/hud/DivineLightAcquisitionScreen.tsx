@@ -375,7 +375,7 @@ function OverviewTab() {
               <div style={{ display: 'flex', gap: 4 }}>
                 {board.frontSlots.map((s, i) => (
                   <div key={i} style={{
-                    width: 22, height: 22, borderRadius: 5,
+                    width: 33, height: 33, borderRadius: 5,
                     background: s ? C.green.fg : 'rgba(255,255,255,0.08)',
                     border: `1px solid ${s ? C.green.br : 'rgba(255,255,255,0.12)'}`,
                     transition: 'all 0.2s',
@@ -385,14 +385,14 @@ function OverviewTab() {
               <div style={{ display: 'flex', gap: 4 }}>
                 {board.backSlots.map((s, i) => (
                   <div key={i} style={{
-                    width: 22, height: 22, borderRadius: 5,
+                    width: 33, height: 33, borderRadius: 5,
                     background: s ? C.purple.fg : 'rgba(255,255,255,0.08)',
                     border: `1px solid ${s ? C.purple.br : 'rgba(255,255,255,0.12)'}`,
                     transition: 'all 0.2s',
                   }} />
                 ))}
                 {/* 5th front mirrors back — pad to match */}
-                <div style={{ width: 22 }} />
+                <div style={{ width: 33 }} />
               </div>
             </div>
             <div style={{ fontSize: 13, color: C.green.fg, fontFamily: DF, fontWeight: 700 }}>
@@ -739,7 +739,7 @@ function TipsTab() {
             )}
             {noStacks && (
               <div style={{ fontSize: 12, color: 'rgba(244,244,248,0.72)', fontFamily: BF }}>
-                → <strong style={{ color: C.green.fg }}>No Limitless Light Stacks banked.</strong> Attacks are running on Collection Power alone — flip a charged card to unlock the other two thirds of your scaling.
+                → <strong style={{ color: C.green.fg }}>No Limitless Light Stacks banked.</strong> Attacks continue using Collection Power scaling; flip a charged card when you want to generate or spend Limitless Light Stacks.
               </div>
             )}
           </div>
@@ -793,7 +793,7 @@ function TipsTab() {
       <TipCard
         rank={8}
         title="Grow Collection Power for a Permanent Floor"
-        detail="Collection Power is one third of every attack's scaling and never resets. Playing and mastering more unique cards raises your baseline payout on every future turn, even before you build a board."
+        detail="Collection Power directly scales attacks and never resets. Playing and mastering more unique cards raises your baseline payout on every future turn, even before you build a board."
         accent={C.purple.fg}
       />
     </div>

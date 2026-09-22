@@ -780,7 +780,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             <div style={{
               position: 'absolute', top: 14, left: 18,
               padding: '3px 13px', borderRadius: 6,
-              background: 'conic-gradient(from 180deg, #ff2fd0, #ff9d3d, #fff35c, #4dffb8, #4d9dff, #b24dff, #ff2fd0)', color: '#15101c',
+              background: 'linear-gradient(90deg, #8f102f, #d51f52 45%, #ff2f92 72%, #9d1239)', color: '#fff4f7',
               fontFamily: uiTypography.display, fontSize: 12, letterSpacing: 1.8, fontWeight: 700,
             }}>BEYOND ALL SETS</div>
             <div style={{ marginTop: 40, fontFamily: uiTypography.display, fontSize: 26, letterSpacing: 2, textTransform: 'uppercase' }}>

@@ -164,8 +164,8 @@ export default function GardenResultModal() {
                           width={40}
                           height={40}
                           style={{
-                            width: 40,
-                            height: 40,
+                            width: 60,
+                            height: 60,
                             objectFit: 'cover',
                             borderRadius: 8,
                             border: '1px solid rgba(255,255,255,0.4)',

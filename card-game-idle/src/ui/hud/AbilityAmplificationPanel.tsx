@@ -37,7 +37,7 @@ export default function AbilityAmplificationPanel() {
           return (
             <div key={slot} style={{ padding: 9, borderRadius: 7, border: '1px solid rgba(110,185,240,0.25)', background: 'rgba(18,38,62,0.5)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
-                {ability && <img src={abilityIconUrl(ability.iconAssetKey)} alt="" aria-hidden="true" width={30} height={30} style={{ width: 30, height: 30, objectFit: 'cover', borderRadius: 5, marginRight: 2 }} />}
+                {ability && <img src={abilityIconUrl(ability.iconAssetKey)} alt="" aria-hidden="true" width={44} height={44} style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 5, marginRight: 2 }} />}
                 <span style={{ color: '#7dd4f8', fontSize: 10 }}>Slot {slot}</span>
                 <button type="button" disabled={!ability || turn.phase !== 'playing' || cooldown > 0} onClick={() => activateAbility(slot)} style={{ padding: '4px 7px', borderRadius: 5, border: '1px solid rgba(110,185,240,0.45)', background: 'rgba(78,160,220,0.18)', color: '#d8f0ff', cursor: !ability || cooldown > 0 ? 'not-allowed' : 'pointer', opacity: !ability || cooldown > 0 ? 0.45 : 1, fontSize: 9 }}>Use</button>
               </div>
@@ -51,7 +51,7 @@ export default function AbilityAmplificationPanel() {
         <div style={{ color: '#d8f0ff', fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 0.8 }}>Active Buffs</div>
         {[activeBuff && turn.divineFieldUntil ? { buff: activeBuff, until: turn.divineFieldUntil, color: '#9be8a8' } : null, activeWhiteout && turn.whiteoutDomainUntil ? { buff: activeWhiteout, until: turn.whiteoutDomainUntil, color: '#f1f3ff' } : null].filter(Boolean).map(entry => entry && (
           <div key={entry.buff.id} style={{ display: 'flex', alignItems: 'center', gap: 9, marginTop: 8, padding: 8, borderRadius: 7, border: `1px solid ${entry.color}73`, background: 'rgba(255,255,255,0.06)' }}>
-            <img src={buffIconUrl(entry.buff.iconAssetKey) || PLACEHOLDER_ICON} alt="" aria-hidden="true" width={32} height={32} style={{ width: 32, height: 32, objectFit: 'cover', borderRadius: 5, opacity: 0.85 }} />
+            <img src={buffIconUrl(entry.buff.iconAssetKey) || PLACEHOLDER_ICON} alt="" aria-hidden="true" width={48} height={48} style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 5, opacity: 0.85 }} />
             <div style={{ minWidth: 0 }}>
               <div style={{ color: entry.color, fontSize: 10 }}>{entry.buff.name}</div>
               <div style={{ marginTop: 2, color: 'rgba(244,244,248,0.62)', fontSize: 9 }}>{Math.ceil(Math.max(0, entry.until - Date.now()) / 1000)}s remaining · {entry.buff.description}</div>
