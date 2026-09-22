@@ -12,6 +12,8 @@ Fresh validation was run on the current working tree:
 
 ## Current design state
 
+- Ain Soph Aur cards are Extra Deck-only: search and salvage effects may target Light and Dark Main Deck cards, but never Ain Soph Aur. Access Ain Soph Aur through summon or free-summon flows.
+
 - The player-facing primary currency remains Divine Light.
 - Causality is designed around a repeatable Limitless Cosmos loop: generate, convert, hold, and spend Cosmos for utility and Divine Light gain.
 - The Causality deck should reward conversion from Limitless Light into useful Cosmos payoff lines rather than dead one-off effects.

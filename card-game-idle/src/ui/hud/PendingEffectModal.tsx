@@ -412,6 +412,31 @@ export default function PendingEffectModal() {
     );
   }
 
+  if (pending.type === 'exchange_deck_ends') {
+    return (
+      <div className="anim-backdrop-fade" style={backdropStyle}>
+        <div className="anim-panel-slide-up" style={styles.panel}>
+          <div style={styles.title}>Reorganize Your Deck?</div>
+          <div style={styles.subtitle}>You may exchange the top and bottom cards of your deck, or keep the current order.</div>
+          <div style={styles.cardGrid}>
+            {[pending.topCard, pending.bottomCard].map((card, index) => (
+              <div key={card.instanceId} className={buildCardClassName(card)} style={buildCardStyle(card)}>
+                {renderCardFace(card, index === 0 ? 'Top of deck' : 'Bottom of deck', warmTheme.accent)}
+              </div>
+            ))}
+          </div>
+          <div style={styles.footer}>
+            <div style={styles.info}>Optional deck reorganization</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="menu-tactile-btn" style={styles.secondaryBtn} onClick={() => resolvePending([pending.topCard.instanceId])}>Keep Order</button>
+              <button className="menu-tactile-btn" style={styles.confirmBtnEnabled} onClick={() => resolvePending([pending.topCard.instanceId, pending.bottomCard.instanceId])}>Exchange Cards</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (pending.type === 'look_top_take_drop') {
     if (pending.cards.length === 0) {
       return (

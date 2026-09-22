@@ -38,7 +38,7 @@ export const enigmaRewardCards: Array<LightCardDefinition | DarkCardDefinition |
     description: 'The answer that exists beyond the event horizon. Its Bridge the Light attack rewards a board prepared by all three Causality families.',
     artKey: 'enig_causality_axiom_beyond_the_horizon', summonMaterialCount: 3,
     summonMaterials: [{ definitionIds: ['enig-causality-horizon-weaver'], count: 1 }, { definitionIds: ['enig-causality-ink-of-the-first-law'], count: 1 }, { definitionIds: ['enig-causality-archive-of-unmade-stars'], count: 1 }],
-    onSummonEffects: [{ type: 'cosmos_flat', value: 5 }, { type: 'search_deck_distinct_types', filter: ['Light', 'Dark', 'AinSophAur'], takePerType: 1 }],
+    onSummonEffects: [{ type: 'cosmos_flat', value: 5 }, { type: 'search_deck_distinct_types', filter: ['Light', 'Dark'], takePerType: 1 }],
     bridgeAttack: { id: 'enig-causality-axiom-beyond-the-horizon:bridge', name: 'Bridge the Light', description: 'A horizon-breaking Divine Light payout with Collection Power scaling.', baseDivineLight: 2_400, cooldownCards: 4, scaling: { kind: 'linear', reads: 'collectionPower', multiplier: 1.8 }, consumesStacks: { kind: 'fixed', value: 4 } },
   } as AinSophAurDefinition,
   {

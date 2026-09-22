@@ -8,6 +8,7 @@ This file is the AI-facing project brief. Read it before making design, balance,
 
 - Main Deck contains **Light** and **Dark** cards only.
 - Extra Deck contains **Ain Soph Aur** cards only. Ain Soph Aur cards are never Main Deck cards.
+- Ain Soph Aur cards cannot be searched from the Main Deck or salvaged from discard; search and salvage effects may target Light and Dark cards only.
 - Main-deck cards are placed into the four support/back slots. Left-click from hand places Soph; right-click from hand places Ain.
 - **Soph** cards are face-down and charge by +1 whenever any card is played from hand.
 - A Soph card is ready at `SOPH_FLIP_CHARGE_REQUIRED = 2`. At that point it can flip to Ain and bank its charge as Limitless Light Stacks, or be sacrificed to convert a percentage of its charge into Limitless Light Stacks.

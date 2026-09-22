@@ -136,7 +136,7 @@ export const ABILITY_DEFINITIONS: readonly AbilityDefinition[] = [
     id: 'causality-archive-elsewhen',
     setId: 'Causality',
     name: 'Archive of Elsewhen',
-    description: 'Spend 8 Limitless Cosmos to draw 5 cards and recover one Light, Dark, and Ain Soph Aur card from your deck. Cooldown: 150 seconds.',
+    description: 'Spend 8 Limitless Cosmos to draw 5 cards and recover one Light and one Dark card from your deck. Ain Soph Aur cards remain in the Extra Deck. Cooldown: 150 seconds.',
     cooldownSeconds: 150,
     cosmosCost: 8,
     ownershipGate: 'anyCausalityEternal',

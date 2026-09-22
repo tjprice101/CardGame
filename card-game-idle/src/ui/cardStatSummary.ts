@@ -51,9 +51,9 @@ function formatScaling(expression: LightCardDefinition['ainAttack']['scaling']):
   }
 }
 
-function formatStackCost(cost: LightCardDefinition['sophAttack']['stackCost'] | DarkCardDefinition['activationCost']): string {
-  if (!cost) return 'no stack cost';
-  if (cost.kind === 'fixed' && (cost.value ?? 0) === 0) return 'no stack cost';
+function formatStackCost(cost: LightCardDefinition['sophAttack']['stackCost'] | DarkCardDefinition['activationCost']): string | null {
+  if (!cost) return null;
+  if (cost.kind === 'fixed' && (cost.value ?? 0) === 0) return null;
   if (cost.kind === 'fixed') return `${formatExactValue(cost.value ?? 0)} Limitless Light Stack${cost.value === 1 ? '' : 's'}`;
   if (cost.kind === 'percentage') return `${formatExactValue(cost.value ?? 0)}% of current Limitless Light Stacks`;
   return `${formatExactValue(cost.min ?? 0)}-${formatExactValue(cost.max ?? cost.min ?? 0)} Limitless Light Stacks`;
@@ -245,12 +245,12 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
     ]);
     pushSummarySection(sections, 'Ain Attack', [
       `${light.ainAttack.baseDivineLight} base Divine Light`,
-      `${formatScaling(light.ainAttack.scaling)}; no stack cost`,
+      formatScaling(light.ainAttack.scaling),
       `Cooldown: ${formatCount(light.ainAttack.cooldownCards, 'card played', 'cards played')}`,
     ]);
     pushSummarySection(sections, 'Soph Attack', [
       `${light.sophAttack.baseDivineLight} base Divine Light`,
-      `${formatScaling(light.sophAttack.scaling)}; costs ${formatStackCost(light.sophAttack.stackCost)}`,
+      `${formatScaling(light.sophAttack.scaling)}${formatStackCost(light.sophAttack.stackCost) ? `; costs ${formatStackCost(light.sophAttack.stackCost)}` : ''}`,
       `Cooldown: ${formatCount(light.sophAttack.cooldownCards, 'card played', 'cards played')}`,
     ]);
     pushSummarySection(sections, 'Charge', [
@@ -272,7 +272,7 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
     ]);
     pushSummarySection(sections, 'Utility', [formatEffectsInline(dark.sophEffects, dark.definitionId)]);
     pushSummarySection(sections, 'Activation', [
-      `Cost: ${formatStackCost(dark.activationCost)}`,
+      ...(formatStackCost(dark.activationCost) ? [`Cost: ${formatStackCost(dark.activationCost)}`] : []),
       ...(dark.persistent ? [`Cooldown: ${formatCount(dark.cooldownCardsPlayed ?? 1, 'card played', 'cards played')}`, 'Remains on board after activation'] : [`One-shot: returns to ${dark.postActivationFate} after activation`]),
     ]);
     pushSummarySection(sections, 'Charge', [
@@ -291,7 +291,7 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
     if (bridge) {
       pushSummarySection(sections, 'Bridge the Light', [
         `${bridge.baseDivineLight} base Divine Light`,
-        `${formatScaling(bridge.scaling)}${bridge.consumesStacks ? `; costs ${formatStackCost(bridge.consumesStacks)}` : '; does not consume stacks'}`,
+        `${formatScaling(bridge.scaling)}${formatStackCost(bridge.consumesStacks) ? `; costs ${formatStackCost(bridge.consumesStacks)}` : ''}`,
         `Cooldown: ${formatCount(bridge.cooldownCards, 'card played', 'cards played')}`,
       ]);
     }

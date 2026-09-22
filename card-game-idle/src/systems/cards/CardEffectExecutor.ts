@@ -153,11 +153,11 @@ export class CardEffectExecutor {
 
         case 'exchange_deck_ends': {
           if (mutableDeck.drawPile.length > 1) {
-            const drawPile = [...mutableDeck.drawPile];
-            const first = drawPile[0];
-            drawPile[0] = drawPile[drawPile.length - 1];
-            drawPile[drawPile.length - 1] = first;
-            mutableDeck.drawPile = drawPile;
+            pendingEffects.push({
+              type: 'exchange_deck_ends',
+              topCard: mutableDeck.drawPile[0],
+              bottomCard: mutableDeck.drawPile[mutableDeck.drawPile.length - 1],
+            });
           }
           break;
         }

@@ -21,6 +21,7 @@
 ## Current Ain/Soph Engine (authoritative)
 - Main Deck: Light and Dark only.
 - Extra Deck: Ain Soph Aur only. Ain Soph Aur cards are never Main Deck cards.
+- Search and salvage effects cannot target Ain Soph Aur cards; those cards exist only in the Extra Deck and are accessed through summon/free-summon flows.
 - Hand controls: left-click places a main-deck card as face-down Soph; right-click places a main-deck card as face-up Ain. Extra Deck cards use their summon flow, not Soph/Ain placement.
 - Soph is face-down and charging; Ain is face-up and active. `SOPH_FLIP_CHARGE_REQUIRED = 2`; at 2+ charge, flip Soph to Ain and convert its charge into Limitless Light Stacks, or sacrifice it to convert a percentage of charge into Limitless Light Stacks.
 - Light cards have Ain and Soph attacks. Dark cards are utility cards. Ain Soph Aur cards summon to the front row from the Extra Deck and use Bridge the Light.

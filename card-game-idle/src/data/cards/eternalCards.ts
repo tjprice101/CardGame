@@ -93,7 +93,7 @@ const asa = (
 export const eternalCards: CardDefinition[] = [
   light('btei-voids-reaping', 'The Harrowing of the Last Dawn', 'btei_voids_reaping', 900, 1200, 720),
   dark('btei-temporal-ruin', 'The Ruin of Hours', 'btei_temporal_ruin', { type: 'discard_draw', discard: 1, draw: 3 }, 'hand'),
-  dark('btei-null-edict', 'The Null Verdict', 'btei_null_edict', { type: 'search_deck_distinct_types', filter: ['Light', 'Dark', 'AinSophAur'], takePerType: 1 }, 'hand'),
+  dark('btei-null-edict', 'The Null Verdict', 'btei_null_edict', { type: 'search_deck_distinct_types', filter: ['Light', 'Dark'], takePerType: 1 }, 'hand'),
   asa('btei-axiom-of-oblivion', 'The Axiom of Nothing', 'btei_axiom_of_oblivion', 3, 1800, 1300),
   asa('btei-sovereign-domain', 'The Sovereign Quiet', 'btei_sovereign_domain', 2, 1450, 1050),
   light('btei-convergence-of-eternity', 'The Convergence Beyond Time', 'btei_convergence_of_eternity', 1100, 1500, 980),

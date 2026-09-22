@@ -19,8 +19,8 @@ const transcendentLight: CardDefinition = {
 	description: `${TRANSCENDENT_ABILITY} When this card is placed on its Soph side, draw 3 cards. If at least 2 drawn cards are Light, draw 1 additional card; if at least 2 drawn cards are Dark, gain 8,000 Divine Light with Collection Power scaling.`,
 	artKey: 'tx_neutral_starbound_glimmer',
 	sacrificeStackRate: 100,
-	ainAttack: { id: 'tx-neutral-starbound-glimmer:ain-attack', label: 'Ain', name: 'The First Dawn', description: '50,000 base Divine Light. No resource scaling.', baseDivineLight: 50_000, cooldownCards: 2, scaling: { kind: 'constant', value: 0 }, tags: ['transcendent', 'ain-attack'] },
-	sophAttack: { id: 'tx-neutral-starbound-glimmer:soph-attack', label: 'Soph', name: 'Before Any Star', description: '90,000 base Divine Light. No resource cost or set-specific scaling.', baseDivineLight: 90_000, cooldownCards: 3, scaling: { kind: 'constant', value: 0 }, tags: ['transcendent', 'soph-attack'] },
+	ainAttack: { id: 'tx-neutral-starbound-glimmer:ain-attack', label: 'Ain', name: 'The First Dawn', description: '12,000 base Divine Light with Collection Power scaling.', baseDivineLight: 12_000, cooldownCards: 3, scaling: { kind: 'linear', reads: 'collectionPower', multiplier: 12 }, tags: ['transcendent', 'ain-attack'] },
+	sophAttack: { id: 'tx-neutral-starbound-glimmer:soph-attack', label: 'Soph', name: 'Before Any Star', description: '21,000 base Divine Light with Collection Power scaling.', baseDivineLight: 21_000, cooldownCards: 5, scaling: { kind: 'linear', reads: 'collectionPower', multiplier: 21 }, tags: ['transcendent', 'soph-attack'] },
 	sophPlacementEffects: [{ type: 'draw_with_type_bonuses', value: 3, drawFilter: 'Light', drawThreshold: 2, bonusDraw: 1, gainFilter: 'Dark', gainThreshold: 2, gainDivineLight: 8_000 }],
 };
 
@@ -43,11 +43,11 @@ const transcendentDark: CardDefinition[] = [
 
 const transcendentAur: CardDefinition = {
 	definitionId: 'tx-angel-starbound-null-archangel', type: 'AinSophAur', rarity: 'Transcendent', name: 'The Bridge Between Light and Life',
-	description: `${TRANSCENDENT_ABILITY} When summoned, draw 4 cards and search your deck for 1 Light card, 1 Dark card, and 1 Ain Soph Aur card.`,
+	description: `${TRANSCENDENT_ABILITY} When summoned, draw 4 cards and search your deck for 1 Light card and 1 Dark card. Ain Soph Aur cards remain in the Extra Deck.`,
 	artKey: 'tx_angel_starbound_null_archangel',
-	summonMaterialCount: 3, onSummonEffects: [{ type: 'draw', value: 4 }, { type: 'search_deck_distinct_types', filter: ['Light', 'Dark', 'AinSophAur'], takePerType: 1 }],
+	summonMaterialCount: 3, onSummonEffects: [{ type: 'draw', value: 4 }, { type: 'search_deck_distinct_types', filter: ['Light', 'Dark'], takePerType: 1 }],
 	summonMaterials: [{ cardTypes: ['Light'], count: 2 }, { cardTypes: ['Dark'], count: 1 }],
-	bridgeAttack: { id: 'tx-angel-starbound-null-archangel:bridge-the-light', name: 'Bridge the Light', description: '150,000 base Divine Light. No resource cost or set-specific scaling.', baseDivineLight: 150_000, cooldownCards: 2, scaling: { kind: 'constant', value: 0 } },
+	bridgeAttack: { id: 'tx-angel-starbound-null-archangel:bridge-the-light', name: 'Bridge the Light', description: '30,000 base Divine Light with extreme Collection Power scaling; no Limitless Light Stack cost; cooldown: 4 cards played.', baseDivineLight: 30_000, cooldownCards: 4, scaling: { kind: 'linear', reads: 'collectionPower', multiplier: 30 }, },
 };
 
 export const transcendentCardDefinitions: CardDefinition[] = [transcendentLight, ...transcendentDark, transcendentAur];

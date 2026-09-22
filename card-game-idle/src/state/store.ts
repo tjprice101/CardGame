@@ -2964,6 +2964,18 @@ export const useStore = create<Store>()(
             if (!s.turn.abilityCooldownUntil) s.turn.abilityCooldownUntil = {};
             s.turn.abilityCooldownUntil['axiomatic-reversal'] = Date.now() + 120_000;
           }
+        } else if (pending.type === 'exchange_deck_ends') {
+          if (selected.length === 1 && selected[0] === pending.topCard.instanceId) return;
+          if (selected.length === 0) return;
+          const uniqueSelected = new Set(selected);
+          if (uniqueSelected.size !== 2 || !uniqueSelected.has(pending.topCard.instanceId) || !uniqueSelected.has(pending.bottomCard.instanceId)) return;
+          if (s.deck.drawPile.length < 2) return;
+          const drawPile = [...s.deck.drawPile];
+          const topIndex = drawPile.findIndex(card => card.instanceId === pending.topCard.instanceId);
+          const bottomIndex = drawPile.findIndex(card => card.instanceId === pending.bottomCard.instanceId);
+          if (topIndex < 0 || bottomIndex < 0) return;
+          [drawPile[topIndex], drawPile[bottomIndex]] = [drawPile[bottomIndex], drawPile[topIndex]];
+          s.deck.drawPile = drawPile;
         } else if (pending.type === 'opposite_exchange') {
           if (selected.length !== 2 || new Set(selected).size !== 2) return;
           const handCard = pending.handCards.find(card => selected.includes(card.instanceId));

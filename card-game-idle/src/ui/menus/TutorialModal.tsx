@@ -240,7 +240,7 @@ function BoardBody() {
         <div style={sectionHeadingStyle}>Card Types</div>
         <ListItem label="Light">Creature cards with an Ain Attack and a stack-consuming Soph Attack.</ListItem>
         <ListItem label="Dark">Utility cards that activate from their face-up Ain side on the board.</ListItem>
-        <ListItem label="Ain Soph Aur">Extra Deck summons. Sacrifice the listed back-row materials to place one in the front row.</ListItem>
+        <ListItem label="Ain Soph Aur">Extra Deck summons. Sacrifice the listed back-row materials to place one in the front row. Ain Soph Aur cards cannot be searched from the Main Deck or salvaged from discard.</ListItem>
       </div>
 
       <div style={{ ...cardStyle, marginTop: 10 }}>

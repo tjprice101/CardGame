@@ -94,6 +94,7 @@ export type PendingEffect =
       resolutionEffects?: CardEffect[];
     }
   | { type: 'opposite_exchange'; handCards: DeckCard[]; deckCards: DeckCard[]; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
+  | { type: 'exchange_deck_ends'; topCard: DeckCard; bottomCard: DeckCard; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
   | { type: 'salvage'; cards: DeckCard[]; filter: CardSubtypeFilter[] | null; count: number; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
   | { type: 'embrace_infinite'; cards: DeckCard[]; allCards: DeckCard[]; keep: number };
 

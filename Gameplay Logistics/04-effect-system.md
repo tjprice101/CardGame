@@ -16,6 +16,8 @@ The executor currently handles:
 - Discard recovery: `salvage_by_type`, `salvage_by_type_count`, `salvage_any`, `salvage_by_id`.
 - Branching: `conditional`.
 
+Search and salvage operate on the Main Deck and discard pile, which contain only Light and Dark cards. Ain Soph Aur cards live exclusively in the Extra Deck and cannot be searched or salvaged; use summon or free-summon effects to access them.
+
 The executor has an exhaustive switch. Adding an effect type without a handler should fail TypeScript.
 
 ## Pending Effects
