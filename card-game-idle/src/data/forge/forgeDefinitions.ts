@@ -35,7 +35,12 @@ export interface ForgeCardLore {
   bannerGradient: string;
   /** Placeholder full-page splash gradient (stands in for real splash art). */
   splashGradient: string;
+  /** Wide 16:9 banner art shown behind the chapter-list nav entry. */
+  navBannerImage: string;
 }
+
+/** Shards of Transcendence cost to acquire 1 copy of a Forge gallery card. */
+export const FORGE_CARD_SHARD_COST = 25;
 
 const RAINBOW_BANNER =
   'conic-gradient(from 180deg at 50% 50%, #ff2fd0, #ff9d3d, #fff35c, #4dffb8, #4d9dff, #b24dff, #ff2fd0)';
@@ -55,6 +60,7 @@ export const FORGE_CARD_LORE: readonly ForgeCardLore[] = [
     lore: 'Before sets, before suits, before a single card bore a name, there was a glimmer that refused to belong. It answers to no house and casts no shadow of allegiance.',
     bannerGradient: forgeAsset('forge-card-1-art.png'),
     splashGradient: forgeAsset('forge-card-1-splash.png'),
+    navBannerImage: forgeAsset('forge-card-1-banner.png'),
   },
   {
     definitionId: 'tx-neutral-null-catalyst',
@@ -63,6 +69,7 @@ export const FORGE_CARD_LORE: readonly ForgeCardLore[] = [
     lore: 'It is said this card was present at the first shuffle, the moment chance itself learned to matter.',
     bannerGradient: forgeAsset('forge-card-2-art.png'),
     splashGradient: forgeAsset('forge-card-2-splash.png'),
+    navBannerImage: forgeAsset('forge-card-2-banner.png'),
   },
   {
     definitionId: 'tx-neutral-void-reliquary',
@@ -71,6 +78,7 @@ export const FORGE_CARD_LORE: readonly ForgeCardLore[] = [
     lore: 'What it contains has never been seen by any who kept it.',
     bannerGradient: forgeAsset('forge-card-3-art.png'),
     splashGradient: forgeAsset('forge-card-3-splash.png'),
+    navBannerImage: forgeAsset('forge-card-3-banner.png'),
   },
   {
     definitionId: 'tx-angel-starbound-null-archangel',
@@ -79,6 +87,7 @@ export const FORGE_CARD_LORE: readonly ForgeCardLore[] = [
     lore: 'Not summoned, not drafted, not owned — it simply arrived once, and the world began.',
     bannerGradient: RAINBOW_BANNER,
     splashGradient: 'radial-gradient(circle at 50% 30%, #ffffff 0%, #fff6d8 22%, #181410 78%)',
+    navBannerImage: RAINBOW_BANNER,
   },
 ];
 

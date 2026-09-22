@@ -98,7 +98,7 @@ import {
   type NeutralityTutorialTier,
 } from '@/data/trialDecks';
 import { TRANSCENDENT_SHOP_IDS, TRANSCENDENT_ANGEL_IDS } from '@/data/ascension/transcendentCards';
-import { FORGE_CALENDAR_BONUS_DAYS, FORGE_EVENT_BOSS_IDS, hasBeatenAllForgeEventBosses, rollShardOfTranscendence } from '@/data/forge/forgeDefinitions';
+import { FORGE_CALENDAR_BONUS_DAYS, FORGE_CARD_SHARD_COST, FORGE_EVENT_BOSS_IDS, hasBeatenAllForgeEventBosses, rollShardOfTranscendence } from '@/data/forge/forgeDefinitions';
 
 import { DEFAULT_MAIN_MENU_BACKGROUND_ID } from '@/data/profile/mainMenuBackgrounds';
 import { ABILITY_REGISTRY, getAbilityMaterialCost, meetsAbilityOwnershipGate } from '@/data/abilities/abilityDefinitions';
@@ -495,6 +495,8 @@ interface StoreActions {
   claimForgeKeyReward: () => boolean;
   /** Debug shortcut: marks every Forge event boss as defeated without fighting them. */
   debugMarkForgeBossesDefeated: () => void;
+  /** Spend Shards of Transcendence to acquire 1 copy of a Forge gallery card. Requires the Forge to be open. */
+  purchaseForgeCardWithShards: (definitionId: string) => boolean;
   /** Purchase a Transcendent shop card with Entropic Energy. */
   purchaseTranscendentCard: (definitionId: string, cost: number) => boolean;
   /** Finalize raid angel drop outcome and update per-raid pity streak state. */
@@ -3633,6 +3635,22 @@ export const useStore = create<Store>()(
         }
         pushRewardToast(s, 'Debug: every Forge event boss marked as defeated.');
       });
+    },
+
+    purchaseForgeCardWithShards: (definitionId) => {
+      if (!TRANSCENDENT_ANGEL_IDS.has(definitionId)) return false;
+      const state = get();
+      if (!state.progress.forgeOfTranscendenceUnlocked) return false;
+      if ((state.progress.shardsOfTranscendence ?? 0) < FORGE_CARD_SHARD_COST) return false;
+      set(s => {
+        s.progress.shardsOfTranscendence = (s.progress.shardsOfTranscendence ?? 0) - FORGE_CARD_SHARD_COST;
+        s.progress.transcendentCollection = {
+          ...(s.progress.transcendentCollection ?? {}),
+          [definitionId]: ((s.progress.transcendentCollection ?? {})[definitionId] ?? 0) + 1,
+        };
+        pushRewardToast(s, 'Acquired 1 copy from the Forge of Transcendence.');
+      });
+      return true;
     },
 
     purchaseTranscendentCard: (definitionId, cost) => {

@@ -5,6 +5,15 @@ import { warmTheme } from '@/ui/theme';
 import { getCardThemePackStyle, getFontScale } from '@/ui/preferences';
 
 const CARD_BACKGROUND_ROOT = `${import.meta.env.BASE_URL}assets/card-backgrounds`;
+const FORGE_ART_ROOT = `${import.meta.env.BASE_URL}assets/forge`;
+
+/** The 4 Forge of Transcendence gallery cards use their own dedicated art, not the shared Neutrality/Infinite folders. */
+const TRANSCENDENT_CARD_ART_BY_ID: Record<string, string> = {
+  'tx-neutral-starbound-glimmer': 'forge-card-1-art.png',
+  'tx-neutral-null-catalyst': 'forge-card-2-art.png',
+  'tx-neutral-void-reliquary': 'forge-card-3-art.png',
+  'tx-angel-starbound-null-archangel': 'forge-card-4-art.png',
+};
 
 export type CardFaceVariant = 'hand' | 'pack' | 'grid' | 'compact' | 'board' | 'boardMini';
 
@@ -449,6 +458,8 @@ export function getCardBackgroundUrl(card: CardDefinition | null | undefined): s
   }
 
   if (card.rarity === 'Transcendent') {
+    const forgeFile = TRANSCENDENT_CARD_ART_BY_ID[card.definitionId];
+    if (forgeFile) return `${FORGE_ART_ROOT}/${encodeURI(forgeFile)}`;
     const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
     return `${CARD_BACKGROUND_ROOT}/neutrality/${encodeURI(fileName)}`;
   }

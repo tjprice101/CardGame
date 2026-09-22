@@ -268,14 +268,14 @@ export default function CollectionViewer({ onClose }: Props) {
       && card.rarity !== 'Transcendent'
       && card.rarity !== 'Enigmatic';
     const isTranscendent = card.rarity === 'Transcendent';
-    const previewText = owned > 0 ? getCardPreviewLines(card, 3).join(' ') : '???';
+    const previewText = (owned > 0 || isTranscendent) ? getCardPreviewLines(card, 3).join(' ') : '???';
     const finishLabel = isHoloOnlyCard(card) ? null : getCardFinishLabel(finish);
-    const cardSurfaceStyle = owned > 0
+    const cardSurfaceStyle = (owned > 0 || isTranscendent)
       ? getLiveCardFaceBackgroundStyle(card, finish, 'front')
       : (isLockedStandardHolo
         ? getLockedHoloCardBackStyle(card)
         : getCardBackBackgroundStyle(card, { dimmed: false }));
-    const shimmerClassName = owned > 0 ? getLiveCardShimmerClassName(card, finish, 'front') : undefined;
+    const shimmerClassName = (owned > 0 || isTranscendent) ? getLiveCardShimmerClassName(card, finish, 'front') : undefined;
 
     return (
       <div
@@ -309,7 +309,7 @@ export default function CollectionViewer({ onClose }: Props) {
           (e.currentTarget as HTMLElement).style.boxShadow = 'none';
           (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
         }}
-        title={owned > 0 ? getCardPreviewLines(card, 4).join('\n') : 'Card not discovered'}
+        title={(owned > 0 || card.rarity === 'Transcendent') ? getCardPreviewLines(card, 4).join('\n') : 'Card not discovered'}
       >
         {isNew && (
           <div style={{

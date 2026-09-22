@@ -3,9 +3,11 @@ import { useStore, selectProgress } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import {
   FORGE_CARD_LORE,
+  FORGE_CARD_SHARD_COST,
   FORGE_EVENT_BOSS_IDS,
   hasBeatenAllForgeEventBosses,
 } from '@/data/forge/forgeDefinitions';
+import { TRANSCENDENT_ABILITY } from '@/data/ascension/transcendentCards';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
 import { getLiveCardShimmerClassName } from '@/ui/cardBackgrounds';
 import { uiTypography } from '@/ui/theme';
@@ -34,6 +36,7 @@ const RAINBOW_TEXT: React.CSSProperties = {
 export default function ForgeOfTranscendence({ onClose }: Props) {
   const progress = useStore(selectProgress);
   const openForgeOfTranscendence = useStore(s => s.openForgeOfTranscendence);
+  const purchaseForgeCardWithShards = useStore(s => s.purchaseForgeCardWithShards);
   const [selectedId, setSelectedId] = useState(FORGE_CARD_LORE[0]?.definitionId ?? '');
 
   const forgeUnlocked = progress.forgeOfTranscendenceUnlocked === true;
@@ -45,6 +48,7 @@ export default function ForgeOfTranscendence({ onClose }: Props) {
   const selectedLore = FORGE_CARD_LORE.find(entry => entry.definitionId === selectedId) ?? FORGE_CARD_LORE[0];
   const selectedDef = selectedLore ? CardRegistry.get(selectedLore.definitionId) : undefined;
   const ownedCopies = selectedLore ? (progress.transcendentCollection?.[selectedLore.definitionId] ?? 0) : 0;
+  const canAcquire = shards >= FORGE_CARD_SHARD_COST;
 
   return (
     <div style={{
@@ -62,12 +66,17 @@ export default function ForgeOfTranscendence({ onClose }: Props) {
           <div style={{ fontFamily: uiTypography.display, fontSize: 26, letterSpacing: 2, textTransform: 'uppercase', ...RAINBOW_TEXT }}>Forge of Transcendence</div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontFamily: uiTypography.display, fontSize: 16 }}>⟁ {keys}</div>
-            <div style={{ fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: 'rgba(20,10,30,0.5)' }}>Keys</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <img src={`${import.meta.env.BASE_URL}assets/forge/key-of-transcendence.png`} alt="" style={{ width: 22, height: 22, objectFit: 'contain' }} />
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontFamily: uiTypography.display, fontSize: 16 }}>{keys}</div>
+              <div style={{ fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: 'rgba(20,10,30,0.5)' }}>Keys</div>
+            </div>
           </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontFamily: uiTypography.display, fontSize: 16, ...RAINBOW_TEXT }}>✧ {shards}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <img src={`${import.meta.env.BASE_URL}assets/forge/shards-of-transcendence.png`} alt="" style={{ width: 22, height: 22, objectFit: 'contain' }} />
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontFamily: uiTypography.display, fontSize: 16 }}>{shards}</div>
             <div style={{ fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: 'rgba(20,10,30,0.5)' }}>Shards</div>
           </div>
           <button type="button" onClick={onClose} aria-label="Close Forge of Transcendence" style={{ width: 34, height: 34, borderRadius: 8, border: '1px solid rgba(20,10,30,0.18)', background: '#fff', color: '#15101c', cursor: 'pointer', fontSize: 18 }}>×</button>
@@ -126,12 +135,13 @@ export default function ForgeOfTranscendence({ onClose }: Props) {
                   style={{
                     display: 'block', width: '100%', textAlign: 'left', padding: '12px 14px', marginBottom: 6,
                     borderRadius: 8, border: isSelected ? '1px solid rgba(160,90,255,0.55)' : '1px solid transparent',
-                    background: isSelected ? 'linear-gradient(90deg, rgba(220,200,255,0.4), rgba(255,255,255,0.5))' : 'transparent',
+                    backgroundImage: `linear-gradient(90deg, rgba(255,255,255,${isSelected ? 0.55 : 0.8}) 0%, rgba(255,255,255,${isSelected ? 0.4 : 0.72}) 62%, rgba(255,255,255,0.35) 100%), ${entry.navBannerImage}`,
+                    backgroundSize: 'cover', backgroundPosition: 'center',
                     cursor: 'pointer', fontFamily: uiTypography.body,
                   }}
                 >
                   <div style={{ fontSize: 13, fontWeight: isSelected ? 700 : 500, color: '#15101c' }}>{entry.displayName}</div>
-                  <div style={{ marginTop: 2, fontSize: 10, color: 'rgba(20,10,30,0.55)', lineHeight: 1.3 }}>{entry.tagline}</div>
+                  <div style={{ marginTop: 2, fontSize: 10, color: 'rgba(20,10,30,0.7)', lineHeight: 1.3 }}>{entry.tagline}</div>
                 </button>
               );
             })}
@@ -139,7 +149,9 @@ export default function ForgeOfTranscendence({ onClose }: Props) {
 
           {/* Center: hero splash art */}
           <div style={{
-            flex: 1, position: 'relative', backgroundImage: selectedLore?.splashGradient, backgroundSize: 'cover', backgroundPosition: 'center',
+            flex: 1, position: 'relative',
+            backgroundImage: `linear-gradient(0deg, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.55) 30%, rgba(255,255,255,0) 58%), ${selectedLore?.splashGradient}`,
+            backgroundSize: 'cover', backgroundPosition: 'center bottom',
             display: 'flex', alignItems: 'flex-end', padding: 28,
           }}>
             <div
@@ -151,8 +163,8 @@ export default function ForgeOfTranscendence({ onClose }: Props) {
               }}
             />
             <div style={{ marginLeft: 24 }}>
-              <div style={{ fontFamily: uiTypography.display, fontSize: 30, letterSpacing: 1.5, color: '#15101c', textShadow: '0 2px 14px rgba(255,255,255,0.8)' }}>{selectedLore?.displayName}</div>
-              <div style={{ marginTop: 4, fontSize: 13, color: 'rgba(20,10,30,0.65)', maxWidth: 420 }}>{selectedLore?.tagline}</div>
+              <div style={{ fontFamily: uiTypography.display, fontSize: 30, letterSpacing: 1.5, color: '#15101c', textShadow: '0 2px 18px rgba(255,255,255,0.95), 0 1px 4px rgba(255,255,255,0.9)' }}>{selectedLore?.displayName}</div>
+              <div style={{ marginTop: 4, fontSize: 13, color: 'rgba(20,10,30,0.8)', maxWidth: 420, textShadow: '0 1px 10px rgba(255,255,255,0.9)' }}>{selectedLore?.tagline}</div>
             </div>
           </div>
 
@@ -161,8 +173,15 @@ export default function ForgeOfTranscendence({ onClose }: Props) {
             <div style={{ fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.6, textTransform: 'uppercase', ...RAINBOW_TEXT, marginBottom: 8 }}>Lore</div>
             <div style={{ fontSize: 13, lineHeight: 1.6, color: 'rgba(20,10,30,0.82)' }}>{selectedLore?.lore}</div>
 
-            <div style={{ marginTop: 22, fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.6, textTransform: 'uppercase', color: 'rgba(20,10,30,0.5)' }}>Effect</div>
-            <div style={{ marginTop: 6, fontSize: 12, color: 'rgba(20,10,30,0.6)', fontStyle: 'italic' }}>{selectedDef?.description ?? 'To be redesigned.'}</div>
+            <div style={{ marginTop: 22, fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.6, textTransform: 'uppercase', color: 'rgba(20,10,30,0.5)' }}>Transcendent Ability</div>
+            <div style={{ marginTop: 6, fontSize: 12.5, lineHeight: 1.6, color: 'rgba(20,10,30,0.7)', fontStyle: 'italic' }}>
+              If this card is in your deck, your maximum hand size is now 10.
+            </div>
+
+            <div style={{ marginTop: 20, fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.6, textTransform: 'uppercase', color: 'rgba(20,10,30,0.5)' }}>Effect</div>
+            <div style={{ marginTop: 6, fontSize: 12.5, lineHeight: 1.6, color: 'rgba(20,10,30,0.82)' }}>
+              {selectedDef?.description?.replace(TRANSCENDENT_ABILITY, '').trim() || 'To be redesigned.'}
+            </div>
 
             <div style={{ marginTop: 22, display: 'flex', gap: 10 }}>
               <div style={{ flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(20,10,30,0.12)', background: 'rgba(20,10,30,0.02)' }}>
@@ -174,6 +193,24 @@ export default function ForgeOfTranscendence({ onClose }: Props) {
                 <div style={{ fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: 'rgba(20,10,30,0.5)' }}>Identity</div>
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={() => selectedLore && purchaseForgeCardWithShards(selectedLore.definitionId)}
+              disabled={!canAcquire}
+              style={{
+                marginTop: 12, width: '100%', padding: '12px 16px', borderRadius: 8,
+                border: '1px solid rgba(160,90,255,0.5)',
+                background: canAcquire ? 'linear-gradient(90deg, rgba(220,200,255,0.5), rgba(255,255,255,0.6))' : 'rgba(20,10,30,0.04)',
+                color: canAcquire ? '#15101c' : 'rgba(20,10,30,0.4)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                fontFamily: uiTypography.display, fontSize: 12, letterSpacing: 1, textTransform: 'uppercase',
+                cursor: canAcquire ? 'pointer' : 'not-allowed',
+              }}
+            >
+              <img src={`${import.meta.env.BASE_URL}assets/forge/shards-of-transcendence.png`} alt="" style={{ width: 16, height: 16, objectFit: 'contain' }} />
+              Acquire 1 Copy · {FORGE_CARD_SHARD_COST} Shards
+            </button>
           </aside>
         </main>
       )}

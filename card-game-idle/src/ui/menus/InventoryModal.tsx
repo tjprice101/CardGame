@@ -10,6 +10,7 @@ interface Props {
 
 const resourceIcon = (fileName: string) => `${import.meta.env.BASE_URL}assets/resource-icons/${fileName}`;
 const materialIcon = (assetKey: string) => `${import.meta.env.BASE_URL}assets/dungeons/items/${assetKey}.png`;
+const forgeIcon = (fileName: string) => `${import.meta.env.BASE_URL}assets/forge/${fileName}`;
 
 function CurrencyTile(props: { name: string; value: string; description: string; iconUrl?: string; glyph?: string; glyphStyle?: React.CSSProperties }) {
   return (
@@ -83,12 +84,12 @@ export default function InventoryModal({ onClose }: Props) {
             <CurrencyTile
               name="Keys of Transcendence" value={(progress.keysOfTranscendence ?? 0).toLocaleString()}
               description="Used to open the Forge of Transcendence."
-              glyph="⟁" glyphStyle={{ color: '#e2c9ff', textShadow: '0 0 10px rgba(200,150,255,0.6)' }}
+              iconUrl={forgeIcon('key-of-transcendence.png')}
             />
             <CurrencyTile
               name="Shards of Transcendence" value={(progress.shardsOfTranscendence ?? 0).toLocaleString()}
               description="Spent inside the Forge of Transcendence."
-              glyph="✧" glyphStyle={{ background: 'conic-gradient(from 180deg, #ff2fd0, #ff9d3d, #fff35c, #4dffb8, #4d9dff, #b24dff, #ff2fd0)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}
+              iconUrl={forgeIcon('shards-of-transcendence.png')}
             />
           </div>
         </section>

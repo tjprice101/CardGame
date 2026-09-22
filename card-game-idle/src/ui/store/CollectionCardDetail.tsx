@@ -48,7 +48,7 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
     : card.rarity === 'Eternal'
       ? "Awarded for defeating mighty foes. (Eternity's Wake)"
       : card.rarity === 'Transcendent'
-        ? 'Earned from Null Raids.'
+        ? 'Beat every event boss, then acquire it in the Forge of Transcendence with Shards of Transcendence.'
         : card.rarity === 'Enigmatic'
           ? 'Earned by completing Enigmas.'
           : null;
@@ -114,7 +114,7 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
             style={{
               width: '100%',
               aspectRatio: '148 / 204',
-              ...(owned > 0 ? getLiveCardFaceBackgroundStyle(card, finish, 'front') : getCardBackBackgroundStyle(card, { dimmed: false })),
+              ...((owned > 0 || card.rarity === 'Transcendent') ? getLiveCardFaceBackgroundStyle(card, finish, 'front') : getCardBackBackgroundStyle(card, { dimmed: false })),
               backgroundColor: warmTheme.surfaceStrong,
               borderRadius: 14,
               position: 'relative',
@@ -245,7 +245,7 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
             <div style={{ fontSize: 10, color: '#aaa', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
               Card Rules
             </div>
-            {owned > 0 ? (
+            {owned > 0 || card.rarity === 'Transcendent' ? (
               <CardRulesDigest
                 card={card}
                 variant="detail"

@@ -11,12 +11,12 @@ import type { CardDefinition } from '@/types/cards';
 // a unique wall of text: if the card is anywhere in your deck or Extra Deck,
 // your maximum hand size becomes 10 (up from 8). That check lives in
 // `getMaxHandSize` in src/state/store.ts, keyed off `TRANSCENDENT_ANGEL_IDS`.
-const TRANSCENDENT_ABILITY = 'Transcendent Ability: If this card is in your deck, your maximum hand size is now 10.';
+export const TRANSCENDENT_ABILITY = 'Transcendent Ability: If this card is in your deck, your maximum hand size is now 10.';
 
 const transcendentLight: CardDefinition = {
 	definitionId: 'tx-neutral-starbound-glimmer', type: 'Light', rarity: 'Transcendent',
 	name: 'Light Before the First Star',
-	description: `${TRANSCENDENT_ABILITY} The first light that was not born of any star.`,
+	description: `${TRANSCENDENT_ABILITY} On Soph placement, gain 6 Light Stacks.`,
 	artKey: 'tx_neutral_starbound_glimmer',
 	sacrificeStackRate: 100,
 	ainAttack: { id: 'tx-neutral-starbound-glimmer:ain-attack', label: 'Ain', name: 'The First Dawn', description: '45,000 base Divine Light with extreme triune scaling.', baseDivineLight: 45_000, cooldownCards: 2, scaling: { kind: 'triune', amount: 28_000 }, tags: ['transcendent', 'ain-attack'] },
@@ -27,14 +27,14 @@ const transcendentLight: CardDefinition = {
 const transcendentDark: CardDefinition[] = [
 	{
 		definitionId: 'tx-neutral-null-catalyst', type: 'Dark', rarity: 'Transcendent', name: 'The First Catalyst',
-		description: `${TRANSCENDENT_ABILITY} Draw 2; consume 3 Cosmos for 55,000 Divine Light and 12 Light Stacks.`,
+		description: `${TRANSCENDENT_ABILITY} Draw 2 cards. Then, if you have at least 3 Cosmos, consume 3 Cosmos to gain 55,000 Divine Light and 12 Light Stacks.`,
 		artKey: 'tx_neutral_null_catalyst',
 		sophEffects: [{ type: 'draw', value: 2 }, { type: 'conditional', condition: { type: 'cosmos_gte', value: 3 }, then: [{ type: 'consume_cosmos', value: 3 }, { type: 'divine_light_flat', value: 55_000 }, { type: 'light_stacks_flat', value: 12 }] }],
 		activationCost: { kind: 'fixed', value: 3 }, cooldownCardsPlayed: 5, postActivationFate: 'hand', sacrificeStackRate: 100, persistent: true,
 	},
 	{
 		definitionId: 'tx-neutral-void-reliquary', type: 'Dark', rarity: 'Transcendent', name: 'The Reliquary of All and Nothing',
-		description: `${TRANSCENDENT_ABILITY} Recover one card of every family; consume 3 Cosmos to search all three families and gain 65,000 Divine Light.`,
+		description: `${TRANSCENDENT_ABILITY} Recover 1 Light, 1 Dark, and 1 Ain Soph Aur card from your discard pile. Then, if you have at least 3 Cosmos, consume 3 Cosmos to search your deck for 1 Light, 1 Dark, and 1 Ain Soph Aur card, and gain 65,000 Divine Light.`,
 		artKey: 'tx_neutral_void_reliquary',
 		sophEffects: [{ type: 'salvage_by_type_count', filter: ['Light', 'Dark', 'AinSophAur'], count: 3 }, { type: 'conditional', condition: { type: 'cosmos_gte', value: 3 }, then: [{ type: 'consume_cosmos', value: 3 }, { type: 'search_deck_distinct_types', filter: ['Light', 'Dark', 'AinSophAur'], takePerType: 1 }, { type: 'divine_light_flat', value: 65_000 }] }],
 		activationCost: { kind: 'fixed', value: 3 }, cooldownCardsPlayed: 6, postActivationFate: 'hand', sacrificeStackRate: 100, persistent: true,
@@ -43,7 +43,7 @@ const transcendentDark: CardDefinition[] = [
 
 const transcendentAur: CardDefinition = {
 	definitionId: 'tx-angel-starbound-null-archangel', type: 'AinSophAur', rarity: 'Transcendent', name: 'The Bridge Between Light and Life',
-	description: `${TRANSCENDENT_ABILITY} The one that bridged the light so life could exist at all.`,
+	description: `${TRANSCENDENT_ABILITY} On summon, gain 10 Light Stacks.`,
 	artKey: 'tx_angel_starbound_null_archangel',
 	summonMaterialCount: 3, onSummonEffects: [{ type: 'light_stacks_flat', value: 10 }],
 	summonMaterials: [{ cardTypes: ['Light'], count: 2 }, { cardTypes: ['Dark'], count: 1 }],

@@ -642,8 +642,8 @@ export default function MainMenuHub(props: MainMenuHubProps) {
       <div className="main-menu-identity" style={{
         position: 'absolute',
         left: 'clamp(20px, 3vw, 56px)',
-        top: '38%',
-        transform: 'translateY(-30%)',
+        top: '30%',
+        transform: 'translateY(-38%)',
         width: 'min(360px, 32vw)',
         display: 'flex', flexDirection: 'column', gap: 14,
       }}>
@@ -738,7 +738,10 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontFamily: uiTypography.display, fontSize: 15, color: '#fff' }}>{progress.keysOfTranscendence ?? 0}</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 5 }}>
+              <img src={menuAsset('forge/key-of-transcendence.png')} alt="" style={{ width: 16, height: 16, objectFit: 'contain' }} />
+              <div style={{ fontFamily: uiTypography.display, fontSize: 15, color: '#fff' }}>{progress.keysOfTranscendence ?? 0}</div>
+            </div>
             <div style={{ fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: uiTheme.textMuted }}>Keys</div>
           </div>
         </div>
@@ -752,7 +755,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 10,
         maxWidth: 'min(900px, 68vw)',
       }}>
-        {/* Forge of Transcendence — sits above the Causality banner. */}
+        {/* Forge of Transcendence — matches the Causality banner's size/dimensions. */}
         {props.onForgeOfTranscendence && (
           <button
             className="menu-tactile-btn"
@@ -760,28 +763,45 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             disabled={forgeLocked}
             style={{
               position: 'relative',
-              width: 585,
-              minHeight: 64,
-              padding: '10px 20px',
-              borderRadius: 10,
+              width: 374,
+              minHeight: 190,
+              padding: '22px 29px 26px',
+              borderRadius: 14,
               border: '1px solid rgba(210,180,255,0.55)',
-              background: 'linear-gradient(90deg, rgba(255,255,255,0.94) 0%, rgba(240,230,255,0.9) 55%, rgba(220,200,255,0.86) 100%)',
-              color: '#15101c',
+              backgroundImage: `linear-gradient(90deg, rgba(20,10,36,0.92) 0%, rgba(20,10,36,0.7) 62%, rgba(20,10,36,0.22) 100%), url("${MAIN_MENU_BANNER_ART.forgeOfTranscendence}")`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              color: '#f4ecff',
               fontFamily: uiTypography.body,
               textAlign: 'left',
-              boxShadow: '0 10px 26px rgba(150,90,255,0.28)',
+              boxShadow: '0 26px 62px rgba(150,90,255,0.28)',
               cursor: forgeLocked ? 'not-allowed' : 'pointer',
-              opacity: forgeLocked ? 0.62 : 1,
-              display: 'flex', alignItems: 'center', gap: 14,
+              opacity: forgeLocked ? 0.72 : 1,
               overflow: 'hidden',
             }}
           >
-            <div aria-hidden style={{ fontSize: 26, background: 'conic-gradient(from 180deg, #ff2fd0, #ff9d3d, #fff35c, #4dffb8, #4d9dff, #b24dff, #ff2fd0)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>✳</div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: uiTypography.display, fontSize: 15, letterSpacing: 1.6, textTransform: 'uppercase' }}>Forge of Transcendence</div>
-              <div style={{ marginTop: 2, fontSize: 11, color: 'rgba(20,16,28,0.68)' }}>
-                {forgeUnlocked ? 'Enter the gallery beyond every set.' : `Requires every event boss beaten · ${forgeBossesCleared}/${FORGE_EVENT_BOSS_IDS.length}`}
-              </div>
+            <div style={{
+              position: 'absolute', top: 14, left: 18,
+              padding: '3px 13px', borderRadius: 6,
+              background: 'conic-gradient(from 180deg, #ff2fd0, #ff9d3d, #fff35c, #4dffb8, #4d9dff, #b24dff, #ff2fd0)', color: '#15101c',
+              fontFamily: uiTypography.display, fontSize: 12, letterSpacing: 1.8, fontWeight: 700,
+            }}>BEYOND ALL SETS</div>
+            <div style={{ marginTop: 40, fontFamily: uiTypography.display, fontSize: 26, letterSpacing: 2, textTransform: 'uppercase' }}>
+              Forge of Transcendence
+            </div>
+            <div style={{ marginTop: 7, fontSize: 13, opacity: 0.85, letterSpacing: 0.6, color: 'rgba(238,228,255,0.9)' }}>
+              {forgeUnlocked ? 'Enter the gallery beyond every set.' : `Requires every event boss beaten · ${forgeBossesCleared}/${FORGE_EVENT_BOSS_IDS.length}`}
+            </div>
+            <div style={{
+              position: 'absolute', bottom: 14, right: 22,
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontFamily: uiTypography.display, fontSize: 13, letterSpacing: 1.8,
+              color: '#e2c9ff',
+            }}>
+              {forgeUnlocked ? 'OPEN ▶' : <>
+                <img src={menuAsset('forge/key-of-transcendence.png')} alt="" style={{ width: 15, height: 15, objectFit: 'contain' }} />
+                {progress.keysOfTranscendence ?? 0} KEYS
+              </>}
             </div>
           </button>
         )}
@@ -791,9 +811,9 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             onClick={props.onEventCausality}
             style={{
               position: 'relative',
-              width: 468,
-              minHeight: 237,
-              padding: '27px 36px 32px',
+              width: 374,
+              minHeight: 190,
+              padding: '22px 29px 26px',
               borderRadius: 14,
               border: '1px solid rgba(138, 221, 255, 0.72)',
               backgroundImage: `linear-gradient(90deg, rgba(8,14,36,0.96) 0%, rgba(8,14,36,0.78) 62%, rgba(8,14,36,0.28) 100%), url("${MAIN_MENU_BANNER_ART.causalityEvent}")`,
@@ -802,32 +822,32 @@ export default function MainMenuHub(props: MainMenuHubProps) {
               color: '#eef4ff',
               fontFamily: uiTypography.body,
               textAlign: 'left',
-              boxShadow: '0 32px 77px rgba(83, 176, 255, 0.25)',
+              boxShadow: '0 26px 62px rgba(83, 176, 255, 0.25)',
               cursor: 'pointer',
               overflow: 'hidden',
             }}
           >
             <div style={{
-              position: 'absolute', top: 18, left: 23,
-              padding: '4px 16px', borderRadius: 7,
+              position: 'absolute', top: 14, left: 18,
+              padding: '3px 13px', borderRadius: 6,
               background: 'rgba(255, 125, 185, 0.9)', color: '#fff',
-              fontFamily: uiTypography.display, fontSize: 23, letterSpacing: 3,
+              fontFamily: uiTypography.display, fontSize: 18, letterSpacing: 2.4,
             }}>LIMITED-TIME</div>
-            <div style={{ marginTop: 50, fontFamily: uiTypography.display, fontSize: 40, letterSpacing: 3.6, textTransform: 'uppercase' }}>
+            <div style={{ marginTop: 40, fontFamily: uiTypography.display, fontSize: 32, letterSpacing: 2.9, textTransform: 'uppercase' }}>
               Causality
             </div>
-            <div style={{ marginTop: 9, fontSize: 25, opacity: 0.82, letterSpacing: 1.4, color: 'rgba(214, 224, 248, 0.95)' }}>
+            <div style={{ marginTop: 7, fontSize: 20, opacity: 0.82, letterSpacing: 1.1, color: 'rgba(214, 224, 248, 0.95)' }}>
               Stellar Wish Event · Spend Aberrated Shards
             </div>
-            <div style={{ marginTop: 18, fontSize: 23, letterSpacing: 2.3, color: '#d7b7ff', fontFamily: uiTypography.display }}>
+            <div style={{ marginTop: 14, fontSize: 18, letterSpacing: 1.8, color: '#d7b7ff', fontFamily: uiTypography.display }}>
               Ends {CAUSALITY_EVENT_ENDS_LABEL}
             </div>
-            <div style={{ marginTop: 7, fontSize: 27, letterSpacing: 2.5, color: '#8de6ff', fontFamily: uiTypography.display }}>
+            <div style={{ marginTop: 6, fontSize: 22, letterSpacing: 2, color: '#8de6ff', fontFamily: uiTypography.display }}>
               {eventCountdown}
             </div>
             <div style={{
-              position: 'absolute', bottom: 18, right: 27,
-              fontFamily: uiTypography.display, fontSize: 23, letterSpacing: 3,
+              position: 'absolute', bottom: 14, right: 22,
+              fontFamily: uiTypography.display, fontSize: 18, letterSpacing: 2.4,
               color: '#8de6ff',
             }}>NEW ▶</div>
           </button>
