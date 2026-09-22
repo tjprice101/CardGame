@@ -1,5 +1,5 @@
 import type { BoardState, DeckState, PendingEffect, TurnState } from '@/types/game';
-import type { CardEffect } from '@/types/effects';
+import type { CardEffect, CardSubtypeFilter } from '@/types/effects';
 import type { CardDefinition } from '@/types/cards';
 
 import { CardRegistry } from '../../cards/CardRegistry';
@@ -132,6 +132,36 @@ export class CardEffectExecutor {
           break;
         }
 
+        case 'draw_with_type_bonus': {
+          const beforeHand = new Set(mutableDeck.hand.map(card => card.instanceId));
+          mutableDeck = TurnSystem.drawCards(mutableDeck, effect.value);
+          const drawn = mutableDeck.hand.filter(card => !beforeHand.has(card.instanceId));
+          const matched = drawn.some(card => effect.filter.includes(CardRegistry.get(card.definitionId)?.type as CardSubtypeFilter));
+          if (matched) mutableDeck = TurnSystem.drawCards(mutableDeck, effect.bonusDraw);
+          break;
+        }
+
+        case 'draw_with_type_bonuses': {
+          const beforeHand = new Set(mutableDeck.hand.map(card => card.instanceId));
+          mutableDeck = TurnSystem.drawCards(mutableDeck, effect.value);
+          const drawn = mutableDeck.hand.filter(card => !beforeHand.has(card.instanceId));
+          const countType = (type: CardSubtypeFilter) => drawn.filter(card => CardRegistry.get(card.definitionId)?.type === type).length;
+          if (countType(effect.drawFilter) >= effect.drawThreshold) mutableDeck = TurnSystem.drawCards(mutableDeck, effect.bonusDraw);
+          if (countType(effect.gainFilter) >= effect.gainThreshold) divineLightBonus += effect.gainDivineLight;
+          break;
+        }
+
+        case 'exchange_deck_ends': {
+          if (mutableDeck.drawPile.length > 1) {
+            const drawPile = [...mutableDeck.drawPile];
+            const first = drawPile[0];
+            drawPile[0] = drawPile[drawPile.length - 1];
+            drawPile[drawPile.length - 1] = first;
+            mutableDeck.drawPile = drawPile;
+          }
+          break;
+        }
+
         case 'discard_choice':
           pendingEffects.push({ type: 'discard_choice', count: effect.value, sourceCard: deckCard.instanceId });
           break;
@@ -211,6 +241,30 @@ export class CardEffectExecutor {
               filter: effect.filter,
               count: Math.min(effect.count, matching.length),
             });
+          }
+          break;
+        }
+
+        case 'salvage_either_light_or_dark': {
+          const lightCards = mutableDeck.discardPile.filter(card => CardRegistry.get(card.definitionId)?.type === 'Light');
+          const darkCards = mutableDeck.discardPile.filter(card => CardRegistry.get(card.definitionId)?.type === 'Dark');
+          const chosenType: CardSubtypeFilter | null = lightCards.length >= effect.count ? 'Light' : darkCards.length >= effect.count ? 'Dark' : null;
+          if (!chosenType) break;
+          const chosenCards = (chosenType === 'Light' ? lightCards : darkCards).slice(0, effect.count);
+          mutableDeck.discardPile = mutableDeck.discardPile.filter(card => !chosenCards.some(chosen => chosen.instanceId === card.instanceId));
+          mutableDeck.hand.push(...chosenCards);
+          if (chosenType === 'Light') {
+            mutableTurn.limitlessLightStacks = (mutableTurn.limitlessLightStacks ?? 0) + effect.lightStacks;
+          } else {
+            const matching = mutableDeck.drawPile.filter(card => {
+              const type = CardRegistry.get(card.definitionId)?.type;
+              return type === 'Light' || type === 'Dark';
+            });
+            if (matching.length > 0) {
+              const found = matching[0];
+              mutableDeck.drawPile = mutableDeck.drawPile.filter(card => card.instanceId !== found.instanceId);
+              mutableDeck.hand.push(found);
+            }
           }
           break;
         }

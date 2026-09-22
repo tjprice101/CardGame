@@ -16,28 +16,28 @@ export const TRANSCENDENT_ABILITY = 'Transcendent Ability: If this card is in yo
 const transcendentLight: CardDefinition = {
 	definitionId: 'tx-neutral-starbound-glimmer', type: 'Light', rarity: 'Transcendent',
 	name: 'Light Before the First Star',
-	description: `${TRANSCENDENT_ABILITY} When this card is placed on its Soph side, draw 3 cards.`,
+	description: `${TRANSCENDENT_ABILITY} When this card is placed on its Soph side, draw 3 cards. If at least 2 drawn cards are Light, draw 1 additional card; if at least 2 drawn cards are Dark, gain 8,000 Divine Light with Collection Power scaling.`,
 	artKey: 'tx_neutral_starbound_glimmer',
 	sacrificeStackRate: 100,
 	ainAttack: { id: 'tx-neutral-starbound-glimmer:ain-attack', label: 'Ain', name: 'The First Dawn', description: '50,000 base Divine Light. No resource scaling.', baseDivineLight: 50_000, cooldownCards: 2, scaling: { kind: 'constant', value: 0 }, tags: ['transcendent', 'ain-attack'] },
 	sophAttack: { id: 'tx-neutral-starbound-glimmer:soph-attack', label: 'Soph', name: 'Before Any Star', description: '90,000 base Divine Light. No resource cost or set-specific scaling.', baseDivineLight: 90_000, cooldownCards: 3, scaling: { kind: 'constant', value: 0 }, tags: ['transcendent', 'soph-attack'] },
-	sophPlacementEffects: [{ type: 'draw', value: 3 }],
+	sophPlacementEffects: [{ type: 'draw_with_type_bonuses', value: 3, drawFilter: 'Light', drawThreshold: 2, bonusDraw: 1, gainFilter: 'Dark', gainThreshold: 2, gainDivineLight: 8_000 }],
 };
 
 const transcendentDark: CardDefinition[] = [
 	{
 		definitionId: 'tx-neutral-null-catalyst', type: 'Dark', rarity: 'Transcendent', name: 'The First Catalyst',
-		description: `${TRANSCENDENT_ABILITY} Draw 4 cards and gain 60,000 Divine Light.`,
+		description: `${TRANSCENDENT_ABILITY} Look at the top and bottom card of your deck, exchange their positions, then draw 2 cards. If at least 1 drawn card is Dark, draw 1 additional card.`,
 		artKey: 'tx_neutral_null_catalyst',
-		sophEffects: [{ type: 'draw', value: 4 }, { type: 'divine_light_flat', value: 60_000 }],
-		activationCost: { kind: 'fixed', value: 0 }, cooldownCardsPlayed: 5, postActivationFate: 'hand', sacrificeStackRate: 100, persistent: true,
+		sophEffects: [{ type: 'exchange_deck_ends' }, { type: 'draw_with_type_bonus', value: 2, filter: ['Dark'], bonusDraw: 1 }],
+		activationCost: { kind: 'fixed', value: 0 }, cooldownCardsPlayed: 0, postActivationFate: 'discard', sacrificeStackRate: 100, persistent: false,
 	},
 	{
 		definitionId: 'tx-neutral-void-reliquary', type: 'Dark', rarity: 'Transcendent', name: 'The Reliquary of All and Nothing',
-		description: `${TRANSCENDENT_ABILITY} Recover 1 Light card, 1 Dark card, and 1 Ain Soph Aur card from your discard pile. Search your deck for 1 card of each type and gain 80,000 Divine Light.`,
+		description: `${TRANSCENDENT_ABILITY} Salvage either 2 Light cards or 2 Dark cards from your discard pile. Salvaging 2 Light cards grants 3 Limitless Light Stacks; salvaging 2 Dark cards searches your deck for 1 Light or Dark card.`,
 		artKey: 'tx_neutral_void_reliquary',
-		sophEffects: [{ type: 'salvage_by_type_count', filter: ['Light', 'Dark', 'AinSophAur'], count: 3 }, { type: 'search_deck_distinct_types', filter: ['Light', 'Dark', 'AinSophAur'], takePerType: 1 }, { type: 'divine_light_flat', value: 80_000 }],
-		activationCost: { kind: 'fixed', value: 0 }, cooldownCardsPlayed: 6, postActivationFate: 'hand', sacrificeStackRate: 100, persistent: true,
+		sophEffects: [{ type: 'salvage_either_light_or_dark', count: 2, lightStacks: 3 }],
+		activationCost: { kind: 'fixed', value: 0 }, cooldownCardsPlayed: 0, postActivationFate: 'discard', sacrificeStackRate: 100, persistent: false,
 	},
 ];
 

@@ -121,6 +121,9 @@ function formatEffect(effect: CardEffect, definitionId?: string): string {
     case 'light_stacks_flat': return `Gain ${formatCount(effect.value, 'Limitless Light Stack')}`;
     case 'score_flat': return `+${effect.value} Divine Light`;
     case 'draw': return `Draw ${formatCount(effect.value, 'card')}`;
+    case 'draw_with_type_bonus': return `Draw ${formatCount(effect.value, 'card')}; if any drawn card is ${formatSubtypeList(effect.filter)}, draw ${formatCount(effect.bonusDraw, 'additional card')}`;
+    case 'draw_with_type_bonuses': return `Draw ${formatCount(effect.value, 'card')}; if at least ${effect.drawThreshold} are ${formatSubtypeList([effect.drawFilter])}, draw ${formatCount(effect.bonusDraw, 'additional card')}; if at least ${effect.gainThreshold} are ${formatSubtypeList([effect.gainFilter])}, gain ${effect.gainDivineLight} Divine Light`;
+    case 'exchange_deck_ends': return 'Exchange the top and bottom cards of your deck';
     case 'discard_choice': return `Choose and discard ${formatCount(effect.value, 'card')}`;
     case 'discard_draw': return `Discard ${formatCount(effect.discard, 'card')}, then draw ${formatCount(effect.draw, 'card')}`;
     case 'exchange_hand_for_opposite': return 'Exchange 1 Light or Dark card in hand for an opposite-type card from your deck';
@@ -132,6 +135,7 @@ function formatEffect(effect: CardEffect, definitionId?: string): string {
     case 'search_deck_distinct_types': return `Search your deck for up to 1 each of ${formatSubtypeList(effect.filter)}`;
     case 'salvage_by_type': return `Salvage ${formatCount(effect.filter.length > 1 ? effect.filter.length : 1, 'card')} matching ${formatSubtypeList(effect.filter)}`;
     case 'salvage_by_type_count': return `Salvage ${formatCount(effect.count, 'card')} matching ${formatSubtypeList(effect.filter)}`;
+    case 'salvage_either_light_or_dark': return `Salvage either ${formatCount(effect.count, 'Light card')} or ${formatCount(effect.count, 'Dark card')}; Light grants ${formatCount(effect.lightStacks, 'Limitless Light Stack')}, Dark searches for 1 Light or Dark card`;
     case 'salvage_any': return 'Salvage any 1 card';
     case 'salvage_by_id': return `Salvage ${effect.label ?? CardRegistry.get(effect.targetId)?.name ?? effect.targetId} from discard`;
     case 'score_multiplier': return `+${effect.value}% of this turn's Divine Light`;

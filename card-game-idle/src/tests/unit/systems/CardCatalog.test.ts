@@ -190,7 +190,11 @@ describe('Ain/Soph card catalog', () => {
       if (card.persistent) {
         expect(card.cooldownCardsPlayed, `${card.definitionId} persistent cooldown`).toBeGreaterThan(0);
       } else {
-        expect(card.cooldownCardsPlayed, `${card.definitionId} should be a one-shot Dark card`).toBeUndefined();
+        if (card.rarity === 'Transcendent') {
+          expect(card.cooldownCardsPlayed, `${card.definitionId} should have a zero-card cooldown`).toBe(0);
+        } else {
+          expect(card.cooldownCardsPlayed, `${card.definitionId} should be a one-shot Dark card`).toBeUndefined();
+        }
       }
     }
   });

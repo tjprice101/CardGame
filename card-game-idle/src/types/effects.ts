@@ -14,6 +14,9 @@ export type ImmediateEffect =
   | { type: 'light_stacks_flat'; value: number }
   | { type: 'score_flat'; value: number }
   | { type: 'draw'; value: number }
+  | { type: 'draw_with_type_bonus'; value: number; filter: CardSubtypeFilter[]; bonusDraw: number }
+  | { type: 'draw_with_type_bonuses'; value: number; drawFilter: CardSubtypeFilter; drawThreshold: number; bonusDraw: number; gainFilter: CardSubtypeFilter; gainThreshold: number; gainDivineLight: number }
+  | { type: 'exchange_deck_ends' }
   | { type: 'discard_choice'; value: number }
   | { type: 'discard_draw'; discard: number; draw: number }
   | { type: 'exchange_hand_for_opposite' }
@@ -25,6 +28,7 @@ export type ImmediateEffect =
   | { type: 'search_deck_distinct_types'; filter: CardSubtypeFilter[]; takePerType?: number }
   | { type: 'salvage_by_type'; filter: CardSubtypeFilter[] }
   | { type: 'salvage_by_type_count'; filter: CardSubtypeFilter[]; count: number }
+  | { type: 'salvage_either_light_or_dark'; count: number; lightStacks: number }
   | { type: 'salvage_any' }
   | { type: 'salvage_by_id'; targetId: string; label?: string };
 
