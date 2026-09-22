@@ -5,7 +5,7 @@
  * Four tabs:
  *   Overview  – live board stats (earned this turn, active bonuses)
  *   Attacks   – Light Ain/Soph and Ain Soph Aur Bridge breakdown
- *   Bonuses   – Triune scaling sources and charge/flip economy
+ *   Bonuses   – Collection Power scaling and charge/flip economy
  *   Tips      – Prioritised strategy tips
  */
 
@@ -505,8 +505,8 @@ function AttacksTab() {
           />
           <SourceCard
             icon="◈"
-            title="Triune Scaling"
-            subtitle="Every attack's bonus is split evenly across Limitless Light Stacks, summoned Ain Soph Aur, and Collection Power — so a deep collection raises your floor even on a thin board."
+            title="Collection Power Scaling"
+            subtitle="Attack bonuses scale directly from your permanent Collection Power. Limitless Light Stacks remain a separate core resource used only when card text requires them."
             accent={C.purple}
             tags={['stacks', 'ain soph aur', 'collection power']}
           />
@@ -647,12 +647,12 @@ function BonusesTab() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
 
       <div>
-        <SectionTitle label="Triune Attack Scaling" accent={C.green.fg} />
+        <SectionTitle label="Collection Power Attack Scaling" accent={C.green.fg} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <SourceCard
             icon="∞"
             title={`Limitless Light Stacks  (${turn.limitlessLightStacks} banked)`}
-            subtitle="Flip a charged card to bank its charge as stacks. One third of every attack's scaling bonus comes from your stack count, measured before any cost is paid."
+            subtitle="Flip a charged card to bank its charge as Limitless Light Stacks. Attacks may spend those stacks when their card text requires a cost."
             value={`${turn.limitlessLightStacks}`}
             accent={turn.limitlessLightStacks > 0 ? C.green : C.dim}
             tags={['per turn', 'resets at turn end']}
@@ -660,7 +660,7 @@ function BonusesTab() {
           <SourceCard
             icon="✦"
             title={`Summoned Ain Soph Aur  (${asaCount} / 4)`}
-            subtitle="Each Ain Soph Aur held on the front row contributes a share of every Soph Attack and Bridge payout across your whole board."
+            subtitle="Ain Soph Aur cards remain powerful board units, but they no longer contribute a separate hidden attack-scaling share."
             value={`${asaCount} / 4`}
             accent={asaCount > 0 ? C.gold : C.dim}
             tags={['front row', 'board-wide']}
@@ -668,7 +668,7 @@ function BonusesTab() {
           <SourceCard
             icon="◈"
             title={`Collection Power  ×${(1 + stats.globalDivineLightMult).toFixed(2)}`}
-            subtitle="Earned permanently by playing and mastering cards. Contributes the final third of every attack's scaling, so it raises your damage floor on every turn regardless of board state."
+            subtitle="Earned permanently by playing and mastering cards. Attack bonuses read Collection Power directly, raising your damage floor across every turn."
             value={`×${(1 + stats.globalDivineLightMult).toFixed(2)}`}
             accent={stats.globalDivineLightMult > 0 ? C.purple : C.dim}
             tags={['permanent', 'cross-turn', 'applied last']}

@@ -738,11 +738,8 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 5 }}>
-              <img src={menuAsset('forge/key-of-transcendence.png')} alt="" style={{ width: 16, height: 16, objectFit: 'contain' }} />
-              <div style={{ fontFamily: uiTypography.display, fontSize: 15, color: '#fff' }}>{progress.keysOfTranscendence ?? 0}</div>
-            </div>
-            <div style={{ fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: uiTheme.textMuted }}>Keys</div>
+            <div style={{ fontFamily: uiTypography.display, fontSize: 15, color: '#fff' }}>{progress.keysOfTranscendence ?? 0}</div>
+            <div style={{ fontSize: 9, letterSpacing: 0.7, textTransform: 'uppercase', color: uiTheme.textMuted }}>Keys of Transcendence</div>
           </div>
         </div>
       </div>
@@ -798,10 +795,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
               fontFamily: uiTypography.display, fontSize: 13, letterSpacing: 1.8,
               color: '#e2c9ff',
             }}>
-              {forgeUnlocked ? 'OPEN ▶' : <>
-                <img src={menuAsset('forge/key-of-transcendence.png')} alt="" style={{ width: 15, height: 15, objectFit: 'contain' }} />
-                {progress.keysOfTranscendence ?? 0} KEYS
-              </>}
+              {forgeUnlocked ? 'OPEN ▶' : `${progress.keysOfTranscendence ?? 0} KEYS OF TRANSCENDENCE`}
             </div>
           </button>
         )}

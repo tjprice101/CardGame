@@ -3,6 +3,7 @@ import {
   getUtcDayIndex,
   getMonthlyTrackKey,
   dailyRewardForStreak,
+  monthlyRewardForDay,
   evaluateDailyLogin,
 } from '@/systems/progression/dailyLogin';
 import type { ProgressState } from '@/types/game';
@@ -71,6 +72,16 @@ describe('dailyLogin.dailyRewardForStreak', () => {
   it('clamps non-positive streaks to tier 1', () => {
     expect(dailyRewardForStreak(0).tier).toBe(1);
     expect(dailyRewardForStreak(-5).tier).toBe(1);
+  });
+});
+
+describe('dailyLogin.monthlyRewardForDay', () => {
+  it('grants Shards of Transcendence on exactly two calendar days', () => {
+    const transcendentShardRewards = Array.from({ length: 31 }, (_, index) => monthlyRewardForDay(index + 1))
+      .filter(reward => reward.kind === 'transcendent_shards');
+
+    expect(transcendentShardRewards).toHaveLength(2);
+    expect(transcendentShardRewards.map(reward => reward.amount)).toEqual([1, 2]);
   });
 });
 

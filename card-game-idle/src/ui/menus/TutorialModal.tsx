@@ -276,7 +276,7 @@ function AttacksBody() {
           <div style={sectionHeadingStyle}>Ain Soph Aur</div>
           <ListItem label="Summon">On summon, every Ain Soph Aur grants +{AIN_SOPH_AUR_SUMMON_STACK_REWARD} Limitless Light Stack.</ListItem>
           <ListItem label="Bridge">Each summon has one Bridge the Light attack with its own base, scaling, cooldown, and optional stack cost.</ListItem>
-          <ListItem label="Triune">Scaling divides evenly among Limitless Light Stacks, summoned Ain Soph Aur, and Collection Power.</ListItem>
+          <ListItem label="Collection Power">Attack scaling uses Collection Power directly. Limitless Light Stacks remain a separate core resource and are only spent when card text says so.</ListItem>
         </div>
       </div>
 
@@ -325,7 +325,7 @@ function PatienceBody() {
       <div style={{ ...cardStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>The Payoff</div>
         <div style={bodyTextStyle}>
-          Attack resolution reads the stack pool before any attack cost is spent. Collection Power and summoned Ain Soph Aur provide the other two triune scaling inputs.
+          Attack resolution reads Collection Power directly for scaling, while Limitless Light Stack costs are paid separately when an attack requires them.
         </div>
       </div>
 

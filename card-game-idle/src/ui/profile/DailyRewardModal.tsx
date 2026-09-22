@@ -61,12 +61,14 @@ export default function DailyRewardModal({ onClose }: Props) {
 
   const rewardSummary = (reward: typeof track[number]['reward']) => {
     if (reward.kind === 'shards') return `+${reward.amount} Shards`;
+    if (reward.kind === 'transcendent_shards') return `+${reward.amount} Shard${reward.amount === 1 ? '' : 's'} of Transcendence`;
     if (reward.kind === 'mastery_all_owned') return `+${reward.amount} Card-light to all owned cards`;
     return `${reward.holo ? 'Holofoil ' : ''}Base Card x${reward.amount}`;
   };
 
   const rewardIcon = (reward: typeof track[number]['reward']) => {
     if (reward.kind === 'shards') return `${import.meta.env.BASE_URL}assets/resource-icons/aberrated-shards.png`;
+    if (reward.kind === 'transcendent_shards') return `${import.meta.env.BASE_URL}assets/forge/shards-of-transcendence.png`;
     if (reward.kind === 'mastery_all_owned') return `${import.meta.env.BASE_URL}assets/resource-icons/card-light-shards.png`;
     return null;
   };

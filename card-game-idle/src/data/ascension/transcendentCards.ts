@@ -16,38 +16,38 @@ export const TRANSCENDENT_ABILITY = 'Transcendent Ability: If this card is in yo
 const transcendentLight: CardDefinition = {
 	definitionId: 'tx-neutral-starbound-glimmer', type: 'Light', rarity: 'Transcendent',
 	name: 'Light Before the First Star',
-	description: `${TRANSCENDENT_ABILITY} On Soph placement, gain 6 Light Stacks.`,
+	description: `${TRANSCENDENT_ABILITY} When this card is placed on its Soph side, draw 3 cards.`,
 	artKey: 'tx_neutral_starbound_glimmer',
 	sacrificeStackRate: 100,
-	ainAttack: { id: 'tx-neutral-starbound-glimmer:ain-attack', label: 'Ain', name: 'The First Dawn', description: '45,000 base Divine Light with extreme triune scaling.', baseDivineLight: 45_000, cooldownCards: 2, scaling: { kind: 'triune', amount: 28_000 }, tags: ['transcendent', 'ain-attack'] },
-	sophAttack: { id: 'tx-neutral-starbound-glimmer:soph-attack', label: 'Soph', name: 'Before Any Star', description: '75,000 base Divine Light with extreme triune scaling; consumes 8 stacks.', baseDivineLight: 75_000, cooldownCards: 3, scaling: { kind: 'triune', amount: 48_000 }, stackCost: { kind: 'fixed', value: 8 }, tags: ['transcendent', 'soph-attack'] },
-	sophPlacementEffects: [{ type: 'light_stacks_flat', value: 6 }],
+	ainAttack: { id: 'tx-neutral-starbound-glimmer:ain-attack', label: 'Ain', name: 'The First Dawn', description: '50,000 base Divine Light. No resource scaling.', baseDivineLight: 50_000, cooldownCards: 2, scaling: { kind: 'constant', value: 0 }, tags: ['transcendent', 'ain-attack'] },
+	sophAttack: { id: 'tx-neutral-starbound-glimmer:soph-attack', label: 'Soph', name: 'Before Any Star', description: '90,000 base Divine Light. No resource cost or set-specific scaling.', baseDivineLight: 90_000, cooldownCards: 3, scaling: { kind: 'constant', value: 0 }, tags: ['transcendent', 'soph-attack'] },
+	sophPlacementEffects: [{ type: 'draw', value: 3 }],
 };
 
 const transcendentDark: CardDefinition[] = [
 	{
 		definitionId: 'tx-neutral-null-catalyst', type: 'Dark', rarity: 'Transcendent', name: 'The First Catalyst',
-		description: `${TRANSCENDENT_ABILITY} Draw 2 cards. Then, if you have at least 3 Cosmos, consume 3 Cosmos to gain 55,000 Divine Light and 12 Light Stacks.`,
+		description: `${TRANSCENDENT_ABILITY} Draw 4 cards and gain 60,000 Divine Light.`,
 		artKey: 'tx_neutral_null_catalyst',
-		sophEffects: [{ type: 'draw', value: 2 }, { type: 'conditional', condition: { type: 'cosmos_gte', value: 3 }, then: [{ type: 'consume_cosmos', value: 3 }, { type: 'divine_light_flat', value: 55_000 }, { type: 'light_stacks_flat', value: 12 }] }],
-		activationCost: { kind: 'fixed', value: 3 }, cooldownCardsPlayed: 5, postActivationFate: 'hand', sacrificeStackRate: 100, persistent: true,
+		sophEffects: [{ type: 'draw', value: 4 }, { type: 'divine_light_flat', value: 60_000 }],
+		activationCost: { kind: 'fixed', value: 0 }, cooldownCardsPlayed: 5, postActivationFate: 'hand', sacrificeStackRate: 100, persistent: true,
 	},
 	{
 		definitionId: 'tx-neutral-void-reliquary', type: 'Dark', rarity: 'Transcendent', name: 'The Reliquary of All and Nothing',
-		description: `${TRANSCENDENT_ABILITY} Recover 1 Light, 1 Dark, and 1 Ain Soph Aur card from your discard pile. Then, if you have at least 3 Cosmos, consume 3 Cosmos to search your deck for 1 Light, 1 Dark, and 1 Ain Soph Aur card, and gain 65,000 Divine Light.`,
+		description: `${TRANSCENDENT_ABILITY} Recover 1 Light card, 1 Dark card, and 1 Ain Soph Aur card from your discard pile. Search your deck for 1 card of each type and gain 80,000 Divine Light.`,
 		artKey: 'tx_neutral_void_reliquary',
-		sophEffects: [{ type: 'salvage_by_type_count', filter: ['Light', 'Dark', 'AinSophAur'], count: 3 }, { type: 'conditional', condition: { type: 'cosmos_gte', value: 3 }, then: [{ type: 'consume_cosmos', value: 3 }, { type: 'search_deck_distinct_types', filter: ['Light', 'Dark', 'AinSophAur'], takePerType: 1 }, { type: 'divine_light_flat', value: 65_000 }] }],
-		activationCost: { kind: 'fixed', value: 3 }, cooldownCardsPlayed: 6, postActivationFate: 'hand', sacrificeStackRate: 100, persistent: true,
+		sophEffects: [{ type: 'salvage_by_type_count', filter: ['Light', 'Dark', 'AinSophAur'], count: 3 }, { type: 'search_deck_distinct_types', filter: ['Light', 'Dark', 'AinSophAur'], takePerType: 1 }, { type: 'divine_light_flat', value: 80_000 }],
+		activationCost: { kind: 'fixed', value: 0 }, cooldownCardsPlayed: 6, postActivationFate: 'hand', sacrificeStackRate: 100, persistent: true,
 	},
 ];
 
 const transcendentAur: CardDefinition = {
 	definitionId: 'tx-angel-starbound-null-archangel', type: 'AinSophAur', rarity: 'Transcendent', name: 'The Bridge Between Light and Life',
-	description: `${TRANSCENDENT_ABILITY} On summon, gain 10 Light Stacks.`,
+	description: `${TRANSCENDENT_ABILITY} When summoned, draw 4 cards and search your deck for 1 Light card, 1 Dark card, and 1 Ain Soph Aur card.`,
 	artKey: 'tx_angel_starbound_null_archangel',
-	summonMaterialCount: 3, onSummonEffects: [{ type: 'light_stacks_flat', value: 10 }],
+	summonMaterialCount: 3, onSummonEffects: [{ type: 'draw', value: 4 }, { type: 'search_deck_distinct_types', filter: ['Light', 'Dark', 'AinSophAur'], takePerType: 1 }],
 	summonMaterials: [{ cardTypes: ['Light'], count: 2 }, { cardTypes: ['Dark'], count: 1 }],
-	bridgeAttack: { id: 'tx-angel-starbound-null-archangel:bridge-the-light', name: 'Bridge the Light', description: '120,000 base Divine Light with overwhelming triune scaling; consumes 10 stacks.', baseDivineLight: 120_000, cooldownCards: 2, scaling: { kind: 'triune', amount: 75_000 }, consumesStacks: { kind: 'fixed', value: 10 } },
+	bridgeAttack: { id: 'tx-angel-starbound-null-archangel:bridge-the-light', name: 'Bridge the Light', description: '150,000 base Divine Light. No resource cost or set-specific scaling.', baseDivineLight: 150_000, cooldownCards: 2, scaling: { kind: 'constant', value: 0 } },
 };
 
 export const transcendentCardDefinitions: CardDefinition[] = [transcendentLight, ...transcendentDark, transcendentAur];

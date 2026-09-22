@@ -23,7 +23,7 @@ export const ainSophAurCards: AinSophAurDefinition[] = names.map((name, index) =
     type: 'AinSophAur',
     rarity: rarities[index],
     name,
-    description: `Sacrifice ${1 + (index % 3)} back-row card${1 + (index % 3) === 1 ? '' : 's'} to summon, then use Bridge the Light for a triune Divine Light payout.`,
+    description: `Sacrifice ${1 + (index % 3)} back-row card${1 + (index % 3) === 1 ? '' : 's'} to summon, then use Bridge the Light for a Collection Power-scaled Divine Light payout.`,
     artKey: artKeys[index],
     summonMaterialCount: 1 + (index % 3),
     summonMaterials: index === 0
@@ -40,7 +40,7 @@ export const ainSophAurCards: AinSophAurDefinition[] = names.map((name, index) =
       description: `${baseDivineLight} base Divine Light; +${bridgeScale} scaled across Limitless Light Stack pool, front-row Ain Soph Aur count, and Collection Power.`,
       baseDivineLight,
       cooldownCards,
-      scaling: { kind: 'triune', amount: bridgeScale },
+      scaling: { kind: 'linear', reads: 'collectionPower', multiplier: bridgeScale / 1000 },
       ...(index % 2 === 0 ? { consumesStacks: { kind: 'fixed' as const, value: 2 + index } } : {}),
     },
   };

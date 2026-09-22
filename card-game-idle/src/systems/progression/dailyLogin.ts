@@ -5,6 +5,7 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 export type MonthlyLoginReward =
   | { kind: 'shards'; amount: number; label: string }
+  | { kind: 'transcendent_shards'; amount: 1 | 2; label: string }
   | { kind: 'card'; definitionId: string; amount: number; holo: boolean; label: string }
   | { kind: 'mastery_all_owned'; amount: number; label: string };
 
@@ -24,6 +25,12 @@ const baseCardIds = () => CardRegistry.getAll()
 
 export function monthlyRewardForDay(day: number, timestamp: number = Date.now()): MonthlyLoginReward {
   const cards = baseCardIds();
+  if (day === 10) {
+    return { kind: 'transcendent_shards', amount: 1, label: '+1 Shard of Transcendence' };
+  }
+  if (day === 25) {
+    return { kind: 'transcendent_shards', amount: 2, label: '+2 Shards of Transcendence' };
+  }
   if (day % 7 === 0) {
     return { kind: 'mastery_all_owned', amount: 3, label: '+3 Card-light to every owned card' };
   }

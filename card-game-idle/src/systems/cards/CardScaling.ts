@@ -8,26 +8,6 @@ export interface CardScalingContext {
 
 type CustomScalingFunction = (context: CardScalingContext) => number;
 
-/**
- * Reference values at which each triune sub-scalar contributes a full share.
- * Chosen so all three carry equal weight at a strong-but-reachable board state.
- */
-export const TRIUNE_STACK_REFERENCE = 25;
-export const TRIUNE_ASA_REFERENCE = 4;
-export const TRIUNE_COLLECTION_REFERENCE = 1000;
-
-export function resolveTriuneShares(context: CardScalingContext): {
-  stackShare: number;
-  asaShare: number;
-  collectionShare: number;
-} {
-  return {
-    stackShare: 0,
-    asaShare: 0,
-    collectionShare: Math.max(0, context.collectionPower) / TRIUNE_COLLECTION_REFERENCE,
-  };
-}
-
 const customScalingFunctions = new Map<string, CustomScalingFunction>();
 
 export function registerCardScalingFunction(fnId: string, fn: CustomScalingFunction): void {
@@ -38,15 +18,14 @@ export function resolveCardScaling(expression: CardScalingExpr, context: CardSca
   switch (expression.kind) {
     case 'constant':
       return expression.value;
-    case 'linear':
-      return (context[expression.reads] * expression.multiplier) + (expression.offset ?? 0);
+    case 'linear': {
+      const sourceValue = expression.reads === 'collectionPower'
+        ? Math.max(0, context.collectionPower)
+        : context[expression.reads];
+      return (sourceValue * expression.multiplier) + (expression.offset ?? 0);
+    }
     case 'stepped':
       return (Math.floor(context[expression.reads] / expression.step) * expression.amount) + (expression.offset ?? 0);
-    case 'triune': {
-      // Attacks scale strictly off Collection Power.
-      const collectionShare = Math.max(0, context.collectionPower) / TRIUNE_COLLECTION_REFERENCE;
-      return expression.amount * collectionShare;
-    }
     case 'custom': {
       const fn = customScalingFunctions.get(expression.fnId);
       if (!fn) {

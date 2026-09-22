@@ -11,8 +11,6 @@ export type CardScalingExpr =
   | { readonly kind: 'constant'; readonly value: number }
   | { readonly kind: 'linear'; readonly reads: 'limitlessLightStacks' | 'asaFrontCount' | 'collectionPower'; readonly multiplier: number; readonly offset?: number }
   | { readonly kind: 'stepped'; readonly reads: 'limitlessLightStacks' | 'asaFrontCount' | 'collectionPower'; readonly step: number; readonly amount: number; readonly offset?: number }
-  // Weights Limitless Light Stacks, summoned Ain Soph Aur, and Collection Power equally.
-  | { readonly kind: 'triune'; readonly amount: number }
   | { readonly kind: 'custom'; readonly fnId: string };
 
 export interface StackCostDefinition {

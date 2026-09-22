@@ -4,15 +4,15 @@ export const causalityInfiniteCards: CardDefinition[] = [
   {
     definitionId: 'inf-causality-origin-script', type: 'Light', rarity: 'Infinite', name: 'Origin Script of Every Tomorrow',
     description: 'An Infinite Causality Light that writes a vast Cosmos reserve before its attacks resolve.', artKey: 'inf_causality_origin_script',
-    ainAttack: { id: 'inf-causality-origin-script:ain', label: 'Ain', name: 'First Possible Dawn', description: '6,500 base Divine Light with extreme triune scaling.', baseDivineLight: 6_500, cooldownCards: 2, scaling: { kind: 'triune', amount: 4_200 }, tags: ['infinite', 'causality', 'ain-attack'] },
-    sophAttack: { id: 'inf-causality-origin-script:soph', label: 'Soph', name: 'Tomorrow Multiplied', description: '10,000 base Divine Light with extreme triune scaling; consumes 5 stacks.', baseDivineLight: 10_000, cooldownCards: 3, scaling: { kind: 'triune', amount: 6_200 }, stackCost: { kind: 'fixed', value: 5 }, tags: ['infinite', 'causality', 'soph-attack'] },
+    ainAttack: { id: 'inf-causality-origin-script:ain', label: 'Ain', name: 'First Possible Dawn', description: '6,500 base Divine Light with Collection Power scaling.', baseDivineLight: 6_500, cooldownCards: 2, scaling: { kind: 'linear', reads: 'collectionPower', multiplier: 4.2 }, tags: ['infinite', 'causality', 'ain-attack'] },
+    sophAttack: { id: 'inf-causality-origin-script:soph', label: 'Soph', name: 'Tomorrow Multiplied', description: '10,000 base Divine Light with Collection Power scaling; consumes 5 Limitless Light Stacks.', baseDivineLight: 10_000, cooldownCards: 3, scaling: { kind: 'linear', reads: 'collectionPower', multiplier: 6.2 }, stackCost: { kind: 'fixed', value: 5 }, tags: ['infinite', 'causality', 'soph-attack'] },
     sophPlacementEffects: [{ type: 'cosmos_flat', value: 8 }, { type: 'draw', value: 2 }], sacrificeStackRate: 100,
   },
   {
     definitionId: 'inf-causality-chromatic-horizon', type: 'Light', rarity: 'Infinite', name: 'Chromatic Horizon Without End',
     description: 'Inspect the top 7 cards and keep 3, then convert 4 prepared Light into 9 Cosmos when possible.', artKey: 'inf_causality_chromatic_horizon',
-    ainAttack: { id: 'inf-causality-chromatic-horizon:ain', label: 'Ain', name: 'Horizon Refraction', description: '7,200 base Divine Light with extreme triune scaling.', baseDivineLight: 7_200, cooldownCards: 2, scaling: { kind: 'triune', amount: 4_800 }, tags: ['infinite', 'causality', 'ain-attack'] },
-    sophAttack: { id: 'inf-causality-chromatic-horizon:soph', label: 'Soph', name: 'Endless Meridian', description: '11,500 base Divine Light with extreme triune scaling; consumes 6 stacks.', baseDivineLight: 11_500, cooldownCards: 3, scaling: { kind: 'triune', amount: 7_000 }, stackCost: { kind: 'fixed', value: 6 }, tags: ['infinite', 'causality', 'soph-attack'] },
+    ainAttack: { id: 'inf-causality-chromatic-horizon:ain', label: 'Ain', name: 'Horizon Refraction', description: '7,200 base Divine Light with Collection Power scaling.', baseDivineLight: 7_200, cooldownCards: 2, scaling: { kind: 'linear', reads: 'collectionPower', multiplier: 4.8 }, tags: ['infinite', 'causality', 'ain-attack'] },
+    sophAttack: { id: 'inf-causality-chromatic-horizon:soph', label: 'Soph', name: 'Endless Meridian', description: '11,500 base Divine Light with Collection Power scaling; consumes 6 Limitless Light Stacks.', baseDivineLight: 11_500, cooldownCards: 3, scaling: { kind: 'linear', reads: 'collectionPower', multiplier: 7 }, stackCost: { kind: 'fixed', value: 6 }, tags: ['infinite', 'causality', 'soph-attack'] },
     sophPlacementEffects: [{ type: 'look_top_take', look: 7, take: 3 }, { type: 'conditional', condition: { type: 'light_stacks_gte', value: 4 }, then: [{ type: 'convert_light_to_cosmos', lightCost: 4, cosmosGain: 9 }] }], sacrificeStackRate: 100,
   },
   {
@@ -32,6 +32,6 @@ export const causalityInfiniteCards: CardDefinition[] = [
     description: 'Summon from three Ain-side cards to gain 10 Cosmos, draw 3, search all card families, and restore the discard pile.', artKey: 'inf_causality_heart_beyond_all',
     summonMaterialCount: 3, summonMaterials: [{ cardTypes: ['Light', 'Dark'], side: 'ain', count: 3 }],
     onSummonEffects: [{ type: 'cosmos_flat', value: 10 }, { type: 'draw', value: 3 }, { type: 'search_deck_distinct_types', filter: ['Light', 'Dark', 'AinSophAur'], takePerType: 1 }, { type: 'shuffle_discard' }],
-    bridgeAttack: { id: 'inf-causality-heart-beyond-all:bridge', name: 'Bridge the Light', description: '15,000 base Divine Light with overwhelming triune scaling.', baseDivineLight: 15_000, cooldownCards: 2, scaling: { kind: 'triune', amount: 9_000 }, consumesStacks: { kind: 'fixed', value: 8 } },
+    bridgeAttack: { id: 'inf-causality-heart-beyond-all:bridge', name: 'Bridge the Light', description: '15,000 base Divine Light with overwhelming Collection Power scaling; consumes 8 Limitless Light Stacks.', baseDivineLight: 15_000, cooldownCards: 2, scaling: { kind: 'linear', reads: 'collectionPower', multiplier: 9 }, consumesStacks: { kind: 'fixed', value: 8 } },
   },
 ];

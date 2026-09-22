@@ -20,17 +20,17 @@ const light = (
   type: 'Light',
   rarity: 'Eternal',
   name,
-  description: 'A two-attack card with triune scaling and a stack-consuming Soph attack.',
+  description: 'A two-attack card with Collection Power scaling and a stack-consuming Soph attack.',
   artKey,
   ainAttack: {
     id: `${definitionId}:ain-attack`, label: 'Ain', name: 'Ain Attack',
-    description: `${baseAin} base Divine Light with triune scaling.`, baseDivineLight: baseAin,
-    cooldownCards: 3, scaling: { kind: 'triune', amount: scale }, tags: ['eternal', 'ain-attack'],
+    description: `${baseAin} base Divine Light with Collection Power scaling.`, baseDivineLight: baseAin,
+    cooldownCards: 3, scaling: { kind: 'linear', reads: 'collectionPower', multiplier: scale / 1000 }, tags: ['eternal', 'ain-attack'],
   },
   sophAttack: {
     id: `${definitionId}:soph-attack`, label: 'Soph', name: 'Soph Attack',
-    description: `${baseSoph} base Divine Light with triune scaling; consumes 3 stacks.`, baseDivineLight: baseSoph,
-    cooldownCards: 4, scaling: { kind: 'triune', amount: scale + 80 },
+    description: `${baseSoph} base Divine Light with Collection Power scaling; consumes 3 Limitless Light Stacks.`, baseDivineLight: baseSoph,
+    cooldownCards: 4, scaling: { kind: 'linear', reads: 'collectionPower', multiplier: (scale + 80) / 1000 },
     stackCost: { kind: 'fixed', value: 3 }, tags: ['eternal', 'soph-attack'],
   },
   sophPlacementEffects: definitionId === 'btei-voids-reaping'
@@ -73,7 +73,7 @@ const asa = (
   type: 'AinSophAur',
   rarity: 'Eternal',
   name,
-  description: `Sacrifice ${materials} back-row cards to summon, then use Bridge the Light for a triune Divine Light payout.`,
+  description: `Sacrifice ${materials} back-row cards to summon, then use Bridge the Light for a Collection Power-scaled Divine Light payout.`,
   artKey,
   summonMaterialCount: materials,
   summonMaterials: definitionId === 'btei-axiom-of-oblivion'
@@ -84,8 +84,8 @@ const asa = (
   onSummonEffects: [{ type: 'divine_light_flat', value: 150 }],
   bridgeAttack: {
     id: `${definitionId}:bridge-the-light`, name: 'Bridge the Light',
-    description: `${baseDivineLight} base Divine Light with triune scaling.`, baseDivineLight,
-    cooldownCards: 4, scaling: { kind: 'triune', amount: scale },
+    description: `${baseDivineLight} base Divine Light with Collection Power scaling.`, baseDivineLight,
+    cooldownCards: 4, scaling: { kind: 'linear', reads: 'collectionPower', multiplier: scale / 1000 },
     consumesStacks: { kind: 'fixed', value: 4 },
   },
 });
@@ -126,7 +126,7 @@ export const eternalCards: CardDefinition[] = [
     description: 'Sacrifice The First Cause Unwritten and Sovereign Ink of the Black Sun to summon this chromatic apex.',
     summonMaterials: [{ definitionIds: ['btei-causality-first-cause'], count: 1 }, { definitionIds: ['btei-causality-ink-sovereign'], count: 1 }],
     onSummonEffects: [{ type: 'cosmos_flat', value: 5 }, { type: 'search_deck_distinct_types', filter: ['Light', 'Dark'], takePerType: 1 }],
-    bridgeAttack: { id: 'btei-causality-pearl-engine:bridge-the-light', name: 'Bridge the Light', description: '5,200 base Divine Light with extreme triune scaling.', baseDivineLight: 5_200, cooldownCards: 3, scaling: { kind: 'triune', amount: 3_100 }, consumesStacks: { kind: 'fixed', value: 5 } },
+    bridgeAttack: { id: 'btei-causality-pearl-engine:bridge-the-light', name: 'Bridge the Light', description: '5,200 base Divine Light with extreme Collection Power scaling; consumes 5 Limitless Light Stacks.', baseDivineLight: 5_200, cooldownCards: 3, scaling: { kind: 'linear', reads: 'collectionPower', multiplier: 3.1 }, consumesStacks: { kind: 'fixed', value: 5 } },
   },
 ] as const;
 

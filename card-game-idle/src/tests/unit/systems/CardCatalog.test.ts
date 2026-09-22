@@ -212,11 +212,10 @@ describe('Ain/Soph card catalog', () => {
     expect(premiumCosts.get('btei-temporal-ruin')).toBe(2);
     expect(premiumCosts.get('btei-null-edict')).toBe(2);
     expect(premiumCosts.get('enig-neutral-null-catechism')).toBe(1);
-    // tx-* Forge of Transcendence gallery cards use a higher Light Stack
-    // activation cost befitting their endgame rarity — see
-    // src/data/ascension/transcendentCards.ts.
-    expect(premiumCosts.get('tx-neutral-null-catalyst')).toBe(3);
-    expect(premiumCosts.get('tx-neutral-void-reliquary')).toBe(3);
+    // Transcendent Dark utilities are powerful but deliberately independent
+    // of set-specific resource systems, so their activation costs are zero.
+    expect(premiumCosts.get('tx-neutral-null-catalyst')).toBe(0);
+    expect(premiumCosts.get('tx-neutral-void-reliquary')).toBe(0);
   });
 
   it('keeps authored attack values intentionally distinct across the catalog', () => {
@@ -225,12 +224,12 @@ describe('Ain/Soph card catalog', () => {
     for (const card of lightCards) {
       triples.push(JSON.stringify([
         card.ainAttack.baseDivineLight,
-        card.ainAttack.scaling.kind === 'triune' ? card.ainAttack.scaling.amount : 0,
+        card.ainAttack.scaling.kind === 'linear' ? card.ainAttack.scaling.multiplier : 0,
         card.ainAttack.cooldownCards,
       ]));
       triples.push(JSON.stringify([
         card.sophAttack.baseDivineLight,
-        card.sophAttack.scaling.kind === 'triune' ? card.sophAttack.scaling.amount : 0,
+        card.sophAttack.scaling.kind === 'linear' ? card.sophAttack.scaling.multiplier : 0,
         card.sophAttack.cooldownCards,
       ]));
     }
@@ -247,7 +246,7 @@ describe('Ain/Soph card catalog', () => {
       expect(card.bridgeAttack).toBeDefined();
       triples.push(JSON.stringify([
         card.bridgeAttack!.baseDivineLight,
-        card.bridgeAttack!.scaling.kind === 'triune' ? card.bridgeAttack!.scaling.amount : 0,
+        card.bridgeAttack!.scaling.kind === 'linear' ? card.bridgeAttack!.scaling.multiplier : 0,
         card.bridgeAttack!.cooldownCards,
       ]));
     }

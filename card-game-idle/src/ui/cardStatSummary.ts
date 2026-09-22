@@ -47,10 +47,6 @@ function formatScaling(expression: LightCardDefinition['ainAttack']['scaling']):
         : expression.reads === 'asaFrontCount' ? 'Ain Soph Aur count' : 'collection power';
       return `+${formatExactValue(expression.amount)} per ${expression.step} ${source}`;
     }
-    case 'triune': {
-      const perShare = formatExactValue(expression.amount);
-      return `scales with Collection Power; ${perShare} is the full-share reference value`;
-    }
     case 'custom': return `bespoke scaling (${expression.fnId})`;
   }
 }

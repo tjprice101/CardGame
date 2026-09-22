@@ -3697,6 +3697,9 @@ export const useStore = create<Store>()(
           s.progress.dailyLogin.monthlyClaimedDays = claimed;
           const reward = evalResult.monthlyReward;
           if (reward?.kind === 'shards') s.progress.aberratedShards += reward.amount;
+          if (reward?.kind === 'transcendent_shards') {
+            s.progress.shardsOfTranscendence = (s.progress.shardsOfTranscendence ?? 0) + reward.amount;
+          }
           if (reward?.kind === 'card') {
             for (let copy = 0; copy < reward.amount; copy += 1) {
               addCollectionCard(s.progress, reward.definitionId, reward.holo ? 'holo' : 'normal');

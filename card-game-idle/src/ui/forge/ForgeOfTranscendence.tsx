@@ -65,19 +65,12 @@ export default function ForgeOfTranscendence({ onClose }: Props) {
           <div style={{ fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(20,10,30,0.5)' }}>Beyond All Sets</div>
           <div style={{ fontFamily: uiTypography.display, fontSize: 26, letterSpacing: 2, textTransform: 'uppercase', ...RAINBOW_TEXT }}>Forge of Transcendence</div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <img src={`${import.meta.env.BASE_URL}assets/forge/key-of-transcendence.png`} alt="" style={{ width: 22, height: 22, objectFit: 'contain' }} />
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontFamily: uiTypography.display, fontSize: 16 }}>{keys}</div>
-              <div style={{ fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: 'rgba(20,10,30,0.5)' }}>Keys</div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <img src={`${import.meta.env.BASE_URL}assets/forge/shards-of-transcendence.png`} alt="" style={{ width: 22, height: 22, objectFit: 'contain' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <img src={`${import.meta.env.BASE_URL}assets/forge/shards-of-transcendence.png`} alt="" style={{ width: 36, height: 36, objectFit: 'contain' }} />
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontFamily: uiTypography.display, fontSize: 16 }}>{shards}</div>
-              <div style={{ fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: 'rgba(20,10,30,0.5)' }}>Shards</div>
+              <div style={{ fontSize: 9, letterSpacing: 0.7, textTransform: 'uppercase', color: 'rgba(20,10,30,0.5)' }}>Shards of Transcendence</div>
             </div>
           </div>
           <button type="button" onClick={onClose} aria-label="Close Forge of Transcendence" style={{ width: 34, height: 34, borderRadius: 8, border: '1px solid rgba(20,10,30,0.18)', background: '#fff', color: '#15101c', cursor: 'pointer', fontSize: 18 }}>×</button>
@@ -119,7 +112,7 @@ export default function ForgeOfTranscendence({ onClose }: Props) {
               cursor: canOpen ? 'pointer' : 'not-allowed',
             }}
           >
-            {allBossesCleared ? (keys >= 1 ? 'Open the Forge' : 'Awaiting a Key') : `Requires every boss beaten (${FORGE_EVENT_BOSS_IDS.filter(id => progress.bossCodex?.[id] !== undefined).length}/${FORGE_EVENT_BOSS_IDS.length})`}
+            {allBossesCleared ? (keys >= 1 ? 'Open the Forge' : 'Awaiting a Key of Transcendence') : `Requires every boss beaten (${FORGE_EVENT_BOSS_IDS.filter(id => progress.bossCodex?.[id] !== undefined).length}/${FORGE_EVENT_BOSS_IDS.length})`}
           </button>
         </main>
       ) : (
@@ -209,8 +202,8 @@ export default function ForgeOfTranscendence({ onClose }: Props) {
                 cursor: canAcquire ? 'pointer' : 'not-allowed',
               }}
             >
-              <img src={`${import.meta.env.BASE_URL}assets/forge/shards-of-transcendence.png`} alt="" style={{ width: 16, height: 16, objectFit: 'contain' }} />
-              Acquire 1 Copy · {FORGE_CARD_SHARD_COST} Shards
+              <img src={`${import.meta.env.BASE_URL}assets/forge/shards-of-transcendence.png`} alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+              Acquire 1 Copy · {FORGE_CARD_SHARD_COST} Shards of Transcendence
             </button>
           </aside>
         </main>

@@ -2,9 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   registerCardScalingFunction,
   resolveCardScaling,
-  TRIUNE_ASA_REFERENCE,
-  TRIUNE_COLLECTION_REFERENCE,
-  TRIUNE_STACK_REFERENCE,
   type CardScalingContext,
 } from '@/systems/cards/CardScaling';
 
@@ -41,18 +38,18 @@ describe('CardScaling', () => {
     const zero: CardScalingContext = { limitlessLightStacks: 0, asaFrontCount: 0, collectionPower: 0 };
 
     it('contributes nothing when collection power is empty', () => {
-      expect(resolveCardScaling({ kind: 'triune', amount: 300 }, zero)).toBe(0);
+      expect(resolveCardScaling({ kind: 'linear', reads: 'collectionPower', multiplier: 0.3 }, zero)).toBe(0);
     });
 
     it('scales directly with collection power', () => {
-      const expr = { kind: 'triune' as const, amount: 300 };
-      const collectionOnly = resolveCardScaling(expr, { ...zero, collectionPower: TRIUNE_COLLECTION_REFERENCE });
+      const expr = { kind: 'linear' as const, reads: 'collectionPower' as const, multiplier: 0.3 };
+      const collectionOnly = resolveCardScaling(expr, { ...zero, collectionPower: 1000 });
 
       expect(collectionOnly).toBe(300);
     });
 
     it('never returns a negative bonus from negative inputs', () => {
-      const result = resolveCardScaling({ kind: 'triune', amount: 300 }, {
+      const result = resolveCardScaling({ kind: 'linear', reads: 'collectionPower', multiplier: 0.3 }, {
         limitlessLightStacks: -50,
         asaFrontCount: -4,
         collectionPower: -1000,

@@ -19,8 +19,8 @@ function CurrencyTile(props: { name: string; value: string; description: string;
       borderRadius: 10, border: `1px solid ${warmTheme.border}`, background: warmTheme.surface,
     }}>
       {props.iconUrl
-        ? <img src={props.iconUrl} alt="" style={{ width: 40, height: 40, objectFit: 'contain', flexShrink: 0 }} />
-        : <div style={{ width: 40, height: 40, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, ...props.glyphStyle }}>{props.glyph}</div>}
+        ? <img src={props.iconUrl} alt="" style={{ width: 64, height: 64, objectFit: 'contain', flexShrink: 0 }} />
+        : <div style={{ width: 64, height: 64, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, ...props.glyphStyle }}>{props.glyph}</div>}
       <div style={{ minWidth: 0, flex: 1 }}>
         <div style={{ fontFamily: uiTypography.display, fontSize: 18, color: warmTheme.text }}>{props.value}</div>
         <div style={{ fontSize: 12, color: warmTheme.textMuted }}>{props.name}</div>
