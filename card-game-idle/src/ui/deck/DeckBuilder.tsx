@@ -37,8 +37,9 @@ const EMPTY_OWNED_ABILITIES: Readonly<Record<string, boolean>> = Object.freeze({
 const NARROW_BREAKPOINT = 1000;
 const MAIN_DECK_SIZE = 50;
 const EXTRA_DECK_SIZE = 10;
-const CARD_LIBRARY_CARD_WIDTH = 196;
-const CARD_LIBRARY_CARD_HEIGHT = 270;
+// Match the Card Store collection tile footprint exactly.
+const CARD_LIBRARY_CARD_WIDTH = 128;
+const CARD_LIBRARY_CARD_HEIGHT = 176;
 const CARD_LIBRARY_ROW_HEIGHT = 352;
 
 function getCardSet(definitionId: string): 'Neutrality' | 'Causality' | null {
@@ -435,7 +436,7 @@ function ProgressRing({ value, max, color, size = 44, label }: { value: number; 
 
 export default function DeckBuilder({ onClose }: Props) {
   useThemeVersion();
-  const faceMetrics = getCardFaceMetrics('hand');
+  const faceMetrics = getCardFaceMetrics('grid');
   const { initDeck, saveCurrentDeck, updateSavedDeck, loadSavedDeck, deleteSavedDeck } = useStore.getState();
   const currentDeck = useStore(selectDeck);
   const collection = useStore(s => s.progress.collection);
@@ -827,7 +828,7 @@ export default function DeckBuilder({ onClose }: Props) {
       ? count < owned && totalForDefinition < cap && extraDeckList.length < EXTRA_DECK_SIZE
       : !(count >= owned || totalForDefinition >= cap);
     const previewText = getCardPreviewLines(def.def, 2).join(' ');
-    const descMetrics = getAdaptiveDescriptionMetrics('hand', previewText);
+    const descMetrics = getAdaptiveDescriptionMetrics('grid', previewText);
     return (
       <div key={def.key} style={styles.cardWithMeta}>
         <div
@@ -844,7 +845,7 @@ export default function DeckBuilder({ onClose }: Props) {
           onMouseLeave={clearTooltip}
         >
           <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <div style={getCardNameRibbonStyle('hand')}>
+            <div style={getCardNameRibbonStyle('grid')}>
               <div style={{ ...styles.cardSubtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>
                 {(() => {
                   const baseLabel = isAngel ? 'Ain Soph Aur' : getDisplayCardTypeLabel(def.def.type);
@@ -854,7 +855,7 @@ export default function DeckBuilder({ onClose }: Props) {
               </div>
               <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 2, overflow: 'hidden' }}>{def.def.name}</div>
             </div>
-            <div style={getCardRulesPanelStyle('hand')}>
+            <div style={getCardRulesPanelStyle('grid')}>
               <div style={{ ...styles.cardDesc, fontSize: descMetrics.fontSize, lineHeight: descMetrics.lineHeight, WebkitLineClamp: descMetrics.lineClamp }}>
                 {previewText}
               </div>
