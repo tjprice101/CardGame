@@ -7,9 +7,9 @@ import {
   FORGE_EVENT_BOSS_IDS,
   hasBeatenAllForgeEventBosses,
 } from '@/data/forge/forgeDefinitions';
-import { TRANSCENDENT_ABILITY } from '@/data/ascension/transcendentCards';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
 import { getLiveCardShimmerClassName } from '@/ui/cardBackgrounds';
+import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import { uiTypography } from '@/ui/theme';
 
 interface Props {
@@ -167,14 +167,21 @@ export default function ForgeOfTranscendence({ onClose }: Props) {
             <div style={{ fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.6, textTransform: 'uppercase', ...RAINBOW_TEXT, marginBottom: 8 }}>Lore</div>
             <div style={{ fontSize: 13, lineHeight: 1.6, color: 'rgba(20,10,30,0.82)' }}>{selectedLore?.lore}</div>
 
-            <div style={{ marginTop: 22, fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.6, textTransform: 'uppercase', color: 'rgba(20,10,30,0.5)' }}>Transcendent Ability</div>
-            <div style={{ marginTop: 6, fontSize: 12.5, lineHeight: 1.6, color: 'rgba(20,10,30,0.7)', fontStyle: 'italic' }}>
-              If this card is in your deck, your maximum hand size is now 10.
-            </div>
-
-            <div style={{ marginTop: 20, fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.6, textTransform: 'uppercase', color: 'rgba(20,10,30,0.5)' }}>Effect</div>
-            <div style={{ marginTop: 6, fontSize: 12.5, lineHeight: 1.6, color: 'rgba(20,10,30,0.82)' }}>
-              {selectedDef?.description?.replace(TRANSCENDENT_ABILITY, '').trim() || 'To be redesigned.'}
+            <div style={{ marginTop: 22, fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.6, textTransform: 'uppercase', color: 'rgba(20,10,30,0.5)' }}>Card Rules and Stats</div>
+            <div style={{ marginTop: 6 }}>
+              {selectedDef ? (
+                <CardRulesDigest
+                  card={selectedDef}
+                  variant="detail"
+                  labelColor="rgba(20,10,30,0.55)"
+                  textColor="rgba(20,10,30,0.86)"
+                  sectionBackground="rgba(20,10,30,0.025)"
+                  sectionBorder="rgba(20,10,30,0.12)"
+                  lightBg
+                />
+              ) : (
+                <div style={{ fontSize: 12.5, color: 'rgba(20,10,30,0.65)' }}>Card rules unavailable.</div>
+              )}
             </div>
 
             <div style={{ marginTop: 22, display: 'flex', gap: 10 }}>
