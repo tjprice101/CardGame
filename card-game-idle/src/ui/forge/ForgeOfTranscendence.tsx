@@ -77,7 +77,8 @@ export default function ForgeOfTranscendence({ onClose }: Props) {
             <img src={`${import.meta.env.BASE_URL}assets/forge/shards-of-transcendence.png`} alt="" style={{ width: 22, height: 22, objectFit: 'contain' }} />
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontFamily: uiTypography.display, fontSize: 16 }}>{shards}</div>
-            <div style={{ fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: 'rgba(20,10,30,0.5)' }}>Shards</div>
+              <div style={{ fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: 'rgba(20,10,30,0.5)' }}>Shards</div>
+            </div>
           </div>
           <button type="button" onClick={onClose} aria-label="Close Forge of Transcendence" style={{ width: 34, height: 34, borderRadius: 8, border: '1px solid rgba(20,10,30,0.18)', background: '#fff', color: '#15101c', cursor: 'pointer', fontSize: 18 }}>×</button>
         </div>
