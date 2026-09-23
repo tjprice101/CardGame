@@ -209,6 +209,7 @@ function resolveAbilityDescription(card: CardDefinition, options?: CardSummaryOp
 export function getCardSummarySections(card: CardDefinition, options?: CardSummaryOptions): CardSummarySection[] {
   const sections: CardSummarySection[] = [];
   const authoredDescription = resolveAbilityDescription(card, options);
+  const transcendentAbilityPrefix = 'Transcendent Ability: If this card is in your deck, your maximum hand size is now 10.';
 
   if (card.definitionId.startsWith('light-neutrality-')
     || card.definitionId.startsWith('dark-neutrality-')
@@ -216,7 +217,14 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
     pushSummarySection(sections, 'Source', ['Neutrality Card Pack']);
   }
 
+  if (card.rarity === 'Transcendent') {
+    pushSummarySection(sections, 'Transcendent Ability', [
+      'If this card is in your deck or Extra Deck, your maximum hand size is 10.',
+    ]);
+  }
+
   pushSummarySection(sections, 'Effect', [authoredDescription
+    .replace(transcendentAbilityPrefix, '')
     .replace(/ with (?:extreme |increased |overwhelming )?Collection Power scaling/gi, '')
     .replace(/Collection Power-scaled /gi, '')
     .replace(/; scales with Collection Power/gi, '')]);

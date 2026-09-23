@@ -13,7 +13,6 @@ import {
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
-import VirtualizedList from '@/ui/components/VirtualizedList';
 import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { warmTheme } from '@/ui/theme';
@@ -27,7 +26,7 @@ import { computeGlobalResonanceScore } from '@/systems/progression/cardMastery';
 import { formatNumber } from '@/utils/bignum';
 import DeckBuilderAbilitiesTab from '@/ui/deck/tabs/DeckBuilderAbilitiesTab';
 import DeckBuilderAnalyzeTab from '@/ui/deck/tabs/DeckBuilderAnalyzeTab';
-import { CARD_COLLECTION_TILE_HEIGHT, CARD_COLLECTION_TILE_STEP, CARD_COLLECTION_TILE_WIDTH } from '@/ui/cardTileMetrics';
+import { CARD_COLLECTION_TILE_HEIGHT, CARD_COLLECTION_TILE_WIDTH } from '@/ui/cardTileMetrics';
 
 // Stable selector fallback: returning a fresh `{}` from a Zustand v5 selector
 // triggers the "getSnapshot should be cached" infinite-render loop.
@@ -40,7 +39,6 @@ const EXTRA_DECK_SIZE = 10;
 // Match the Card Store collection tile footprint exactly.
 const CARD_LIBRARY_CARD_WIDTH = CARD_COLLECTION_TILE_WIDTH;
 const CARD_LIBRARY_CARD_HEIGHT = CARD_COLLECTION_TILE_HEIGHT;
-const CARD_LIBRARY_ROW_HEIGHT = CARD_COLLECTION_TILE_HEIGHT + 68;
 
 function getCardSet(definitionId: string): 'Neutrality' | 'Causality' | null {
   if (definitionId.includes('causality')) return 'Causality';
@@ -127,7 +125,7 @@ const styles: Record<string, React.CSSProperties> = {
     background: 'rgba(78,160,220,0.16)',
   },
   body: { display: 'flex', flex: 1, overflow: 'hidden' },
-  poolPane: { flex: '1 1 auto', display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 },
+  poolPane: { flex: '1 1 auto', display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, position: 'relative' },
   cardPool: { flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 0 },
   deckPane: {
     flex: '0 0 420px', minWidth: 380, display: 'flex', flexDirection: 'column', overflow: 'hidden',
@@ -323,14 +321,6 @@ interface CardVariantDisplay {
   def: CardDefinition;
 }
 
-interface DeckPoolVirtualRow {
-  key: string;
-  kind: 'heading' | 'cards';
-  sectionLabel: string;
-  countText?: string;
-  entries?: CardVariantDisplay[];
-}
-
 function getVariantKey(definitionId: string, finish: CardFinish): string {
   return `${definitionId}::${finish}`;
 }
@@ -478,22 +468,8 @@ export default function DeckBuilder({ onClose }: Props) {
   const tooltipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tooltipDismissRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mousePosRef = useRef({ x: 0, y: 0 });
-  const cardPoolViewportRef = useRef<HTMLDivElement | null>(null);
-  const [cardPoolViewportWidth, setCardPoolViewportWidth] = useState(0);
   const bodyRef = useRef<HTMLDivElement | null>(null);
   const [isNarrow, setIsNarrow] = useState(false);
-
-  useEffect(() => {
-    const node = cardPoolViewportRef.current;
-    if (!node) return;
-
-    const updateWidth = () => setCardPoolViewportWidth(Math.max(0, node.clientWidth - 40));
-    updateWidth();
-
-    const resizeObserver = new ResizeObserver(() => updateWidth());
-    resizeObserver.observe(node);
-    return () => resizeObserver.disconnect();
-  }, []);
 
   useEffect(() => {
     const node = bodyRef.current;
@@ -625,43 +601,6 @@ export default function DeckBuilder({ onClose }: Props) {
   );
   const totalCards = deckList.reduce((sum, e) => sum + e.copies, 0);
   const validation = DeckSystem.validate(deckList);
-  const poolColumns = Math.max(1, Math.floor((cardPoolViewportWidth + 10) / CARD_COLLECTION_TILE_STEP));
-  const deckPoolRows = useMemo(() => {
-    const rows: DeckPoolVirtualRow[] = [];
-    const pushCardRows = (entries: CardVariantDisplay[], prefix: string, sectionLabel: string) => {
-      for (let index = 0; index < entries.length; index += poolColumns) {
-        rows.push({
-          key: `${prefix}-${index}`,
-          kind: 'cards',
-          sectionLabel,
-          entries: entries.slice(index, index + poolColumns),
-        });
-      }
-    };
-
-    if (angelSection.length > 0) {
-      rows.push({
-        key: 'heading-Angel',
-        kind: 'heading',
-        sectionLabel: 'Ain Soph Aur',
-        countText: `${extraDeckList.length} / ${EXTRA_DECK_SIZE} selected`,
-      });
-      pushCardRows(angelSection, 'Ain Soph Aur', 'Ain Soph Aur');
-    }
-
-    mainSections.forEach((section) => {
-      rows.push({
-        key: `heading-${section.label}`,
-        kind: 'heading',
-        sectionLabel: section.label,
-        countText: `${section.cards.length} card${section.cards.length !== 1 ? 's' : ''}`,
-      });
-      pushCardRows(section.cards, section.label, section.label);
-    });
-
-    return rows;
-  }, [angelSection, extraDeckList.length, mainSections, poolColumns]);
-
   // Aggregate deck stats: element distribution + rarity breakdown.
   const deckStats = useMemo(() => {
     const elementCounts: Record<string, number> = {};
@@ -1136,47 +1075,40 @@ export default function DeckBuilder({ onClose }: Props) {
       <div ref={bodyRef} style={{ ...styles.body, flexDirection: isNarrow ? 'column' : 'row' }}>
         {/* Pool pane */}
         <div style={{ ...styles.poolPane, display: surface === 'library' ? 'flex' : 'none', flex: isNarrow ? '1 1 55%' : styles.poolPane.flex }}>
-          {deckPoolRows.length === 0 ? (
-            <div style={styles.cardPool}>
-              <div style={styles.empty}>
-                {`No${elementFilter ? ` ${elementFilter}` : ''} cards in your collection yet.`}
-              </div>
-            </div>
-          ) : (
-            <VirtualizedList
-              items={deckPoolRows}
-              getItemKey={(row) => row.key}
-              getItemHeight={(row) => row.kind === 'heading' ? 48 : CARD_LIBRARY_ROW_HEIGHT}
-              topPadding={12}
-              bottomPadding={64}
-              overscanPx={160}
-              viewportRef={cardPoolViewportRef}
-              style={styles.cardPool}
-              renderItem={(row) => {
-                if (row.kind === 'heading') {
-                  const accent = getSectionColors()[row.sectionLabel] ?? '#58aada';
-                  const title = row.sectionLabel === 'Ain Soph Aur' ? 'Ain Soph Aur (adds to Extra Deck)' : row.sectionLabel;
-                  return (
-                    <div style={{ padding: '0 4px' }}>
-                      <div style={{ ...styles.sectionHeader, marginBottom: 10 }}>
-                        <div style={{ width: 4, height: 20, borderRadius: 2, background: accent, boxShadow: `0 0 8px ${accent}50`, flexShrink: 0 }} />
-                        <span style={{ ...styles.sectionLabel, color: accent }}>
-                          {title}
-                        </span>
-                        <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, ${accent}45, transparent)`, marginLeft: 4 }} />
-                        <span style={styles.sectionCount}>{row.countText}</span>
-                      </div>
-                    </div>
-                  );
-                }
-                return (
-                  <div style={{ display: 'flex', flexWrap: 'nowrap', gap: 10, padding: '0 4px 24px', alignItems: 'flex-start', minWidth: 0 }}>
-                    {row.entries?.map((entry) => renderPoolCard(entry, row.sectionLabel))}
+          <div style={{ ...styles.cardPool, gap: 24 }}>
+            {angelSection.length > 0 && (
+              <section>
+                <div style={{ ...styles.sectionHeader, marginBottom: 10 }}>
+                  <div style={{ width: 4, height: 20, borderRadius: 2, background: getSectionColors()['Ain Soph Aur'] ?? '#58aada', boxShadow: `0 0 8px ${(getSectionColors()['Ain Soph Aur'] ?? '#58aada')}50`, flexShrink: 0 }} />
+                  <span style={{ ...styles.sectionLabel, color: getSectionColors()['Ain Soph Aur'] ?? '#58aada' }}>Ain Soph Aur (adds to Extra Deck)</span>
+                  <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, ${(getSectionColors()['Ain Soph Aur'] ?? '#58aada')}45, transparent)`, marginLeft: 4 }} />
+                  <span style={styles.sectionCount}>{extraDeckList.length} / {EXTRA_DECK_SIZE} selected</span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, ${CARD_LIBRARY_CARD_WIDTH}px)`, gap: '16px 10px', alignItems: 'start' }}>
+                  {angelSection.map(entry => renderPoolCard(entry, 'Ain Soph Aur'))}
+                </div>
+              </section>
+            )}
+            {mainSections.map(section => {
+              const accent = getSectionColors()[section.label] ?? '#58aada';
+              return (
+                <section key={section.label}>
+                  <div style={{ ...styles.sectionHeader, marginBottom: 10 }}>
+                    <div style={{ width: 4, height: 20, borderRadius: 2, background: accent, boxShadow: `0 0 8px ${accent}50`, flexShrink: 0 }} />
+                    <span style={{ ...styles.sectionLabel, color: accent }}>{section.label}</span>
+                    <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, ${accent}45, transparent)`, marginLeft: 4 }} />
+                    <span style={styles.sectionCount}>{section.cards.length} card{section.cards.length === 1 ? '' : 's'}</span>
                   </div>
-                );
-              }}
-            />
-          )}
+                  <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, ${CARD_LIBRARY_CARD_WIDTH}px)`, gap: '16px 10px', alignItems: 'start' }}>
+                    {section.cards.map(entry => renderPoolCard(entry, section.label))}
+                  </div>
+                </section>
+              );
+            })}
+            {angelSection.length === 0 && mainSections.length === 0 && (
+              <div style={styles.empty}>{`No${elementFilter ? ` ${elementFilter}` : ''} cards in your collection yet.`}</div>
+            )}
+          </div>
         </div>
 
         {/* Deck pane */}
