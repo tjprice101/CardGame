@@ -4,15 +4,11 @@ import { CardRegistry } from '@/cards/CardRegistry';
 import { DeckSystem } from '@/systems/cards/DeckSystem';
 import { SET_ACCENT, SET_LABEL, getCardSetLabel } from '@/data/elements';
 import {
-  cardFacePalette,
   getLiveCardFaceBackgroundStyle,
   getLiveCardShimmerClassName,
-  getCardArtTopBottomBorderOverlayStyleForCard,
-  getCardFaceMetrics,
-  getCardNameRibbonStyle,
-  getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
+import CollectionCardTile from '@/ui/components/CollectionCardTile';
 import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { warmTheme } from '@/ui/theme';
@@ -161,9 +157,6 @@ const styles: Record<string, React.CSSProperties> = {
     transform: 'translateY(-2px)',
   },
   cardFull: { opacity: 0.34, cursor: 'not-allowed' },
-  cardName: { fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25 },
-  cardDesc: { color: cardFacePalette.textSoft, textAlign: 'center', display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' },
-  cardSubtype: { letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 4, textAlign: 'center' },
   badge: {
     position: 'absolute', bottom: 7, right: 6, width: 21, height: 21,
     borderRadius: '50%',
@@ -426,7 +419,6 @@ function ProgressRing({ value, max, color, size = 44, label }: { value: number; 
 
 export default function DeckBuilder({ onClose }: Props) {
   useThemeVersion();
-  const faceMetrics = getCardFaceMetrics('grid');
   const { initDeck, saveCurrentDeck, updateSavedDeck, loadSavedDeck, deleteSavedDeck } = useStore.getState();
   const currentDeck = useStore(selectDeck);
   const collection = useStore(s => s.progress.collection);
@@ -766,72 +758,31 @@ export default function DeckBuilder({ onClose }: Props) {
     const canAdd = isAngel
       ? count < owned && totalForDefinition < cap && extraDeckList.length < EXTRA_DECK_SIZE
       : !(count >= owned || totalForDefinition >= cap);
-    const previewText = getCardPreviewLines(def.def, 3).join(' ');
     const finishLabel = getFinishLabel(def.def, def.finish);
+    const isFull = isAngel ? (count === 0 && !canAdd) : !canAdd;
     return (
-      <div key={def.key} style={styles.cardWithMeta}>
-        <div
+      <div
+        key={def.key}
+        style={styles.cardWithMeta}
+        onMouseMove={(event) => { mousePosRef.current = { x: event.clientX, y: event.clientY }; }}
+        onMouseEnter={() => startTooltip(def.def)}
+        onMouseLeave={clearTooltip}
+      >
+        <CollectionCardTile
+          card={def.def}
+          owned={owned}
           className={getLiveCardShimmerClassName(def.def, def.finish, 'front')}
-          style={{
-            ...styles.card,
+          surfaceStyle={{
             ...getLiveCardFaceBackgroundStyle(def.def, def.finish, 'front'),
             ...(count > 0 ? styles.cardAdded : {}),
-            ...((isAngel ? (count === 0 && !canAdd) : !canAdd) ? styles.cardFull : {}),
+            ...(isFull ? styles.cardFull : {}),
           }}
+          border={count > 0 ? '1px solid rgba(110,200,245,0.90)' : '1px solid rgba(72,128,190,0.32)'}
           onClick={() => addCard(def.def.definitionId, def.finish)}
-          onMouseMove={(e) => { mousePosRef.current = { x: e.clientX, y: e.clientY }; }}
-          onMouseEnter={() => startTooltip(def.def)}
-          onMouseLeave={clearTooltip}
-        >
-          <div style={getCardArtTopBottomBorderOverlayStyleForCard(def.def)} />
-          <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <div style={getCardNameRibbonStyle('grid')}>
-              <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.4, textTransform: 'uppercase', textAlign: 'center', marginBottom: 4 }}>
-                {finishLabel === 'Holofoil'
-                  ? `${getDisplayCardTypeLabel(def.def.type)} · Holofoil`
-                  : getDisplayCardTypeLabel(def.def.type)}
-              </div>
-              <div style={{
-                fontSize: faceMetrics.nameSize,
-                fontWeight: 'bold',
-                color: cardFacePalette.text,
-                lineHeight: 1.25,
-                minHeight: 24,
-                textAlign: 'center',
-              }}>
-                {def.def.name}
-              </div>
-            </div>
-            <div style={getCardRulesPanelStyle('grid')}>
-              <div style={{
-                fontSize: faceMetrics.descSize,
-                color: cardFacePalette.textSoft,
-                lineHeight: faceMetrics.descLineHeight,
-                textAlign: 'center',
-                display: '-webkit-box',
-                WebkitBoxOrient: 'vertical',
-                WebkitLineClamp: 3,
-                overflow: 'hidden',
-              }}>
-                {previewText}
-              </div>
-              <div style={{
-                marginTop: 6,
-                fontSize: 10,
-                letterSpacing: 1,
-                color: cardFacePalette.textMuted,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: 8,
-              }}>
-                <span style={{ textTransform: 'uppercase' }}>{def.def.rarity}</span>
-                <span>×{owned} owned</span>
-              </div>
-            </div>
-          </div>
-          {count > 0 && <div style={{ ...styles.badge, zIndex: 2 }}>{count}</div>}
-        </div>
+          finishLabel={finishLabel === 'Holofoil' ? 'Holofoil' : null}
+          footerRight={`×${owned} owned`}
+          cornerOverlay={count > 0 ? <div style={{ ...styles.badge, zIndex: 2 }}>{count}</div> : undefined}
+        />
         <div style={styles.ownedLabelBelow}>owns {owned}</div>
         {renderLockControl(
           def.def.definitionId,
@@ -1124,22 +1075,26 @@ export default function DeckBuilder({ onClose }: Props) {
                 const def = CardRegistry.get(entry.definitionId);
                 if (!def) return null;
                 return (
-                  <div
+                  <CollectionCardTile
                     key={entry.key}
+                    card={def}
+                    owned={collection[entry.definitionId] ?? entry.copies}
                     className={getLiveCardShimmerClassName(def, entry.finish, 'front')}
-                    style={{
+                    surfaceStyle={{
                       ...styles.extraStripCard,
                       ...getLiveCardFaceBackgroundStyle(def, entry.finish, 'front'),
                     }}
+                    border="1px solid rgba(112,200,144,0.45)"
                     title={`${def.name} ×${entry.copies} — click to remove one`}
                     onClick={() => removeCard(entry.definitionId, entry.finish)}
-                  >
-                    {entry.copies > 1 && (
-                      <div style={{ position: 'absolute', zIndex: 1, bottom: 2, right: 2, fontSize: 9, fontWeight: 'bold', color: '#3a1800', background: '#f8d878', borderRadius: '50%', width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    finishLabel={getFinishLabel(def, entry.finish) === 'Holofoil' ? 'Holofoil' : null}
+                    footerRight={`×${entry.copies} selected`}
+                    cornerOverlay={entry.copies > 1 ? (
+                      <div style={{ position: 'absolute', zIndex: 2, bottom: 7, right: 6, fontSize: 9, fontWeight: 'bold', color: '#3a1800', background: '#f8d878', borderRadius: '50%', width: 21, height: 21, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {entry.copies}
                       </div>
-                    )}
-                  </div>
+                    ) : undefined}
+                  />
                 );
               })}
               {extraDeckList.length === 0 && (

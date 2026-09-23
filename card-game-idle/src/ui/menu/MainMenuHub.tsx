@@ -642,8 +642,8 @@ export default function MainMenuHub(props: MainMenuHubProps) {
       <div className="main-menu-identity" style={{
         position: 'absolute',
         left: 'clamp(20px, 3vw, 56px)',
-        top: '30%',
-        transform: 'translateY(-38%)',
+        top: '82px',
+        transform: 'none',
         width: 'min(360px, 32vw)',
         display: 'flex', flexDirection: 'column', gap: 14,
       }}>
@@ -720,28 +720,6 @@ export default function MainMenuHub(props: MainMenuHubProps) {
           “{dailyLine}”
         </button>
 
-        {/* Forge standing — fills the dead space below the voiced line. */}
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
-          padding: '10px 14px',
-          borderRadius: 4,
-          border: '1px solid rgba(200,180,255,0.28)',
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(140,90,255,0.08) 100%)',
-          backdropFilter: 'blur(4px)',
-        }}>
-          <div>
-            <div style={{ fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 1.6, textTransform: 'uppercase', color: '#e2c9ff' }}>
-              Forge Standing
-            </div>
-            <div style={{ marginTop: 3, fontSize: 11, color: uiTheme.textMuted }}>
-              {forgeUnlocked ? 'The Forge lies open.' : `Event bosses beaten: ${forgeBossesCleared}/${FORGE_EVENT_BOSS_IDS.length}`}
-            </div>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontFamily: uiTypography.display, fontSize: 15, color: '#fff' }}>{progress.keysOfTranscendence ?? 0}</div>
-            <div style={{ fontSize: 9, letterSpacing: 0.7, textTransform: 'uppercase', color: uiTheme.textMuted }}>Keys of Transcendence</div>
-          </div>
-        </div>
       </div>
 
       {/* ───────── Bottom-left: news / event banners ───────── */}
@@ -825,23 +803,23 @@ export default function MainMenuHub(props: MainMenuHubProps) {
               position: 'absolute', top: 14, left: 18,
               padding: '3px 13px', borderRadius: 6,
               background: 'rgba(255, 125, 185, 0.9)', color: '#fff',
-              fontFamily: uiTypography.display, fontSize: 18, letterSpacing: 2.4,
+              fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.5,
             }}>LIMITED-TIME</div>
             <div style={{ marginTop: 40, fontFamily: uiTypography.display, fontSize: 32, letterSpacing: 2.9, textTransform: 'uppercase' }}>
               Causality
             </div>
-            <div style={{ marginTop: 7, fontSize: 20, opacity: 0.82, letterSpacing: 1.1, color: 'rgba(214, 224, 248, 0.95)' }}>
+            <div style={{ marginTop: 7, fontSize: 11, opacity: 0.82, letterSpacing: 0.6, color: 'rgba(214, 224, 248, 0.95)' }}>
               Stellar Wish Event · Spend Aberrated Shards
             </div>
-            <div style={{ marginTop: 14, fontSize: 18, letterSpacing: 1.8, color: '#d7b7ff', fontFamily: uiTypography.display }}>
+            <div style={{ marginTop: 10, fontSize: 11, letterSpacing: 1, color: '#d7b7ff', fontFamily: uiTypography.display }}>
               Ends {CAUSALITY_EVENT_ENDS_LABEL}
             </div>
-            <div style={{ marginTop: 6, fontSize: 22, letterSpacing: 2, color: '#8de6ff', fontFamily: uiTypography.display }}>
+            <div style={{ marginTop: 4, fontSize: 13, letterSpacing: 1.2, color: '#8de6ff', fontFamily: uiTypography.display }}>
               {eventCountdown}
             </div>
             <div style={{
               position: 'absolute', bottom: 14, right: 22,
-              fontFamily: uiTypography.display, fontSize: 18, letterSpacing: 2.4,
+              fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.5,
               color: '#8de6ff',
             }}>NEW ▶</div>
           </button>
