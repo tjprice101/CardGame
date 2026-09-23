@@ -28,6 +28,7 @@ import { computeGlobalResonanceScore } from '@/systems/progression/cardMastery';
 import { formatNumber } from '@/utils/bignum';
 import DeckBuilderAbilitiesTab from '@/ui/deck/tabs/DeckBuilderAbilitiesTab';
 import DeckBuilderAnalyzeTab from '@/ui/deck/tabs/DeckBuilderAnalyzeTab';
+import { CARD_COLLECTION_TILE_HEIGHT, CARD_COLLECTION_TILE_STEP, CARD_COLLECTION_TILE_WIDTH } from '@/ui/cardTileMetrics';
 
 // Stable selector fallback: returning a fresh `{}` from a Zustand v5 selector
 // triggers the "getSnapshot should be cached" infinite-render loop.
@@ -38,9 +39,9 @@ const NARROW_BREAKPOINT = 1000;
 const MAIN_DECK_SIZE = 50;
 const EXTRA_DECK_SIZE = 10;
 // Match the Card Store collection tile footprint exactly.
-const CARD_LIBRARY_CARD_WIDTH = 128;
-const CARD_LIBRARY_CARD_HEIGHT = 176;
-const CARD_LIBRARY_ROW_HEIGHT = 352;
+const CARD_LIBRARY_CARD_WIDTH = CARD_COLLECTION_TILE_WIDTH;
+const CARD_LIBRARY_CARD_HEIGHT = CARD_COLLECTION_TILE_HEIGHT;
+const CARD_LIBRARY_ROW_HEIGHT = CARD_COLLECTION_TILE_HEIGHT + 68;
 
 function getCardSet(definitionId: string): 'Neutrality' | 'Causality' | null {
   if (definitionId.includes('causality')) return 'Causality';
@@ -219,13 +220,13 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4,
   },
   extraStripCard: {
-    flex: '0 0 auto', width: 70, height: 96, borderRadius: 10,
+    flex: '0 0 auto', width: CARD_COLLECTION_TILE_WIDTH, height: CARD_COLLECTION_TILE_HEIGHT, borderRadius: 10,
     border: '1px solid rgba(112,200,144,0.45)',
     background: 'rgba(4,8,18,0.9)',
     position: 'relative', overflow: 'hidden', cursor: 'pointer',
   },
   extraStripEmptySlot: {
-    flex: '0 0 auto', width: 70, height: 96, borderRadius: 10,
+    flex: '0 0 auto', width: CARD_COLLECTION_TILE_WIDTH, height: CARD_COLLECTION_TILE_HEIGHT, borderRadius: 10,
     border: '1px dashed rgba(72,128,190,0.30)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     color: 'rgba(190,215,245,0.28)', fontSize: 16,
@@ -625,7 +626,7 @@ export default function DeckBuilder({ onClose }: Props) {
   );
   const totalCards = deckList.reduce((sum, e) => sum + e.copies, 0);
   const validation = DeckSystem.validate(deckList);
-  const poolColumns = Math.max(1, Math.floor((cardPoolViewportWidth + 10) / 138));
+  const poolColumns = Math.max(1, Math.floor((cardPoolViewportWidth + 10) / CARD_COLLECTION_TILE_STEP));
   const deckPoolRows = useMemo(() => {
     const rows: DeckPoolVirtualRow[] = [];
     const pushCardRows = (entries: CardVariantDisplay[], prefix: string, sectionLabel: string) => {
