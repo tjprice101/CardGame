@@ -7,10 +7,10 @@ import {
   cardFacePalette,
   getLiveCardFaceBackgroundStyle,
   getLiveCardShimmerClassName,
+  getCardArtTopBottomBorderOverlayStyleForCard,
   getCardFaceMetrics,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
-  getAdaptiveDescriptionMetrics,
 } from '@/ui/cardBackgrounds';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import VirtualizedList from '@/ui/components/VirtualizedList';
@@ -21,8 +21,7 @@ import { useThemeVersion } from '@/ui/useThemeVersion';
 import { STARTER_COLLECTION } from '@/systems/progression/StarterDeck';
 import { isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import type { DeckEntry, ExtraDeckEntry } from '@/types/game';
-import type { AinSophAurDefinition, CardDefinition, CardFinish } from '@/types/cards';
-import { formatSummonRequirement, getSummonRequirements } from '@/systems/cards/AinSophSummonRequirements';
+import type { CardDefinition, CardFinish } from '@/types/cards';
 import { calculateDeckDpsProjection } from '@/systems/cards/DeckDpsCalculator';
 import { computeGlobalResonanceScore } from '@/systems/progression/cardMastery';
 import { formatNumber } from '@/utils/bignum';
@@ -828,8 +827,8 @@ export default function DeckBuilder({ onClose }: Props) {
     const canAdd = isAngel
       ? count < owned && totalForDefinition < cap && extraDeckList.length < EXTRA_DECK_SIZE
       : !(count >= owned || totalForDefinition >= cap);
-    const previewText = getCardPreviewLines(def.def, 2).join(' ');
-    const descMetrics = getAdaptiveDescriptionMetrics('grid', previewText);
+    const previewText = getCardPreviewLines(def.def, 3).join(' ');
+    const finishLabel = getFinishLabel(def.def, def.finish);
     return (
       <div key={def.key} style={styles.cardWithMeta}>
         <div
@@ -845,27 +844,51 @@ export default function DeckBuilder({ onClose }: Props) {
           onMouseEnter={() => startTooltip(def.def)}
           onMouseLeave={clearTooltip}
         >
+          <div style={getCardArtTopBottomBorderOverlayStyleForCard(def.def)} />
           <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column' }}>
             <div style={getCardNameRibbonStyle('grid')}>
-              <div style={{ ...styles.cardSubtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>
-                {(() => {
-                  const baseLabel = isAngel ? 'Ain Soph Aur' : getDisplayCardTypeLabel(def.def.type);
-                  const finishLabel = getFinishLabel(def.def, def.finish);
-                  return finishLabel === 'Holofoil' ? `${baseLabel} · Holofoil` : baseLabel;
-                })()}
+              <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.4, textTransform: 'uppercase', textAlign: 'center', marginBottom: 4 }}>
+                {finishLabel === 'Holofoil'
+                  ? `${getDisplayCardTypeLabel(def.def.type)} · Holofoil`
+                  : getDisplayCardTypeLabel(def.def.type)}
               </div>
-              <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 2, overflow: 'hidden' }}>{def.def.name}</div>
+              <div style={{
+                fontSize: faceMetrics.nameSize,
+                fontWeight: 'bold',
+                color: cardFacePalette.text,
+                lineHeight: 1.25,
+                minHeight: 24,
+                textAlign: 'center',
+              }}>
+                {def.def.name}
+              </div>
             </div>
             <div style={getCardRulesPanelStyle('grid')}>
-              <div style={{ ...styles.cardDesc, fontSize: descMetrics.fontSize, lineHeight: descMetrics.lineHeight, WebkitLineClamp: descMetrics.lineClamp }}>
+              <div style={{
+                fontSize: faceMetrics.descSize,
+                color: cardFacePalette.textSoft,
+                lineHeight: faceMetrics.descLineHeight,
+                textAlign: 'center',
+                display: '-webkit-box',
+                WebkitBoxOrient: 'vertical',
+                WebkitLineClamp: 3,
+                overflow: 'hidden',
+              }}>
                 {previewText}
               </div>
-              {isAngel && def.def.type === 'AinSophAur' && (
-                <div style={{ fontSize: 6.5, color: cardFacePalette.textMuted, marginTop: 3, textAlign: 'center', display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, overflow: 'hidden' }}>
-                  {getSummonRequirements((def.def as AinSophAurDefinition).summonMaterials, (def.def as AinSophAurDefinition).summonMaterialCount)
-                    .map((requirement, index) => <div key={`summon-requirement-${index}`}>Requires: {formatSummonRequirement(requirement)}</div>)}
-                </div>
-              )}
+              <div style={{
+                marginTop: 6,
+                fontSize: 10,
+                letterSpacing: 1,
+                color: cardFacePalette.textMuted,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: 8,
+              }}>
+                <span style={{ textTransform: 'uppercase' }}>{def.def.rarity}</span>
+                <span>×{owned} owned</span>
+              </div>
             </div>
           </div>
           {count > 0 && <div style={{ ...styles.badge, zIndex: 2 }}>{count}</div>}
