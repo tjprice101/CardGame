@@ -1,12 +1,17 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { ABILITY_DEFINITIONS } from '@/data/abilities/abilityDefinitions';
+import { ABILITY_DEFINITIONS, ABILITY_ICON_FALLBACKS } from '@/data/abilities/abilityDefinitions';
 
 describe('ability and Garden asset wiring', () => {
   it('provides an asset for every ability icon key', () => {
     const missing = ABILITY_DEFINITIONS
-      .filter(ability => !existsSync(join(process.cwd(), 'public/assets/ability-icons', `${ability.iconAssetKey}.png`)))
+      .filter(ability => {
+        const dedicated = join(process.cwd(), 'public/assets/ability-icons', `${ability.iconAssetKey}.png`);
+        if (existsSync(dedicated)) return false;
+        const fallback = ABILITY_ICON_FALLBACKS[ability.iconAssetKey];
+        return !fallback || !existsSync(join(process.cwd(), 'public/assets', fallback.folder, fallback.file));
+      })
       .map(ability => ability.id);
     expect(missing).toEqual([]);
   });

@@ -38,7 +38,13 @@ class EternityBossRadioImpl {
 
   setVolume(volume: number) {
     this.volume = Math.max(0, Math.min(1, volume));
-    if (this.audio && this.running) this.audio.volume = this.volume;
+    if (!this.audio || !this.running) return;
+    if (this.volume <= 0) {
+      this.audio.pause();
+      return;
+    }
+    if (this.fadeTimer === null) this.audio.volume = this.volume;
+    if (this.audio.paused) void this.audio.play().catch(() => undefined);
   }
 
   private playCurrent() {

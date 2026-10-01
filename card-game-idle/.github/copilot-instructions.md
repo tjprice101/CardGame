@@ -37,13 +37,14 @@
 - Dark activation-cost policy: ordinary one-shot Dark utilities should usually cost 0; reserve Limitless Light costs for premium/reusable/high-impact cards.
 - Every Divine Light gain, including sacrifice rewards and card effects, scales from Collection Power exactly once through the central grant path.
 - Collection Power uses `1 + Resonance / 1000`, with a dynamic natural cap derived from every registered card's maximum 320 Resonance contribution. Never restore a fixed ×3 cap. Card-light is mastery XP and changes Resonance only when a Card-born Tier threshold is crossed.
-- Rarities are distinct: normal rarities, Enigmatic (Enigma rewards), Eternal (Eternity's Wake rewards), Infinite (Infinity-menu crafting), and Transcendent (Null Raid progression).
+- Rarities are distinct: normal rarities, Enigmatic (Enigma rewards), Eternal (Eternity's Wake rewards), Infinite (Infinitude crafting), and Transcendent (Forge of Transcendence).
+- Spectrum Level is a turn-scoped card requirement. Enigmatic/Eternal/Infinite/Transcendent minimum levels are 1/2/4/5. Transcendent materialized abilities are standalone, use shared Limitless Light Stacks/Divine Light/card zones only, and must not access Cosmos, Causality cooldowns, or any set-specific/future-set mechanics.
 
 ## Completed Systems Snapshot
 - Neutrality content currently registers 27 Light, 28 Dark, and 12 Ain Soph Aur cards across base, Enigmatic, Eternal, and Transcendent sources. Base Neutrality packs contain 52 live cards: 24 Light, 24 Dark, and 4 Ain Soph Aur.
-- Nine Neutrality Eternal boss rewards, four Transcendent Null Raid cards, and two Enigmatic rewards are implemented and art-wired.
+- Nine Neutrality Eternal boss rewards, four Transcendent Forge cards, and Enigmatic rewards are implemented and art-wired.
 - Daily and weekly challenges track current Light/Dark/Ain/Soph/stack/summon/Bridge/boss/raid actions.
-- Achievements distinguish Infinity crafts, Eternal boss rewards, Enigmatic rewards, and Transcendent Null Raid ownership.
+- Achievements distinguish Infinite crafts, Eternal boss rewards, Enigmatic rewards, and Transcendent Forge ownership.
 - Universal Ain/Soph rules are documented in the base tutorial; card stat panels should show only card-specific values.
 - Supplied Neutrality card art and wide Eternity's Wake boss art live under `public/assets/card-backgrounds` and are covered by the asset audit.
 - Card hover details belong in the right-rail Card Inspector, not floating over the board/hand. Pack opening waits for individual clicks, Reveal All/Reveal Best, or Instant; do not re-add timed auto-reveal.

@@ -206,6 +206,7 @@ describe('Ain/Soph card catalog', () => {
     expect(paidBaseCards).toEqual([
       ['dark-neutrality-22', 1],
       ['dark-neutrality-23', 1],
+      ['dark-neutrality-24', 1],
     ]);
 
     const premiumCosts = new Map(

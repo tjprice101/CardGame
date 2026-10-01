@@ -13,6 +13,7 @@ const RARITY_ORDER = ['Legendary', 'Transcendent', 'Eternal', 'Infinite', 'Enigm
 
 interface DeckStats {
   rarityCounts: Record<string, number>;
+  levelCounts: number[];
   typeLight: number;
   typeDark: number;
 }
@@ -184,6 +185,29 @@ export default function DeckBuilderAnalyzeTab({ deckList, extraDeckList, totalCa
           </div>
         </div>
       </div>
+
+      {totalCards > 0 && (
+        <div style={{ marginBottom: 16, padding: '10px 14px', borderRadius: 8, background: 'rgba(5,8,16,0.7)', border: '1px solid rgba(160,130,240,0.25)' }}>
+          <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#d6c4ff', fontWeight: 700, marginBottom: 8 }}>
+            Spectrum Level Curve
+          </div>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 70 }}>
+            {deckStats.levelCounts.map((count, level) => {
+              const peak = Math.max(1, ...deckStats.levelCounts);
+              return (
+                <div key={level} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, height: '100%', justifyContent: 'flex-end' }}>
+                  <span style={{ fontSize: 9, color: '#ece4ff', fontWeight: 700 }}>{count}</span>
+                  <div style={{ width: '100%', height: `${(count / peak) * 46}px`, minHeight: count > 0 ? 3 : 0, borderRadius: 3, background: level === 0 ? '#80e860' : `rgba(${150 + level * 15}, ${130 - level * 10}, 240, 0.85)` }} />
+                  <span style={{ fontSize: 9, color: 'rgba(214,196,255,0.7)' }}>Lv {level}</span>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ marginTop: 6, fontSize: 9.5, color: 'rgba(200,190,230,0.7)', lineHeight: 1.4 }}>
+            Every turn starts at Spectrum Lv 0. Rising to the next level costs 5 + current level Limitless Light Stacks and 1 hand card sacrificed to the Light-bound Abyss.
+          </div>
+        </div>
+      )}
 
       {renderSection('Light', sections.seraphim, '#f0bd78')}
       {renderSection('Dark', sections.cherubim, warmTheme.cherubim)}

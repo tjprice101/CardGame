@@ -8,6 +8,8 @@ export const GARDEN_REWARD_LABELS: Record<GardenRewardCurrency, string> = {
   causalBloom: 'Causal Bloom',
   shatteredCausalTranscript: 'Shattered Causal Transcript',
   heartOfCausality: 'Heart of Causality',
+  divineLight: 'Divine Light',
+  shardsOfTranscendence: 'Shards of Transcendence',
 };
 
 export const GARDEN_MATERIAL_METADATA: Record<GardenRewardCurrency, { name: string; artAssetKey: string; description: string }> = {
@@ -30,6 +32,8 @@ export const GARDEN_MATERIAL_METADATA: Record<GardenRewardCurrency, { name: stri
   causalBloom: { name: 'Causal Bloom', artAssetKey: 'causal-bloom', description: 'A chromatic flower whose petals open into mutually exclusive futures. Used in Causality Infinite construction.' },
   shatteredCausalTranscript: { name: 'Shattered Causal Transcript', artAssetKey: 'shattered-causal-transcript', description: 'A broken manuscript page preserving outcomes that never occurred. Used in Causality Infinite construction.' },
   heartOfCausality: { name: 'Heart of Causality', artAssetKey: 'heart-of-causality', description: 'The pearlescent core of a collapsed event horizon. Used in apex Causality Infinite construction.' },
+  divineLight: { name: 'Divine Light', artAssetKey: 'divine-light', description: 'The universal currency of the Forge: a vast reserve of light distilled from the first dawn.' },
+  shardsOfTranscendence: { name: 'Shards of Transcendence', artAssetKey: 'shards-of-transcendence', description: 'A fragment of the Forge itself, used to awaken a Transcendent ability.' },
 };
 
 export const GARDEN_DUNGEONS: readonly GardenDungeonDefinition[] = [

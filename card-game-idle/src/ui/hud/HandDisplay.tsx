@@ -3,6 +3,8 @@ import { useStore, selectDeck, selectTurn, selectBoard, selectProgress, selectSe
 import { useThemeVersion } from '@/ui/useThemeVersion';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
+import { getUnmetCardRequirement } from '@/systems/cards/PlayRequirements';
+import { getCardSpectrumLevel, getTurnSpectrumLevel } from '@/systems/cards/SpectrumLevel';
 import { getSummonRequirements } from '@/systems/cards/AinSophSummonRequirements';
 import {
   cardFacePalette,
@@ -333,7 +335,7 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
       const state = useStore.getState();
       const currentDeckCard = state.deck.hand.find(c => c.instanceId === instanceId);
       const def = currentDeckCard ? CardRegistry.get(currentDeckCard.definitionId) : null;
-      if (!def || !CardEffectExecutor.checkPlayable(def, state.deck.hand.length, state.turn, state.board)) return;
+      if (!def || !CardEffectExecutor.checkPlayable(def, state.deck.hand.length, state.turn, state.board, state.deck, instanceId)) return;
       playCard(instanceId, side);
     }
   }
@@ -516,8 +518,11 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
           const selected = !isExtraDeckView && (turn.mulliganSelected ?? []).includes(deckCard.instanceId);
           const isHovered = hoveredId === deckCard.instanceId;
           const isPlayable = isExtraDeckView
-            ? (isPlaying && !!def && def.type === 'AinSophAur' && (freeSummonSelection || CardEffectExecutor.checkPlayable(def, 0, turn, board)))
-            : (!isPlaying || !def || CardEffectExecutor.checkPlayable(def, hand.length, turn, board));
+            ? (isPlaying && !!def && def.type === 'AinSophAur' && (freeSummonSelection
+              ? getCardSpectrumLevel(def) <= getTurnSpectrumLevel(turn) + 1
+              : CardEffectExecutor.checkPlayable(def, 0, turn, board, deck)))
+            : (!isPlaying || !def || CardEffectExecutor.checkPlayable(def, hand.length, turn, board, deck, deckCard.instanceId));
+          const unmetRequirement = !isExtraDeckView && isPlaying && def ? getUnmetCardRequirement(def, turn, deck, deckCard.instanceId) : null;
           const previewText = def ? getCardPreviewText(def, 2) : 'Card data unavailable';
           const descMetrics = getAdaptiveDescriptionMetrics('hand', previewText);
           const nameLength = (def?.name ?? '').length;
@@ -629,7 +634,9 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
                   border: `1px solid ${warmTheme.border}`, borderRadius: 6, padding: '4px 8px',
                   pointerEvents: 'none', zIndex: 5,
                 }}>
-                  Left-click: place Soph · Right-click: place Ain
+                  {unmetRequirement
+                    ? (unmetRequirement.startsWith('Requires Spectrum') ? unmetRequirement : `Cannot play: ${unmetRequirement}`)
+                    : 'Left-click: place Soph · Right-click: place Ain'}
                 </div>
               )}
 

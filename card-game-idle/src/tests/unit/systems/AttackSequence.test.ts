@@ -7,6 +7,7 @@ import {
   getAttackSequenceMultiplier,
   getAttackSequenceStarCount,
   getAttackSequenceStars,
+  toOrbitSpace,
 } from '@/systems/cards/AttackSequence';
 
 describe('attack orbit sequences', () => {
@@ -127,6 +128,37 @@ describe('attack orbit sequences', () => {
     const sequence = useStore.getState().turn.attackSequence!;
     expect(sequence.orbitScore).toBeGreaterThan(2.5);
     expect(getAttackSequenceMultiplier('ain', 0, sequence.orbitScore)).toBeGreaterThan(3.5);
+  });
+
+  it('scores a tight circle around the Soph card the same way as an Ain circle', () => {
+    const rect = { left: 0, top: 0, width: 1920, height: 1080 };
+    const runCircle = (kind: 'ain' | 'soph') => {
+      const base = structuredClone(defaultGameState) as GameState;
+      const definition = lightCards[0];
+      const instanceId = `attack-sequence-${kind}-tight`;
+      base.turn.phase = 'playing';
+      base.turn.limitlessLightStacks = 999;
+      base.board.backSlots[0] = {
+        instanceId, definitionId: definition.definitionId, type: 'Light', rarity: definition.rarity,
+        finish: 'normal', side: 'ain', faceState: 'front', limitlessCharge: 0, attackCooldowns: {}, backSlot: 0,
+      };
+      useStore.setState(state => ({ ...state, ...base }));
+      if (kind === 'ain') useStore.getState().activateLightAinAttack(instanceId);
+      else useStore.getState().activateLightSophAttack(instanceId);
+      const priming = useStore.getState().turn.attackSequence!;
+      useStore.getState().tickAttackSequence(priming.phaseEndsAt + 1);
+      for (let sample = 0; sample < 120; sample += 1) {
+        const angle = sample * 0.4;
+        // ~130px radius around the visible core (centered at 52% height).
+        const point = toOrbitSpace(960 + Math.cos(angle) * 130, 1080 * 0.52 + Math.sin(angle) * 130, rect);
+        useStore.getState().registerAttackSequencePointer(point.x, point.y, priming.phaseEndsAt + 1 + sample * 12);
+      }
+      return useStore.getState().turn.attackSequence!.orbitScore ?? 0;
+    };
+    const ain = runCircle('ain');
+    const soph = runCircle('soph');
+    expect(ain).toBeGreaterThan(2);
+    expect(soph).toBeCloseTo(ain, 5);
   });
 
   it('does not reward non-circular pointer movement', () => {

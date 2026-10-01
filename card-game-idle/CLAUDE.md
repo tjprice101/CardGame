@@ -26,7 +26,8 @@ This file is the AI-facing project brief. Read it before making design, balance,
 - Garden of Cards contains set-filtered expeditions: Valley of Null for Neutrality and Rift of Causality for Causality. Each set owns its own material currencies; do not treat Neutrality and Causality dungeon materials as interchangeable.
 - Every Divine Light gain, including sacrifices, card effects, on-summon rewards, attacks, Bridge, quests, and pack flow, must route through the central grant path so Collection Power scaling applies exactly once.
 - Collection Power is `1 + Resonance / 1000`. Its cap is the natural maximum `1 + (registered card count * 320) / 1000`, so registering new cards automatically raises it. Card-light does not directly increase Collection Power; it advances one card toward a Card-born Tier, and Resonance changes only when that tier threshold is crossed.
-- Rarity sources are distinct: Common/Rare/Epic/Legendary from packs, Enigmatic from Enigmas, Eternal from Eternity's Wake, Infinite from Infinitude crafting, Transcendent from Null Raid progression.
+- Rarity sources are distinct: Common/Rare/Epic/Legendary from packs, Enigmatic from Enigmas, Eternal from Eternity's Wake, Infinite from Infinitude crafting, Transcendent from the Forge of Transcendence.
+- Transcendent materialized abilities are standalone from their cards and set-neutral: use shared Limitless Light Stacks, Divine Light, draw, and generic card zones only. Never make them generate/spend Cosmos or touch Causality/another set's mechanics.
 
 ## Latest Iteration Status
 

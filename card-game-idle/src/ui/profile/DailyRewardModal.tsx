@@ -14,6 +14,8 @@ import {
 } from '@/ui/cardBackgrounds';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { getCardPreviewLines } from '@/ui/cardStatSummary';
+import ShardDropRate from '@/ui/components/ShardDropRate';
+import { FORGE_CALENDAR_BONUS_DAYS, areShardDropRatesVisible, formatShardDropChance } from '@/data/forge/forgeDefinitions';
 
 interface Props {
   onClose: () => void;
@@ -58,6 +60,7 @@ export default function DailyRewardModal({ onClose }: Props) {
   const monthLabel = new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(now));
   const firstWeekday = new Date(Date.UTC(new Date(now).getUTCFullYear(), new Date(now).getUTCMonth(), 1)).getUTCDay();
   const calendarFaceMetrics = getCardFaceMetrics('boardMini');
+  const showShardRates = areShardDropRatesVisible(progress);
 
   const rewardSummary = (reward: typeof track[number]['reward']) => {
     if (reward.kind === 'shards') return `+${reward.amount} Shards`;
@@ -148,6 +151,9 @@ export default function DailyRewardModal({ onClose }: Props) {
                   <div style={{ marginTop: 3, color: warmTheme.textMuted, fontSize: 8, lineHeight: 1.15 }}>{reward.kind === 'card' ? cardDefinition?.name ?? reward.definitionId : reward.kind === 'mastery_all_owned' ? 'Card-light mastery' : 'Aberrated Shards'}</div>
                 </div>
               </div>
+              {showShardRates && FORGE_CALENDAR_BONUS_DAYS.includes(day) && (
+                <ShardDropRate label={`Bonus Shard · ${formatShardDropChance()}`} fontSize={8} style={{ marginTop: 5, padding: '2px 6px' }} />
+              )}
             </article>;
           })}
         </div>

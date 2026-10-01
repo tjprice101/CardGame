@@ -28,6 +28,8 @@ npm test -- --run src/tests/unit/systems/CardRuntimeWiring.test.ts
 - `CardBackgroundAssetAudit.test.ts`: card art references resolve and each live foil rarity receives the shared lightweight treatment.
 - `LiveCardFaceSource.test.ts`: hand and board use the same live face and shimmer helpers; hand must not reintroduce a separate raw artwork layer.
 - `CardMasteryProgress.test.ts`: same-record tier crossings refresh Resonance, Collection Power uses the canonical scale, the maximum follows the registry, and previews distinguish Card-light from Resonance.
+- `SpectrumLevel.test.ts`: rarity floors, rarity/origin attack ordering, unique Light Soph effects, level-up costs, play/summon gates, Phantom Matrix allowance, and Light-bound Abyss resets.
+- `AbilityRuntime.test.ts`: materialized ability ownership, purchase costs, activation effects, and set-isolation for Transcendent abilities.
 
 ## Gameplay Test Rules
 
@@ -46,6 +48,7 @@ Add or extend tests whenever you change:
 - Pending-effect contracts.
 - Pack pools, reward generation, or collection writes.
 - Card UI that controls availability, costs, previews, or reveal timing.
+- Spectrum levels, rarity/origin power bands, Light-bound Abyss movement, or materialized ability set boundaries.
 
 ## Debugging Order
 

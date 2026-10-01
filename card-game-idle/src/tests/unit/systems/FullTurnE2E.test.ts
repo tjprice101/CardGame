@@ -61,10 +61,11 @@ describe('Full turn end-to-end', () => {
   it('runs a complete build-up turn and wipes everything except Oblivion', () => {
     resetStore();
 
-    const light = handCard('e2e-light', lightCards[0].definitionId);
+    const light = handCard('e2e-light', lightCards[2].definitionId);
     const dark = handCard('e2e-dark', darkCards[0].definitionId);
+    // Fillers use Soph placements that neither open a pending choice nor grant stacks.
     const filler = Array.from({ length: 4 }, (_, i) =>
-      handCard(`e2e-filler-${i}`, lightCards[i + 1].definitionId));
+      handCard(`e2e-filler-${i}`, lightCards[i % 2 === 0 ? 2 : 5].definitionId));
 
     useStore.setState(state => ({
       ...state,

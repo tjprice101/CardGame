@@ -15,6 +15,7 @@ import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { getCardPreviewLines, getCardPreviewText } from '@/ui/cardStatSummary';
 import { highlightRulesText } from '@/ui/text/highlightRulesText';
 import { warmTheme } from '@/ui/theme';
+import { useSuppressMusic } from '@/audio/musicSuppression';
 import type { CardDefinition } from '@/types/cards';
 
 const RARITY_COLORS: Record<string, string> = {
@@ -404,6 +405,7 @@ const CardTile = memo(function CardTile({
 const RARITY_RANK: Record<string, number> = { Common: 0, Rare: 1, Epic: 2, Legendary: 3, Eternal: 4, Infinite: 5 };
 
 export default function PackOpeningModal({ cards, packName, newCards, holoIndices = new Set(), onClose }: Props) {
+  useSuppressMusic();
   const faceMetrics = getCardFaceMetrics('pack');
   const settings = useStore(selectSettings);
   const cardArtDisplay = settings.cardArtDisplay ?? 'both';

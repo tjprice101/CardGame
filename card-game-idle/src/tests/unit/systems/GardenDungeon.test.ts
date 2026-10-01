@@ -18,6 +18,44 @@ describe('Garden of Cards dungeon runtime', () => {
     expect(getLinearEncounterHp(1, 1, 3, 10_000, 5_000)).toBe(20_000);
   });
 
+  it('resets the deck and returns summoned ASAs to the Extra Deck between encounters', () => {
+    resetStore();
+    const dungeon = GARDEN_DUNGEONS[0];
+    expect(useStore.getState().startGardenDungeon(dungeon.id)).toBe(true);
+    const before = useStore.getState().deck;
+    const extraBefore = before.extraDeck.map(entry => entry.definitionId).sort();
+    const mainCount = before.deckList.reduce((sum, entry) => sum + entry.copies, 0);
+    expect(extraBefore.length).toBeGreaterThan(0);
+
+    // Simulate a summoned ASA on the front row plus a played back-row card.
+    const [summoned, ...restExtra] = before.extraDeck;
+    const backCard = before.drawPile[0];
+    useStore.setState(state => ({
+      ...state,
+      turn: { ...state.turn, phase: 'playing' },
+      deck: { ...state.deck, extraDeck: restExtra, drawPile: state.deck.drawPile.slice(1) },
+      board: {
+        ...state.board,
+        frontSlots: [{
+          instanceId: 'asa-garden', definitionId: summoned.definitionId, type: 'AinSophAur', rarity: 'Legendary',
+          finish: summoned.finish, faceState: 'front', side: 'ain', cardClass: 'ain-soph-aur', limitlessCharge: 0, attackCooldowns: {}, boardSlot: 0,
+        } as any, null, null, null],
+        backSlots: [{ ...backCard, type: 'Light', rarity: 'Common', side: 'soph', faceState: 'back', limitlessCharge: 0, attackCooldowns: {}, backSlot: 0 } as any, null, null, null],
+      },
+      gardenDungeon: { ...state.gardenDungeon, encounterHp: 0 },
+    }));
+
+    expect(useStore.getState().resolveGardenEncounter()).toBe(true);
+    expect(useStore.getState().continueGardenDungeon()).toBe(true);
+
+    const after = useStore.getState();
+    expect(after.deck.extraDeck.map(entry => entry.definitionId).sort()).toEqual(extraBefore);
+    expect(after.board.frontSlots.every(slot => slot === null)).toBe(true);
+    expect(after.board.backSlots.every(slot => slot === null)).toBe(true);
+    expect(after.deck.discardPile).toHaveLength(0);
+    expect(after.deck.hand.length + after.deck.drawPile.length).toBe(mainCount);
+  });
+
   it('grants three current and one next material per encounter, then four on the final encounter', () => {
     resetStore();
     const dungeon = GARDEN_DUNGEONS[0];

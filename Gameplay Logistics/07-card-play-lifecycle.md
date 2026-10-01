@@ -4,7 +4,7 @@ This guide describes the current Light/Dark/Ain Soph Aur runtime.
 
 ## Turn Start
 
-`beginTurn()` prepares a turn, draws five cards, and enters mulligan unless a guided trial skips directly to play. `confirmMulligan()` swaps selected cards, refills the hand, and moves to `playing`.
+`beginTurn()` returns Light-bound Abyss cards to the deck, resets Spectrum Level to 0, draws five cards, and enters mulligan unless a guided trial skips directly to play. `confirmMulligan()` swaps selected cards, refills the hand, and moves to `playing`.
 
 ## Main-Deck Placement
 
@@ -14,6 +14,8 @@ Hand controls are intentional:
 - Right-click a Light or Dark card to place it face-up as Ain.
 
 Both sides occupy support/back slots. Playing from hand increments `cardsPlayedThisTurn`, ticks hand-play cooldowns, advances tutorial guide state, and recomputes board state.
+
+Before placement, a Main Deck card must have `spectrumLevel <= turn.spectrumLevel`. `raiseSpectrumLevel` is a free action during play: sacrifice one chosen hand card to the Light-bound Abyss and pay `5 + currentLevel` Limitless Light Stacks to gain one level, up to level 5. The Abyss is not searchable or salvageable and returns only when the deck zones reset.
 
 ## Soph Lifecycle
 
@@ -50,14 +52,15 @@ Ain Soph Aur cards live in the Extra Deck and summon to front slots.
 Summoning requires:
 
 1. Playing phase.
-2. The card exists in the Extra Deck.
-3. An empty front slot.
-4. Exactly `summonMaterialCount` selected occupied back-row cards.
-5. On-summon effects can resolve.
+2. Current Spectrum Level meets the ASA's `spectrumLevel` (Phantom Matrix free summons allow one level above current).
+3. The card exists in the Extra Deck.
+4. An empty front slot.
+5. Exactly `summonMaterialCount` selected occupied back-row cards.
+6. On-summon effects can resolve.
 
 Materials are consumed only after validation succeeds. Every successful summon grants +1 Limitless Light Stack. On-summon effects grant Divine Light through the central grant path.
 
-Bridge the Light uses `activateAsaBridge` to validate and reserve optional stack costs and compute triune scaling. The resulting `attackSequence` grants Divine Light and starts cooldown only after the central cursor-orbit sequence resolves.
+Bridge the Light uses `activateAsaBridge` to validate and reserve optional stack costs, then evaluates the attack's declared scaling inputs. The resulting `attackSequence` grants Divine Light and starts cooldown only after the central cursor-orbit sequence resolves.
 
 Attack actions now reserve costs and create `turn.attackSequence`; payout and cooldown are committed only when the sequence reaches result. `AttackSequenceOverlay` owns presentation while `registerAttackSequencePointer` scores sustained circular pointer motion around the center. Orbit power is uncapped, but straight lines, jitter, and direction changes do not score. A score requires a full consistent revolution.
 

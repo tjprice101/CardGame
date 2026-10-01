@@ -3,6 +3,27 @@ import type { AttackSequenceKind, AttackSequenceStar } from '@/types/game';
 export const ATTACK_SEQUENCE_PRIME_MS = 650;
 export const ATTACK_SEQUENCE_RESULT_MS = 1_200;
 
+/** Orbit radius band, in units of the overlay's shorter side. */
+export const ORBIT_MIN_RADIUS = 0.05;
+export const ORBIT_MAX_RADIUS = 0.48;
+/** Vertical position of every orbit target (matches `top: 52%` in CSS). */
+const ORBIT_CENTER_Y = 0.52;
+
+/**
+ * Maps a pointer position into square orbit space centered on the visible target,
+ * so circles are judged the same regardless of screen aspect ratio or attack kind.
+ */
+export function toOrbitSpace(clientX: number, clientY: number, rect: { left: number; top: number; width: number; height: number }): { x: number; y: number } {
+  const minSide = Math.max(1, Math.min(rect.width, rect.height));
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height * ORBIT_CENTER_Y;
+  return { x: 0.5 + (clientX - centerX) / minSide, y: 0.5 + (clientY - centerY) / minSide };
+}
+
+export function isOrbitSample(absDelta: number, radialDelta: number): boolean {
+  return absDelta >= 0.035 && absDelta <= 0.95 && radialDelta <= 0.08;
+}
+
 export function getAttackSequenceDuration(kind: AttackSequenceKind): number {
   return kind === 'ain' ? 2_000 : 3_000;
 }

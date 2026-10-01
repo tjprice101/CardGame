@@ -60,8 +60,11 @@ Use:
 - Divine Light, not Oblivion.
 - Ain Soph Aur with spaces, not ASA or AinSophAur in display text.
 - Light, Dark, Soph, Ain, Limitless Light Stacks.
+- Spectrum Level and Light-bound Abyss.
 
 Do not reintroduce retired Seraphim/Cherubim/Ophanim/Angel terminology for live card types.
+
+Transcendent cards have an innate maximum-hand-size passive. Separately, the Forge sells four named materialized abilities for 8,000,000 Divine Light and 30 Shards each. Their activation effects must remain set-independent: they may use shared Limitless Light Stacks, Divine Light, draw, and generic deck/discard zones, but must not use Cosmos or modify another set's mechanics/cooldowns.
 
 ## Modals And Selection UI
 

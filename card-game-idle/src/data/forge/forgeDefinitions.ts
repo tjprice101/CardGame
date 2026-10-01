@@ -115,6 +115,16 @@ export function rollShardOfTranscendence(variantMultiplier = 1): boolean {
   return Math.random() < chance;
 }
 
+/** Drop rates are only revealed once all Forge event bosses are beaten AND the Forge is opened. */
+export function areShardDropRatesVisible(progress: { forgeOfTranscendenceUnlocked?: boolean; bossCodex?: Record<string, unknown> }): boolean {
+  return progress.forgeOfTranscendenceUnlocked === true && hasBeatenAllForgeEventBosses(progress.bossCodex);
+}
+
+export function formatShardDropChance(variantMultiplier = 1): string {
+  const percent = SHARD_OF_TRANSCENDENCE_BASE_CHANCE * Math.max(1, variantMultiplier) * 100;
+  return `${percent.toLocaleString(undefined, { maximumFractionDigits: 2 })}%`;
+}
+
 /**
  * Login Calendar days eligible for a rare bonus Shard of Transcendence roll
  * (only once the Forge is open) — about 1-2 days across a 30-day cycle.

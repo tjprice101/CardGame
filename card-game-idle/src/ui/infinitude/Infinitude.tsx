@@ -85,8 +85,9 @@ export default function Infinitude({ onClose }: Props) {
   ), [resultDef]);
 
   function canCombine(recipe: InfiniteRecipe): boolean {
+    const progressMap = progress as unknown as Record<string, number>;
     return recipe.ingredients.every(ing => ing.currency
-      ? progress[ing.currency] >= ing.count
+      ? (progressMap[ing.currency] ?? 0) >= ing.count
       : (progress.collection[ing.definitionId ?? ''] ?? 0) >= ing.count);
   }
 
@@ -277,7 +278,7 @@ export default function Infinitude({ onClose }: Props) {
                     <span style={styles.sectionTitle}>Required Eternals</span>
                     <span style={styles.sectionMeta}>
                       {selectedRecipe.ingredients.filter(ing => ing.currency
-                        ? progress[ing.currency] >= ing.count
+                        ? ((progress as unknown as Record<string, number>)[ing.currency] ?? 0) >= ing.count
                         : (progress.collection[ing.definitionId ?? ''] ?? 0) >= ing.count
                       ).length} of {selectedRecipe.ingredients.length} ready
                     </span>
@@ -286,7 +287,7 @@ export default function Infinitude({ onClose }: Props) {
                   <div style={styles.ingredientsList}>
                     {selectedRecipe.ingredients.map(ing => {
                       const ingDef = ing.definitionId ? CardRegistry.get(ing.definitionId) : null;
-                      const ingOwned = ing.currency ? progress[ing.currency] : progress.collection[ing.definitionId ?? ''] ?? 0;
+                      const ingOwned = ing.currency ? ((progress as unknown as Record<string, number>)[ing.currency] ?? 0) : (progress.collection[ing.definitionId ?? ''] ?? 0);
                       const ingMet = ingOwned >= ing.count;
                       const pct = Math.min(1, ingOwned / ing.count);
                       return (

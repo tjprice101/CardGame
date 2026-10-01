@@ -1,4 +1,10 @@
-import type { AinSophAurDefinition } from '@/types/cards';
+import type { AinSophAurDefinition, SpectrumLevel } from '@/types/cards';
+import {
+  formatSpectrumNumber,
+  getSpectrumBridgeBase,
+  getSpectrumFlatDivineLight,
+  getSpectrumScaling,
+} from './spectrumPower';
 
 const artKeys = [
   'ain_soph_aur_neutrality_void',
@@ -11,21 +17,25 @@ const names = [
   'The White Null', 'The Axiom Below', 'The Paradox Crown', 'The Stillbreak',
 ] as const;
 
-const rarities = ['Legendary', 'Legendary', 'Legendary', 'Legendary'] as const;
+// The White Null is the starter Extra Deck card, so it stays summonable at Spectrum Level 0.
+const levels: readonly SpectrumLevel[] = [0, 1, 3, 4];
 
 export const ainSophAurCards: AinSophAurDefinition[] = names.map((name, index) => {
   const id = `ain-soph-aur-neutrality-${index + 1}`;
-  const baseDivineLight = 320 + index * 95;
+  const level = levels[index]!;
+  const baseDivineLight = getSpectrumBridgeBase('Legendary', level, 'base');
+  const summonDivineLight = getSpectrumFlatDivineLight('Legendary', level, 'base', 0.15);
   const cooldownCards = 2 + (index % 5);
-  const bridgeScale = 240 + index * 45;
+  const materialCount = 1 + (index % 3);
   return {
     definitionId: id,
     type: 'AinSophAur',
-    rarity: rarities[index],
+    rarity: 'Legendary',
+    spectrumLevel: level,
     name,
-    description: `Sacrifice ${1 + (index % 3)} back-row card${1 + (index % 3) === 1 ? '' : 's'} to summon, then use Bridge the Light for a Collection Power-scaled Divine Light payout.`,
+    description: `Sacrifice ${materialCount} back-row card${materialCount === 1 ? '' : 's'} to summon and gain ${formatSpectrumNumber(summonDivineLight)} Divine Light, then use Bridge the Light for a Collection Power-scaled Divine Light payout.`,
     artKey: artKeys[index],
-    summonMaterialCount: 1 + (index % 3),
+    summonMaterialCount: materialCount,
     summonMaterials: index === 0
       ? [{ cardTypes: ['Light'], side: 'ain', count: 1 }]
       : index === 1
@@ -33,14 +43,14 @@ export const ainSophAurCards: AinSophAurDefinition[] = names.map((name, index) =
         : index === 2
           ? [{ cardTypes: ['Light'], count: 2 }, { cardTypes: ['Dark'], count: 1 }]
           : [{ cardTypes: ['Light'], side: 'ain', count: 1 }],
-    onSummonEffects: [{ type: 'divine_light_flat', value: 30 + index * 10 }],
+    onSummonEffects: [{ type: 'divine_light_flat', value: summonDivineLight }],
     bridgeAttack: {
       id: `${id}:bridge-the-light`,
       name: 'Bridge the Light',
-      description: `${baseDivineLight} base Divine Light; +${bridgeScale} scaled across Limitless Light Stack pool, front-row Ain Soph Aur count, and Collection Power.`,
+      description: `${formatSpectrumNumber(baseDivineLight)} base Divine Light; scales with Collection Power.`,
       baseDivineLight,
       cooldownCards,
-      scaling: { kind: 'linear', reads: 'collectionPower', multiplier: bridgeScale / 1000 },
+      scaling: { kind: 'linear', reads: 'collectionPower', multiplier: getSpectrumScaling(baseDivineLight) },
       ...(index % 2 === 0 ? { consumesStacks: { kind: 'fixed' as const, value: 2 + index } } : {}),
     },
   };

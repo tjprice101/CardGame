@@ -24,6 +24,13 @@ export interface AbilityDefinition {
   };
 }
 
+export const ABILITY_ICON_FALLBACKS: Readonly<Record<string, { folder: string; file: string }>> = {
+  'forge-ability-first-dawn-accord': { folder: 'forge', file: 'forge-card-1-art.png' },
+  'forge-ability-axiom-of-acceleration': { folder: 'forge', file: 'forge-card-2-art.png' },
+  'forge-ability-vault-unwritten-futures': { folder: 'forge', file: 'forge-card-3-art.png' },
+  'forge-ability-confluence-all-origins': { folder: 'forge', file: 'forge-of-transcendence-menu-banner.png' },
+};
+
 export const ABILITY_DEFINITIONS: readonly AbilityDefinition[] = [
   {
     id: 'neutralizing-inferno',
@@ -162,11 +169,48 @@ export const ABILITY_DEFINITIONS: readonly AbilityDefinition[] = [
     ownershipGate: 'anyCausalityInfinite',
     iconAssetKey: 'causality-infinite-manuscript',
   },
+  {
+    id: 'transcendent-starbound-glimmer',
+    setId: 'Transcendent',
+    name: 'First Dawn Accord',
+    description: 'Spend 6 Limitless Light Stacks to gain 10,000 base Divine Light and draw 3 cards. Cooldown: 90 seconds.',
+    cooldownSeconds: 90,
+    stackCost: 6,
+    iconAssetKey: 'forge-ability-first-dawn-accord',
+  },
+  {
+    id: 'transcendent-first-catalyst',
+    setId: 'Transcendent',
+    name: 'Axiom of Acceleration',
+    description: 'Spend 8 Limitless Light Stacks to gain 4 Limitless Light Stacks and draw 2 cards. Cooldown: 105 seconds.',
+    cooldownSeconds: 105,
+    stackCost: 8,
+    iconAssetKey: 'forge-ability-axiom-of-acceleration',
+  },
+  {
+    id: 'transcendent-reliquary-all-nothing',
+    setId: 'Transcendent',
+    name: 'Vault of Unwritten Futures',
+    description: 'Spend 10 Limitless Light Stacks to choose and salvage 2 cards from your discard pile, gain 12,000 base Divine Light, and draw 2 cards. Cooldown: 120 seconds.',
+    cooldownSeconds: 120,
+    stackCost: 10,
+    iconAssetKey: 'forge-ability-vault-unwritten-futures',
+  },
+  {
+    id: 'transcendent-bridge-light-life',
+    setId: 'Transcendent',
+    name: 'Confluence of All Origins',
+    description: 'Spend 12 Limitless Light Stacks to gain 30,000 base Divine Light and draw 3 cards. Cooldown: 150 seconds.',
+    cooldownSeconds: 150,
+    stackCost: 12,
+    iconAssetKey: 'forge-ability-confluence-all-origins',
+  },
 ];
 
 export const ABILITY_REGISTRY = new Map(ABILITY_DEFINITIONS.map(ability => [ability.id, ability]));
 
 export function getAbilityTier(ability: AbilityDefinition): AbilityTier {
+  if (ability.setId === 'Transcendent') return 'infinite';
   if (ability.ownershipGate === 'anyNeutralityInfinite' || ability.ownershipGate === 'anyCausalityInfinite') return 'infinite';
   if (ability.ownershipGate === 'anyNeutralityEternal' || ability.ownershipGate === 'anyCausalityEternal') return 'eternal';
   if (ability.ownershipGate === 'allCausalityBase') return 'foundational';
@@ -175,6 +219,7 @@ export function getAbilityTier(ability: AbilityDefinition): AbilityTier {
 
 export function getAbilityMaterialCost(ability: AbilityDefinition): AbilityMaterialCost {
   const tier = getAbilityTier(ability);
+  if (ability.setId === 'Transcendent') return { divineLight: 8_000_000, shardsOfTranscendence: 30 };
   if (ability.setId === 'Causality') {
     if (tier === 'infinite') return { shatteredCausalTranscript: 12, heartOfCausality: 6 };
     if (tier === 'eternal') return { causalBloom: 10, shatteredCausalTranscript: 4 };

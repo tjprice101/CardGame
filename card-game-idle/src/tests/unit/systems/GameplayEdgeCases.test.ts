@@ -11,6 +11,8 @@ import type { GameState } from '@/types/game';
 function resetStore(): void {
   const baseState = JSON.parse(JSON.stringify(defaultGameState)) as GameState;
   useStore.setState(state => ({ ...state, ...baseState }));
+  // Gameplay-loop tests use cards of every level; Spectrum gating is covered by SpectrumLevel.test.ts.
+  useStore.setState(state => ({ ...state, turn: { ...state.turn, spectrumLevel: 5 } }));
 }
 
 describe('Ain/Soph gameplay loop', () => {
@@ -123,7 +125,16 @@ describe('Ain/Soph gameplay loop', () => {
           turn: { ...state.turn, phase: 'playing' },
           deck: {
             ...state.deck,
-            hand: [{ instanceId, definitionId: definition.definitionId, finish: 'normal' as const }],
+            // Extra hand/discard cards satisfy discard and salvage play requirements.
+            hand: [
+              { instanceId, definitionId: definition.definitionId, finish: 'normal' as const },
+              { instanceId: `${instanceId}-filler-1`, definitionId: 'light-neutrality-1', finish: 'normal' as const },
+              { instanceId: `${instanceId}-filler-2`, definitionId: 'dark-neutrality-1', finish: 'normal' as const },
+            ],
+            discardPile: [
+              { instanceId: `${instanceId}-discard-light`, definitionId: 'light-neutrality-2', finish: 'normal' as const },
+              { instanceId: `${instanceId}-discard-dark`, definitionId: 'dark-neutrality-2', finish: 'normal' as const },
+            ],
           },
         }));
 

@@ -663,7 +663,9 @@ export default function PendingEffectModal() {
             <div style={styles.subtitle}>No valid cards in your discard pile.</div>
             <div style={styles.footer}>
               <div style={styles.info} />
-                <button className="menu-tactile-btn" style={styles.secondaryBtn} onClick={failToFind}>Fail to Find</button>
+                {pending.sourceCard !== 'ability:transcendent-vault-unwritten-futures' && (
+                  <button className="menu-tactile-btn" style={styles.secondaryBtn} onClick={failToFind}>Fail to Find</button>
+                )}
             </div>
           </div>
         </div>
@@ -705,9 +707,11 @@ export default function PendingEffectModal() {
           <div style={styles.footer}>
             <div style={styles.info}>{selected.length} / {requiredCount} chosen</div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <button className="menu-tactile-btn" style={styles.secondaryBtn} onClick={failToFind}>
-                Fail to Find
-              </button>
+              {pending.sourceCard !== 'ability:transcendent-vault-unwritten-futures' && (
+                <button className="menu-tactile-btn" style={styles.secondaryBtn} onClick={failToFind}>
+                  Fail to Find
+                </button>
+              )}
               <button className="menu-tactile-btn"
                 style={{ ...styles.confirmBtn, ...(canConfirm ? styles.confirmBtnEnabled : styles.confirmDisabled) }}
                 onClick={canConfirm ? confirm : undefined}

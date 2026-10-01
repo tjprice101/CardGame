@@ -17,6 +17,10 @@ Front slots are for Extra Deck summons only. Support slots are for main-deck Lig
 - `mulligan`: starting hand can be swapped.
 - `playing`: cards can be placed, flipped, attacked, activated, summoned, or force-removed.
 
+## Spectrum Level
+
+Each turn begins at Spectrum Level 0. Cards may be played or summoned only when their authored `spectrumLevel` is at or below the current level. Raising a level costs `5 + currentLevel` Limitless Light Stacks and one player-chosen hand card sacrificed to the Light-bound Abyss; the maximum is level 5. This level-up does not count as a card play. The Abyss returns to the deck only on a deck-zone reset (new turn, Garden encounter, or new fight/match). Phantom Matrix free summons may reach one level above current.
+
 ## Soph Charge
 
 Each hand play adds +1 Limitless Charge to every face-down Soph card in the support row. At `SOPH_FLIP_CHARGE_REQUIRED = 2`, a Soph card can flip to Ain or be sacrificed.
@@ -35,19 +39,13 @@ Light cards have:
 Ain Soph Aur cards have:
 
 - On-summon stack gain: every successful summon grants +1 Limitless Light Stack.
-- Bridge the Light: optional stack cost, triune scaling, and cooldown. The consumed stack cost is deducted and is not added back to the Divine Light payout.
+- Bridge the Light: optional stack cost, authored scaling inputs, and cooldown. The consumed stack cost is deducted and is not added back to the Divine Light payout.
 
 Dark cards have utility activations rather than attacks. Persistent premium Dark cards use cooldowns; one-shot Dark cards leave the board after activation.
 
-## Triune Scaling
+## Attack Scaling
 
-Triune scaling reads three sources:
-
-- Limitless Light Stacks.
-- Number of front-row Ain Soph Aur cards.
-- Collection Power.
-
-UI previews and runtime grants should use the same `resolveCardScaling` inputs.
+Attack definitions declare their reads in `CardScalingExpr`, currently Limitless Light Stacks, front-row Ain Soph Aur count, or Collection Power. Previews and runtime use the same declared expression. Transcendent materialized abilities do not use Cosmos, Causality cooldowns, or set-specific scaling.
 
 ## Interactive Attack Sequences
 

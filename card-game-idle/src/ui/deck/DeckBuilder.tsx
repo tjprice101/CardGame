@@ -18,6 +18,7 @@ import { isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import type { DeckEntry, ExtraDeckEntry } from '@/types/game';
 import type { CardDefinition, CardFinish } from '@/types/cards';
 import { calculateDeckDpsProjection } from '@/systems/cards/DeckDpsCalculator';
+import { getCardSpectrumLevel } from '@/systems/cards/SpectrumLevel';
 import { computeGlobalResonanceScore } from '@/systems/progression/cardMastery';
 import { formatNumber } from '@/utils/bignum';
 import DeckBuilderAbilitiesTab from '@/ui/deck/tabs/DeckBuilderAbilitiesTab';
@@ -443,6 +444,7 @@ export default function DeckBuilder({ onClose }: Props) {
     activeDeck?.extraDeck ? [...activeDeck.extraDeck] : (currentDeck.extraDeck ? [...currentDeck.extraDeck] : [])
   );
   const [elementFilter, setElementFilter] = useState<string | null>(null);
+  const [levelFilter, setLevelFilter] = useState<number | null>(null);
   const [cardSearch, setCardSearch] = useState('');
   const [saveMode, setSaveMode] = useState(false);
   const [newDeckName, setNewDeckName] = useState('');
@@ -531,6 +533,7 @@ export default function DeckBuilder({ onClose }: Props) {
     const query = cardSearch.trim().toLowerCase();
     const filtered = ownedCards.filter(card => {
       if (elementFilter !== null && getCardSet(card.def.definitionId) !== elementFilter) return false;
+      if (levelFilter !== null && getCardSpectrumLevel(card.def) !== levelFilter) return false;
       if (!query) return true;
       const searchable = [
         card.def.name,
@@ -559,7 +562,7 @@ export default function DeckBuilder({ onClose }: Props) {
       angelSection: filtered.filter(d => d.def.type === 'AinSophAur').sort(byRarity),
       availableElements,
     };
-  }, [cardSearch, collection, holoCollection, elementFilter]);
+  }, [cardSearch, collection, holoCollection, elementFilter, levelFilter]);
 
   const deckMap = new Map<string, number>(deckList.map(e => [getVariantKey(e.definitionId, e.finish), e.copies]));
   const deckDefinitionCountMap = useMemo(() => {
@@ -597,6 +600,7 @@ export default function DeckBuilder({ onClose }: Props) {
   const deckStats = useMemo(() => {
     const elementCounts: Record<string, number> = {};
     const rarityCounts: Record<string, number> = { Common: 0, Rare: 0, Epic: 0, Legendary: 0 };
+    const levelCounts = [0, 0, 0, 0, 0, 0];
     let typeLight = 0, typeDark = 0;
     for (const entry of deckList) {
       const def = CardRegistry.get(entry.definitionId);
@@ -604,10 +608,11 @@ export default function DeckBuilder({ onClose }: Props) {
       const el = 'Neutrality';
       elementCounts[el] = (elementCounts[el] ?? 0) + entry.copies;
       rarityCounts[def.rarity] = (rarityCounts[def.rarity] ?? 0) + entry.copies;
+      levelCounts[getCardSpectrumLevel(def)] += entry.copies;
       if (def.type === 'Light') typeLight += entry.copies;
       else if (def.type === 'Dark') typeDark += entry.copies;
     }
-    return { elementCounts, rarityCounts, typeLight, typeDark };
+    return { elementCounts, rarityCounts, levelCounts, typeLight, typeDark };
   }, [deckList]);
 
   function addCard(defId: string, finish: CardFinish) {
@@ -967,6 +972,12 @@ export default function DeckBuilder({ onClose }: Props) {
           Deck valid — {MAIN_DECK_SIZE} cards
         </div>
       )}
+      {totalCards > 0 && deckStats.levelCounts[0] === 0 && (
+        <div style={{ ...styles.validationBanner, color: '#e8c060' }}>
+          <span style={{ fontSize: 13, lineHeight: 1 }}>!</span>
+          No Spectrum Lv 0 cards — every turn starts at Lv 0, so this deck cannot play its first card.
+        </div>
+      )}
 
       {/* Element filter */}
       <div style={styles.filterBar}>
@@ -999,6 +1010,17 @@ export default function DeckBuilder({ onClose }: Props) {
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: el === 'Causality' ? '#d66a52' : SET_ACCENT, display: 'inline-block', flexShrink: 0 }} />
             )}
             {el}
+          </button>
+        ))}
+        <span style={{ color: 'rgba(205,228,255,0.48)', fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase', marginLeft: 8 }}>Spectrum</span>
+        {[null, 0, 1, 2, 3, 4, 5].map(level => (
+          <button className="menu-tactile-btn"
+            key={level ?? 'all'}
+            style={{ ...styles.filterBtn, ...(levelFilter === level ? styles.filterBtnActive : {}) }}
+            onClick={() => setLevelFilter(level)}
+            title={level === null ? 'Show all Spectrum Levels' : `Show only Spectrum Lv ${level} cards`}
+          >
+            {level === null ? 'Any Lv' : `Lv ${level}`}
           </button>
         ))}
       </div>

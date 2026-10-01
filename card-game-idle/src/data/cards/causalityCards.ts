@@ -1,4 +1,14 @@
-import type { AinSophAurDefinition, DarkCardDefinition, LightCardDefinition } from '@/types/cards';
+import type { AinSophAurDefinition, DarkCardDefinition, LightCardDefinition, SpectrumLevel } from '@/types/cards';
+import {
+  formatSpectrumNumber,
+  getSpectrumAinBase,
+  getSpectrumBridgeBase,
+  getSpectrumScaling,
+  getSpectrumSophBase,
+} from './spectrumPower';
+
+const MAIN_DECK_LEVELS: readonly SpectrumLevel[] = [0, 0, 1, 1, 2, 2, 2, 3, 3, 4];
+const ASA_LEVELS: readonly SpectrumLevel[] = [1, 2, 2, 3, 4];
 
 const LIGHT_NAMES = [
   'Eventide Archivist', 'Horizon Silk', 'Black-Star Crane', 'Mandate of Falling Suns', 'Heavenly Singularity',
@@ -45,24 +55,30 @@ const DARK_IDENTITIES: Pick<DarkCardDefinition, 'description' | 'sophEffects' | 
 export const causalityLightCards: LightCardDefinition[] = LIGHT_NAMES.map((name, index) => {
   const id = `light-causality-${index + 1}`;
   const identity = LIGHT_IDENTITIES[index]!;
+  const rarity = index < 5 ? 'Rare' : index < 9 ? 'Epic' : 'Legendary';
+  const level = MAIN_DECK_LEVELS[index]!;
+  const tieBreak = (index % 5) * 5;
+  const ainBase = getSpectrumAinBase(rarity, level, 'event') + tieBreak;
+  const sophBase = getSpectrumSophBase(rarity, level, 'event') + tieBreak;
   return {
     definitionId: id,
     type: 'Light',
-    rarity: index < 5 ? 'Rare' : index < 9 ? 'Epic' : 'Legendary',
+    rarity,
+    spectrumLevel: level,
     name,
     description: identity.description,
     artKey: artKey('light', index),
     ainAttack: {
       id: `${id}:ain-attack`, label: 'Ain', name: 'Ain Attack',
-      description: 'Steady Divine Light gain with Collection Power scaling.',
-      baseDivineLight: 180 + index * 35, cooldownCards: 2 + (index % 3),
-      scaling: { kind: 'linear', reads: 'collectionPower', multiplier: (140 + index * 20) / 1000 }, tags: ['causality', 'ain-attack'],
+      description: `${formatSpectrumNumber(ainBase)} base Divine Light; scales with Collection Power.`,
+      baseDivineLight: ainBase, cooldownCards: 2 + (index % 3),
+      scaling: { kind: 'linear', reads: 'collectionPower', multiplier: getSpectrumScaling(ainBase) }, tags: ['causality', 'ain-attack'],
     },
     sophAttack: {
       id: `${id}:soph-attack`, label: 'Soph', name: 'Soph Attack',
-      description: 'Stronger Divine Light burst that consumes Limitless Light Stacks.',
-      baseDivineLight: 260 + index * 45, cooldownCards: 3 + (index % 4),
-      scaling: { kind: 'linear', reads: 'collectionPower', multiplier: (220 + index * 25) / 1000 },
+      description: `${formatSpectrumNumber(sophBase)} base Divine Light; scales with Collection Power; consumes ${1 + (index % 4)} Limitless Light Stacks.`,
+      baseDivineLight: sophBase, cooldownCards: 3 + (index % 4),
+      scaling: { kind: 'linear', reads: 'collectionPower', multiplier: getSpectrumScaling(sophBase) },
       stackCost: { kind: 'fixed', value: 1 + (index % 4) }, tags: ['causality', 'soph-attack'],
     },
     sophPlacementEffects: identity.sophPlacementEffects,
@@ -77,6 +93,7 @@ export const causalityDarkCards: DarkCardDefinition[] = DARK_NAMES.map((name, in
     definitionId: id,
     type: 'Dark',
     rarity: index < 5 ? 'Rare' : index < 9 ? 'Epic' : 'Legendary',
+    spectrumLevel: MAIN_DECK_LEVELS[index]!,
     name,
     description: identity.description,
     artKey: artKey('dark', index),
@@ -99,10 +116,13 @@ export const causalityAinSophAurCards: AinSophAurDefinition[] = ASA_NAMES.map((n
     { description: 'Summon with Last Meridian and The Unwritten Mass; rewrite the whole archive with 8 Cosmos and Light/Dark searches.', summonMaterialCount: 2, summonMaterials: [{ definitionIds: ['light-causality-10'], count: 1 }, { definitionIds: ['dark-causality-10'], count: 1 }], onSummonEffects: [{ type: 'cosmos_flat', value: 8 }, { type: 'search_deck_distinct_types', filter: ['Light', 'Dark'], takePerType: 1 }, { type: 'shuffle_discard' }] },
   ];
   const profile = summonProfiles[index]!;
+  const level = ASA_LEVELS[index]!;
+  const bridgeBase = getSpectrumBridgeBase('Legendary', level, 'event');
   return {
     definitionId: id,
     type: 'AinSophAur',
     rarity: 'Legendary',
+    spectrumLevel: level,
     name,
     description: profile.description,
     artKey: artKey('asa', index),
@@ -111,9 +131,9 @@ export const causalityAinSophAurCards: AinSophAurDefinition[] = ASA_NAMES.map((n
     onSummonEffects: profile.onSummonEffects,
     bridgeAttack: {
       id: `${id}:bridge-the-light`, name: 'Bridge the Light',
-      description: 'Bridge the event horizon for a Collection Power-scaled Divine Light payout.',
-      baseDivineLight: 650 + index * 120, cooldownCards: 2 + (index % 3),
-      scaling: { kind: 'linear', reads: 'collectionPower', multiplier: (500 + index * 80) / 1000 },
+      description: `${formatSpectrumNumber(bridgeBase)} base Divine Light; scales with Collection Power.`,
+      baseDivineLight: bridgeBase, cooldownCards: 2 + (index % 3),
+      scaling: { kind: 'linear', reads: 'collectionPower', multiplier: getSpectrumScaling(bridgeBase) },
       consumesStacks: { kind: 'fixed', value: 2 + (index % 3) },
     },
   };

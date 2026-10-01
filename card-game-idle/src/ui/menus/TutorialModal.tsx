@@ -323,6 +323,20 @@ function PatienceBody() {
       </div>
 
       <div style={{ ...cardStyle, marginTop: 10 }}>
+        <div style={sectionHeadingStyle}>Spectrum Level</div>
+        <div style={bodyTextStyle}>
+          Every card has a <Tag>Spectrum Level</Tag> from 0 to 5. You can only play a card from hand, or summon an
+          Ain Soph Aur, when your current Spectrum Level is at or above the card&apos;s level. Every turn, Garden
+          encounter, boss fight, and Battleground match starts at Lv 0.
+        </div>
+        <ListItem label="Raise">Press Raise Spectrum (default hotkey R) to spend 5 Limitless Light Stacks and sacrifice 1 hand card to reach Lv 1. Each further level costs 1 more stack (6, 7, 8, then 9 for Lv 5).</ListItem>
+        <ListItem label="Light-bound Abyss">Sacrificed cards enter the Light-bound Abyss and cannot be retrieved until your deck resets at the next turn or encounter.</ListItem>
+        <ListItem label="Rarity floors">Enigmatic cards are Lv 1+, Eternal Lv 2+, Infinite Lv 4+, and Transcendent cards are always Lv 5.</ListItem>
+        <ListItem label="Phantom Matrix">Its free summon may reach one level above your current Spectrum Level.</ListItem>
+        <ListItem label="Deckbuilding">Higher-level cards hit harder but take tempo to unlock, so keep enough Lv 0 cards to start every turn and mulligan high-level cards you cannot reach soon.</ListItem>
+      </div>
+
+      <div style={{ ...cardStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>The Payoff</div>
         <div style={bodyTextStyle}>
           Attack resolution reads Collection Power directly for scaling, while Limitless Light Stack costs are paid separately when an attack requires them.
@@ -565,8 +579,11 @@ function ForgeBody() {
         <div style={sectionHeadingStyle}>The 4 Transcendent Cards</div>
         <div style={bodyTextStyle}>
           Every Transcendent card carries the same innate <Tag>Transcendent Ability</Tag>: if it is anywhere in
-          your deck or Extra Deck, your maximum hand size becomes 10 instead of 8. Beyond that shared passive,
-          each of the 4 cards has its own attack or effect with the single highest numbers in the game.
+          your deck or Extra Deck, your maximum hand size becomes 10 instead of 8. Each card also has its own
+          Spectrum Level 5 rules and attacks. Separately, the Forge offers four materialized abilities: First Dawn
+          Accord, Axiom of Acceleration, Vault of Unwritten Futures, and Confluence of All Origins. Each costs
+          8,000,000 Divine Light and 30 Shards of Transcendence to purchase. Activations spend only Limitless Light
+          Stacks and use shared Divine Light/card-zone effects; they do not use Cosmos or set-specific mechanics.
         </div>
       </div>
     </>

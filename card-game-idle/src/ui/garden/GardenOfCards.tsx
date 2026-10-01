@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import { GARDEN_DUNGEONS, GARDEN_MATERIAL_METADATA, GARDEN_REWARD_LABELS } from '@/data/dungeons/gardenDungeonDefinitions';
 import { useStore, selectProgress } from '@/state/store';
 import { uiTypography } from '@/ui/theme';
+import ShardDropRate from '@/ui/components/ShardDropRate';
+import { areShardDropRatesVisible, formatShardDropChance } from '@/data/forge/forgeDefinitions';
 
 interface Props { onClose: () => void; onEnterDungeon?: (dungeonId: string) => void }
 
@@ -23,6 +25,7 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
   const activeEncounter = activeDungeon?.encounters[dungeonState.encounterIndex];
   const minutes = Math.floor(dungeonState.timeRemainingSeconds / 60);
   const seconds = Math.floor(dungeonState.timeRemainingSeconds % 60).toString().padStart(2, '0');
+  const showShardRates = areShardDropRatesVisible(progress);
 
   const ownedMaterials = useMemo(() => {
     return (Object.keys(GARDEN_MATERIAL_METADATA) as (keyof typeof GARDEN_MATERIAL_METADATA)[])
@@ -364,6 +367,9 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
                         <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 11, marginTop: 1 }}>
                           HP: {encounter.maxHp.toLocaleString()} · Drop: {GARDEN_REWARD_LABELS[encounter.reward.currency]}
                         </div>
+                        {showShardRates && index === selected.encounters.length - 1 && (
+                          <ShardDropRate label={`Shard of Transcendence · ${formatShardDropChance()} on clear`} fontSize={10} style={{ marginTop: 5 }} />
+                        )}
                       </div>
                       <div style={{ color: '#ffffff', fontSize: 12, fontWeight: 600, textAlign: 'right', flexShrink: 0 }}>
                         <div>Guaranteed +{index === selected.encounters.length - 1 ? 4 : 3}</div>

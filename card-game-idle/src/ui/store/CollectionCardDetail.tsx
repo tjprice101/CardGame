@@ -39,6 +39,7 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
   const [favoriteFeedback, setFavoriteFeedback] = useState<string | null>(null);
 
   const isFavorite = favoriteCollection[`${card.definitionId}:${finish}`] ?? false;
+  const isRevealed = owned > 0;
   const packs = findPacksForCard(card.definitionId);
   const elementColor = getCardSetColor(card.definitionId);
   const rarityColor = RARITY_COLORS[card.rarity] ?? '#888';
@@ -110,11 +111,11 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
           }}
         >
           <div
-            className={getLiveCardShimmerClassName(card, finish, 'front')}
+            className={isRevealed ? getLiveCardShimmerClassName(card, finish, 'front') : undefined}
             style={{
               width: '100%',
               aspectRatio: '148 / 204',
-              ...((owned > 0 || card.rarity === 'Transcendent') ? getLiveCardFaceBackgroundStyle(card, finish, 'front') : getCardBackBackgroundStyle(card, { dimmed: false })),
+              ...(isRevealed ? getLiveCardFaceBackgroundStyle(card, finish, 'front') : getCardBackBackgroundStyle(card, { dimmed: false })),
               backgroundColor: warmTheme.surfaceStrong,
               borderRadius: 14,
               position: 'relative',
@@ -245,7 +246,7 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
             <div style={{ fontSize: 10, color: '#aaa', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
               Card Rules
             </div>
-            {owned > 0 || card.rarity === 'Transcendent' ? (
+            {isRevealed ? (
               <CardRulesDigest
                 card={card}
                 variant="detail"

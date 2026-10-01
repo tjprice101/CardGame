@@ -54,7 +54,7 @@ export const RARITY_TIERS: RarityTier[] = [
   { name: 'Eternal',  source: "Eternity's Wake boss drops",    description: 'Apex Ain/Soph cards with stronger attacks, deeper utility, and bespoke bridge effects.' },
   { name: 'Infinite', source: 'Infinitude crafting',           description: 'Apex tier. Forged by consuming specific Eternals, with the strongest Ain/Soph scaling.' },
   { name: 'Enigmatic', source: 'Enigma rewards',               description: 'Quest-like reward cards with their own black, white, and golden metallic foil treatment.' },
-  { name: 'Transcendent', source: 'Forge of Transcendence',    description: 'Belongs to no set. Only 4 exist. Each carries the Transcendent Ability and the single highest attack numbers in the game.' },
+  { name: 'Transcendent', source: 'Forge of Transcendence',    description: 'Belongs to no set. Only 4 exist. Each has the shared maximum-hand-size passive and its own Spectrum Level 5 rules. Four separate Forge abilities can also be materialized with Divine Light and Shards of Transcendence; they use no other set mechanics.' },
 ];
 
 // ---------------------------------------------------------------------------

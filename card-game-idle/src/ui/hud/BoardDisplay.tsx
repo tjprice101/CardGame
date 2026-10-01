@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
-import { useStore, selectBoard, selectBossFight, selectGardenDungeon, selectCanEmbraceInfinite, selectProgress, selectTurn } from '@/state/store';
+import { useStore, selectBoard, selectBossFight, selectDeck, selectGardenDungeon, selectCanEmbraceInfinite, selectProgress, selectTurn } from '@/state/store';
 import { useThemeVersion } from '@/ui/useThemeVersion';
 import { CardRegistry } from '@/cards/CardRegistry';
 import {
@@ -19,6 +19,8 @@ import { SET_ACCENT } from '@/data/elements';
 import { resolveCardScaling } from '@/systems/cards/CardScaling';
 import { SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
 import { canActivateShatterTheInfiniteLight } from '@/systems/cards/ShatterTheInfiniteLight';
+import { getUnmetCardRequirement } from '@/systems/cards/PlayRequirements';
+import SpectrumControl from './SpectrumControl';
 import { formatSummonRequirement, getSummonRequirements, matchesSummonRequirement } from '@/systems/cards/AinSophSummonRequirements';
 import { computeGlobalResonanceScore } from '@/systems/progression/cardMastery';
 import type {
@@ -97,6 +99,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
   const gardenDungeon = useStore(selectGardenDungeon);
   const canEmbraceInfinite = useStore(selectCanEmbraceInfinite);
   const turn = useStore(selectTurn);
+  const deck = useStore(selectDeck);
   const progress = useStore(selectProgress);
   const collectionPower = computeGlobalResonanceScore(progress);
   const {
@@ -311,18 +314,26 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
         right: 0,
         transform: 'translateY(-100%)',
         pointerEvents: 'none',
-        padding: '4px 11px',
-        borderRadius: 999,
-        border: '1px solid rgba(255,232,158,0.48)',
-        background: 'rgba(35,24,18,0.78)',
-        color: '#ffe89e',
-        fontFamily: BODY_FONT,
-        fontSize: 9,
-        fontWeight: 700,
-        letterSpacing: 0.4,
-        boxShadow: '0 3px 12px rgba(0,0,0,0.24)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6,
       }}>
-        Limitless Light Stacks {turn.limitlessLightStacks}
+        {canPlay && <SpectrumControl />}
+        <div style={{
+          pointerEvents: 'none',
+          padding: '4px 11px',
+          borderRadius: 999,
+          border: '1px solid rgba(255,232,158,0.48)',
+          background: 'rgba(35,24,18,0.78)',
+          color: '#ffe89e',
+          fontFamily: BODY_FONT,
+          fontSize: 9,
+          fontWeight: 700,
+          letterSpacing: 0.4,
+          boxShadow: '0 3px 12px rgba(0,0,0,0.24)',
+        }}>
+          Limitless Light Stacks {turn.limitlessLightStacks}
+        </div>
       </div>
       {canEmbraceInfinite && (
         <div style={{ marginBottom: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, pointerEvents: 'auto' }}>
@@ -701,6 +712,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
             let sophCost = 0;
             let darkCooldown = 0;
             let darkCost = 0;
+            let darkRequirement: string | null = null;
             if (mainDef?.type === 'Light' && isAin) {
               ainCooldown = mainCard.attackCooldowns[mainDef.ainAttack.id] ?? 0;
               sophCooldown = mainCard.attackCooldowns[mainDef.sophAttack.id] ?? 0;
@@ -711,6 +723,12 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
             if (mainDef?.type === 'Dark' && isAin) {
               darkCooldown = mainDef.persistent ? (mainCard.attackCooldowns[`${mainDef.definitionId}:activation`] ?? 0) : 0;
               darkCost = previewStackCost(mainDef.activationCost, turn.limitlessLightStacks);
+              darkRequirement = getUnmetCardRequirement(
+                mainDef,
+                { ...turn, limitlessLightStacks: turn.limitlessLightStacks - darkCost },
+                deck,
+                mainCard.instanceId,
+              );
             }
 
             return (
@@ -846,10 +864,11 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
                     {isAin && mainDef?.type === 'Dark' && (
                       <button
                         type="button"
-                        disabled={darkCooldown > 0 || turn.limitlessLightStacks < darkCost}
+                        disabled={darkCooldown > 0 || turn.limitlessLightStacks < darkCost || !!darkRequirement}
+                        title={darkRequirement ?? undefined}
                         onClick={(e) => { e.stopPropagation(); activateDark(mainCard.instanceId); setNewActionSlot(null); }}
-                        style={actionBtnStyle('rgba(200,160,255,0.6)', 'rgba(30,14,50,0.85)', '#c8a0ff', darkCooldown > 0 || turn.limitlessLightStacks < darkCost)}
-                      >{darkCost > 0 ? `Activate (-${darkCost} Stacks)` : 'Activate (No Stack Cost)'}</button>
+                        style={actionBtnStyle('rgba(200,160,255,0.6)', 'rgba(30,14,50,0.85)', '#c8a0ff', darkCooldown > 0 || turn.limitlessLightStacks < darkCost || !!darkRequirement)}
+                      >{darkRequirement ?? (darkCost > 0 ? `Activate (-${darkCost} Stacks)` : 'Activate (No Stack Cost)')}</button>
                     )}
                     <button
                       type="button"

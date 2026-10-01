@@ -39,7 +39,7 @@ const styles: Record<string, React.CSSProperties> = {
   hint: { fontSize: 8, color: 'rgba(244,244,248,0.3)', letterSpacing: 0.7 },
 };
 
-type PileType = 'deck' | 'discard' | 'hand' | 'extra';
+type PileType = 'deck' | 'discard' | 'abyss' | 'hand' | 'extra';
 
 export default function DeckStatus() {
   useThemeVersion();
@@ -71,6 +71,8 @@ export default function DeckStatus() {
       ? deck.drawPile
       : openPile === 'discard'
         ? deck.discardPile
+        : openPile === 'abyss'
+          ? (deck.lightBoundAbyss ?? [])
         : openPile === 'hand'
           ? deck.hand
           : deck.extraDeck;
@@ -88,7 +90,7 @@ export default function DeckStatus() {
         def,
       };
     });
-  }, [openPile, deck.drawPile, deck.discardPile, deck.hand, deck.extraDeck]);
+  }, [openPile, deck.drawPile, deck.discardPile, deck.lightBoundAbyss, deck.hand, deck.extraDeck]);
 
   return (
     <div ref={containerRef} style={styles.container}>
@@ -111,6 +113,18 @@ export default function DeckStatus() {
         <span style={styles.label}>Discard</span>
         <span style={styles.hint}>click</span>
       </button>
+      {turn.phase !== 'idle' && (
+        <button
+          style={{ ...styles.pill, cursor: 'pointer', border: '1px solid rgba(214,196,255,0.4)' }}
+          onClick={() => setOpenPile('abyss')}
+          title="Light-bound Abyss: cards sacrificed to raise Spectrum Level. They return only when your deck resets."
+        >
+          <span style={{ ...styles.icon, color: '#d6c4ff' }}>◉</span>
+          <span style={{ ...styles.count, color: '#d6c4ff' }}>{deck.lightBoundAbyss?.length ?? 0}</span>
+          <span style={{ ...styles.label, color: 'rgba(214,196,255,0.8)' }}>Abyss</span>
+          <span style={{ ...styles.hint, color: 'rgba(214,196,255,0.55)' }}>click</span>
+        </button>
+      )}
       {turn.phase !== 'idle' && (
         <>
           <button style={{ ...styles.pill, cursor: 'pointer' }} onClick={() => setOpenPile('hand')}>
@@ -154,7 +168,7 @@ export default function DeckStatus() {
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <div style={{ fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', color: warmTheme.accentDeep }}>
-              {openPile} ({pileEntries.length})
+              {openPile === 'abyss' ? 'Light-bound Abyss' : openPile} ({pileEntries.length})
             </div>
             <button
               onClick={() => setOpenPile(null)}

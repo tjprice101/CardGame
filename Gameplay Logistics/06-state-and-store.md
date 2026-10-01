@@ -7,6 +7,7 @@
 Key card actions include:
 
 - `beginTurn()`
+- `raiseSpectrumLevel(handInstanceId)`
 - `toggleMulliganCard(instanceId)`
 - `confirmMulligan()`
 - `playCard(instanceId, side)` where `side` is `'soph'` or `'ain'`
@@ -23,9 +24,9 @@ React components call these actions; they do not directly mutate gameplay state.
 
 ## State Categories
 
-- Deck: `deckList`, `extraDeck`, `hand`, `drawPile`, `discardPile`.
+- Deck: `deckList`, `extraDeck`, `hand`, `drawPile`, `discardPile`, `lightBoundAbyss`.
 - Board: four front slots for Ain Soph Aur, four support/back slots for Light/Dark.
-- Turn: phase, cards played, Limitless Light Stacks, pending effects, card cooldowns, persistent materialized-ability cooldown timestamps, Divine Field expiration, and mulligan state.
+- Turn: phase, cards played, Spectrum Level (reset to 0 at each turn), Limitless Light Stacks, pending effects, card cooldowns, persistent materialized-ability cooldown timestamps, Divine Field expiration, and mulligan state.
 - Progress: collection, holo collection, mastery, quests, achievements, enigmas, boss stats.
 - Settings: UI display preferences, controls, audio, accessibility.
 
@@ -36,6 +37,7 @@ Every action validates phase, card existence, definition type, costs, cooldowns,
 Transactional examples:
 
 - Dark activation commits stack spending only after the effect can resolve.
+- Spectrum level-up validates the turn, next-level stack cost, and chosen hand card before moving it to the Light-bound Abyss.
 - Ain Soph Aur summoning validates materials, Extra Deck ownership, front-slot availability, and on-summon effects before consuming materials.
 - Materialized abilities are equipped in three saved-deck slots. Ability cooldowns and Divine Field persist across End Turn and are validated again by the store.
 - Force-removal works only during the playing phase.

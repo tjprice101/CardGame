@@ -7,6 +7,7 @@ import { CardRegistry } from '@/cards/CardRegistry';
 import { warmTheme, uiTypography } from '@/ui/theme';
 import { useThemeVersion } from '@/ui/useThemeVersion';
 import PackOpeningModal from './PackOpeningModal';
+import { useSuppressMusic } from '@/audio/musicSuppression';
 import CollectionViewer from './CollectionViewer';
 import AbilityMaterialization from './AbilityMaterialization';
 import { getSpotlightPackId, getSpotlightPackCost, SPOTLIGHT_DISCOUNT } from '@/systems/progression/spotlightPack';
@@ -227,6 +228,7 @@ function BulkHolofoilResult(props: {
   holoCards: Array<{ definitionId: string; count: number }>;
   onClose: () => void;
 }) {
+  useSuppressMusic();
   const metrics = getCardFaceMetrics('grid');
   return (
     <div style={{

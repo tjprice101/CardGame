@@ -14,7 +14,7 @@ import type { CardDefinition } from '@/types/cards';
 export const TRANSCENDENT_ABILITY = 'Transcendent Ability: If this card is in your deck, your maximum hand size is now 10.';
 
 const transcendentLight: CardDefinition = {
-	definitionId: 'tx-neutral-starbound-glimmer', type: 'Light', rarity: 'Transcendent',
+	definitionId: 'tx-neutral-starbound-glimmer', type: 'Light', rarity: 'Transcendent', spectrumLevel: 5,
 	name: 'Light Before the First Star',
 	description: `${TRANSCENDENT_ABILITY} When this card is placed on its Soph side, draw 3 cards. If at least 2 drawn cards are Light, draw 1 additional card; if at least 2 drawn cards are Dark, gain 8,000 Divine Light with Collection Power scaling.`,
 	artKey: 'tx_neutral_starbound_glimmer',
@@ -26,14 +26,14 @@ const transcendentLight: CardDefinition = {
 
 const transcendentDark: CardDefinition[] = [
 	{
-		definitionId: 'tx-neutral-null-catalyst', type: 'Dark', rarity: 'Transcendent', name: 'The First Catalyst',
+		definitionId: 'tx-neutral-null-catalyst', type: 'Dark', rarity: 'Transcendent', spectrumLevel: 5, name: 'The First Catalyst',
 		description: `${TRANSCENDENT_ABILITY} Look at the top and bottom card of your deck, exchange their positions, then draw 2 cards. If at least 1 drawn card is Dark, draw 1 additional card.`,
 		artKey: 'tx_neutral_null_catalyst',
 		sophEffects: [{ type: 'exchange_deck_ends' }, { type: 'draw_with_type_bonus', value: 2, filter: ['Dark'], bonusDraw: 1 }],
 		activationCost: { kind: 'fixed', value: 0 }, cooldownCardsPlayed: 0, postActivationFate: 'discard', sacrificeStackRate: 100, persistent: false,
 	},
 	{
-		definitionId: 'tx-neutral-void-reliquary', type: 'Dark', rarity: 'Transcendent', name: 'The Reliquary of All and Nothing',
+		definitionId: 'tx-neutral-void-reliquary', type: 'Dark', rarity: 'Transcendent', spectrumLevel: 5, name: 'The Reliquary of All and Nothing',
 		description: `${TRANSCENDENT_ABILITY} Salvage either 2 Light cards or 2 Dark cards from your discard pile. Salvaging 2 Light cards grants 3 Limitless Light Stacks; salvaging 2 Dark cards searches your deck for 1 Light or Dark card.`,
 		artKey: 'tx_neutral_void_reliquary',
 		sophEffects: [{ type: 'salvage_either_light_or_dark', count: 2, lightStacks: 3 }],
@@ -42,7 +42,7 @@ const transcendentDark: CardDefinition[] = [
 ];
 
 const transcendentAur: CardDefinition = {
-	definitionId: 'tx-angel-starbound-null-archangel', type: 'AinSophAur', rarity: 'Transcendent', name: 'The Bridge Between Light and Life',
+	definitionId: 'tx-angel-starbound-null-archangel', type: 'AinSophAur', rarity: 'Transcendent', spectrumLevel: 5, name: 'The Bridge Between Light and Life',
 	description: `${TRANSCENDENT_ABILITY} When summoned, draw 4 cards and search your deck for 1 Light card and 1 Dark card. Ain Soph Aur cards remain in the Extra Deck.`,
 	artKey: 'tx_angel_starbound_null_archangel',
 	summonMaterialCount: 3, onSummonEffects: [{ type: 'draw', value: 4 }, { type: 'search_deck_distinct_types', filter: ['Light', 'Dark'], takePerType: 1 }],

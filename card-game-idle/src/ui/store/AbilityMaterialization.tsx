@@ -1,13 +1,17 @@
 import { useMemo, useState } from 'react';
-import { ABILITY_DEFINITIONS, getAbilityMaterialCost, getAbilityTier, meetsAbilityOwnershipGate, type AbilityDefinition } from '@/data/abilities/abilityDefinitions';
+import { ABILITY_DEFINITIONS, ABILITY_ICON_FALLBACKS, getAbilityMaterialCost, getAbilityTier, meetsAbilityOwnershipGate, type AbilityDefinition } from '@/data/abilities/abilityDefinitions';
 import { GARDEN_REWARD_LABELS } from '@/data/dungeons/gardenDungeonDefinitions';
 import { useStore } from '@/state/store';
 import { uiTypography } from '@/ui/theme';
 
 const EMPTY_OWNED_ABILITIES: Readonly<Record<string, boolean>> = Object.freeze({});
 const abilityIconUrl = (key: string) => `${import.meta.env.BASE_URL}assets/ability-icons/${key}.png`;
+const abilityIconFallbackUrl = (key: string) => {
+  const fallback = ABILITY_ICON_FALLBACKS[key];
+  return fallback ? `${import.meta.env.BASE_URL}assets/${fallback.folder}/${encodeURIComponent(fallback.file)}` : null;
+};
 
-type SetFilter = 'all' | 'Neutrality' | 'Causality';
+type SetFilter = 'all' | 'Neutrality' | 'Causality' | 'Transcendent';
 type TierFilter = 'all' | 'foundational' | 'eternal' | 'infinite';
 type TypeFilter = 'all' | 'buff' | 'instant' | 'summon' | 'utility';
 type OwnershipFilter = 'all' | 'unowned' | 'owned';
@@ -91,14 +95,14 @@ export default function AbilityMaterialization() {
             <div style={{ color: '#d5a4ff', fontFamily: uiTypography.display, fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 5 }}>THE AMPLIFICATION ARCHIVE</div>
             <div style={{ fontFamily: uiTypography.display, fontSize: 28, color: '#fff0d1', letterSpacing: 1.5, textShadow: '0 0 24px rgba(213,164,255,0.35)' }}>Ability Materialization</div>
             <div style={{ marginTop: 4, color: 'rgba(200,223,242,0.7)', fontSize: 12, lineHeight: 1.5 }}>
-              Materialize universal abilities with Garden materials from their associated set. Higher tiers require progressively rarer materials.
+              Materialize abilities with their associated materials. Transcendent abilities use Divine Light and Shards of Transcendence, and do not use another set's mechanics.
             </div>
           </div>
         </div>
 
         {/* Primary Set Sub-menu */}
         <div style={{ marginTop: 18, display: 'flex', gap: 8, borderBottom: '1px solid rgba(110,185,240,0.22)', paddingBottom: 10 }}>
-          {(['Neutrality', 'Causality', 'all'] as const).map(setName => (
+          {(['Neutrality', 'Causality', 'Transcendent', 'all'] as const).map(setName => (
             <button
               key={setName}
               type="button"
@@ -260,7 +264,8 @@ export default function AbilityMaterialization() {
           {filteredAbilities.map(ability => {
             const owned = ownedAbilities[ability.id] === true;
             const materialCost = Object.entries(getAbilityMaterialCost(ability));
-            const affordable = materialCost.every(([currency, amount]) => progress[currency as keyof typeof GARDEN_REWARD_LABELS] >= (amount ?? 0));
+            const progressMap = progress as unknown as Record<string, number>;
+            const affordable = materialCost.every(([currency, amount]) => (progressMap[currency] ?? 0) >= (amount ?? 0));
             const gateMet = meetsAbilityOwnershipGate(ability, collection, infiniteCollection);
             const gateLabel = getGateRequirementLabel(ability.ownershipGate);
             const tier = getAbilityTier(ability);
@@ -289,6 +294,14 @@ export default function AbilityMaterialization() {
                       src={abilityIconUrl(ability.iconAssetKey)}
                       alt=""
                       aria-hidden="true"
+                      onError={event => {
+                        const fallback = abilityIconFallbackUrl(ability.iconAssetKey);
+                        if (fallback && event.currentTarget.src !== new URL(fallback, window.location.href).href) {
+                          event.currentTarget.src = fallback;
+                        } else {
+                          event.currentTarget.style.visibility = 'hidden';
+                        }
+                      }}
                       width={42}
                       height={42}
                       style={{

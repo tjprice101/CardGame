@@ -23,10 +23,12 @@ import { ScoreSystem } from '@/systems/scoring/ScoreSystem';
 import { DeckSystem } from '@/systems/cards/DeckSystem';
 import { accrueSophCharges, AIN_SOPH_AUR_SUMMON_STACK_REWARD, SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
 import { canActivateShatterTheInfiniteLight, SHATTER_ACTIVE_MS, SHATTER_PRIME_MS, SHATTER_RESULT_MS } from '@/systems/cards/ShatterTheInfiniteLight';
-import { ATTACK_SEQUENCE_PRIME_MS, ATTACK_SEQUENCE_RESULT_MS, getAttackSequenceDuration, getAttackSequenceMultiplier, getAttackSequenceStars } from '@/systems/cards/AttackSequence';
+import { ATTACK_SEQUENCE_PRIME_MS, ATTACK_SEQUENCE_RESULT_MS, ORBIT_MAX_RADIUS, ORBIT_MIN_RADIUS, getAttackSequenceDuration, getAttackSequenceMultiplier, getAttackSequenceStars, isOrbitSample } from '@/systems/cards/AttackSequence';
 import { resolveCardScaling } from '@/systems/cards/CardScaling';
 import { TurnSystem } from '@/systems/cards/TurnSystem';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
+import { getUnmetCardRequirement } from '@/systems/cards/PlayRequirements';
+import { getCardSpectrumLevel, getSpectrumLevelUpBlocker, getSpectrumLevelUpCost, getTurnSpectrumLevel } from '@/systems/cards/SpectrumLevel';
 import { getSummonRequirements, satisfiesSummonRequirements } from '@/systems/cards/AinSophSummonRequirements';
 import { PackSystem } from '@/systems/cards/PackSystem';
 import { getActiveCoopRng, useCoopSyncStore } from '@/state/coopSyncStore';
@@ -134,6 +136,7 @@ const defaultDeck: DeckState = {
   drawPile: DeckSystem.buildFromList(STARTER_DECK_LIST),
   hand: [],
   discardPile: [],
+  lightBoundAbyss: [],
 };
 
 const defaultTurn: TurnState = {
@@ -145,6 +148,7 @@ const defaultTurn: TurnState = {
   cardsPlayedThisTurn: 0,
   neutralityAbilityActivationsThisTurn: 0,
   limitlessLightStacks: 0,
+  spectrumLevel: 0,
   limitlessCosmosStacks: 0,
   causalityCardsPlayedThisTurn: 0,
   causalityDivineLightThisTurn: 0,
@@ -399,6 +403,8 @@ interface StoreActions {
   confirmMulligan: () => void;
   embraceInfinite: () => void;
   playCard: (instanceId: string, side?: 'soph' | 'ain') => void;
+  /** Spend 5+level Limitless Light Stacks and sacrifice a hand card to the Light-bound Abyss to raise Spectrum Level by 1. */
+  raiseSpectrumLevel: (sacrificeInstanceId: string) => boolean;
   forceRemoveBoardCard: (instanceId: string) => void;
   flipSoph: (instanceId: string, mode: 'flip' | 'sacrifice') => void;
   activateLightAinAttack: (instanceId: string) => void;
@@ -826,7 +832,14 @@ function buildNeutralityTutorialDeck(
   const rarity = tier === 'eternal' ? 'Eternal' : 'Infinite';
   const pool = CardRegistry.getByRarity(rarity);
   const mainPool = pool.filter(def => def.type !== 'AinSophAur');
-  const deckList = buildPracticeDeckListFromPool(mainPool, 45);
+  // Eternal/Infinite cards start at Spectrum Lv 2+/4+; Lv 0 base cards let the practice turn level up.
+  const bootstrapList = buildPracticeDeckListFromPool(
+    CardRegistry.getAll().filter(def => def.type !== 'AinSophAur' && def.definitionId.includes('-neutrality-') && getCardSpectrumLevel(def) === 0),
+    20,
+  );
+  const deckList = mainPool.length > 0
+    ? [...bootstrapList, ...buildPracticeDeckListFromPool(mainPool, 25)]
+    : [];
   const extraDeck = buildPracticeExtraDeckFromPool(pool);
 
   if (!deckList.length) {
@@ -1723,6 +1736,25 @@ function shiftTurnAbsoluteTimers(s: Store, pauseStartedAt: number, resumedAt: nu
   if (s.turn.whiteoutDomainUntil && s.turn.whiteoutDomainUntil > pauseStartedAt) s.turn.whiteoutDomainUntil += pausedFor;
 }
 
+/** Abyss cards rejoin the deck only when deck zones reset (new turn / new encounter). */
+function returnLightBoundAbyss(deck: DeckState): void {
+  const abyss = deck.lightBoundAbyss ?? [];
+  if (abyss.length > 0) deck.discardPile.push(...abyss);
+  deck.lightBoundAbyss = [];
+}
+
+function resetDeckForGardenEncounter(s: Store): void {
+  const extraDeck = cloneExtraDeck(s.deck.extraDeck);
+  for (const slot of s.board.frontSlots) {
+    if (slot) extraDeck.push(createExtraDeckEntry(slot.definitionId, slot.finish));
+  }
+  for (const card of [...s.deck.hand, ...s.deck.discardPile, ...s.deck.drawPile]) {
+    if (CardRegistry.get(card.definitionId)?.type === 'AinSophAur') extraDeck.push(createExtraDeckEntry(card.definitionId, card.finish));
+  }
+  s.deck = createDeckState(s.deck.deckList, extraDeck);
+  s.board = { frontSlots: [null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
+}
+
 function finishShatterInfiniteLight(s: Store, resumedAt: number): void {
   const pauseStartedAt = s.turn.shatterInfiniteLight?.pauseStartedAt;
   if (pauseStartedAt !== undefined) shiftTurnAbsoluteTimers(s, pauseStartedAt, resumedAt);
@@ -1807,6 +1839,7 @@ function endTurnInternal(s: Store): void {
   recordLossEvent(s, s.deck.hand.map(card => ({ definitionId: card.definitionId })), 'discard');
   for (const card of s.deck.hand) s.deck.discardPile.push(card);
   s.deck.hand = [];
+  returnLightBoundAbyss(s.deck);
   if (s.deck.discardPile.length > 0) {
     s.deck.drawPile = DeckSystem.reshuffleDiscard(s.deck.drawPile, s.deck.discardPile);
     s.deck.discardPile = [];
@@ -2087,6 +2120,8 @@ export const useStore = create<Store>()(
         if (s.turn.phase !== 'playing' || s.board.frontSlots[targetSlot] !== null || s.turn.shatterInfiniteLight || s.turn.attackSequence) return;
         const def = CardRegistry.get(definitionId);
         if (!def || def.type !== 'AinSophAur') return;
+        // Phantom Matrix free summons may reach one Spectrum Level above the current level.
+        if (getCardSpectrumLevel(def) > getTurnSpectrumLevel(s.turn) + (freeSummon ? 1 : 0)) return;
         const uniqueIds = freeSummon ? [] : [...new Set(materialInstanceIds)];
         const materials = uniqueIds.map(id => s.board.backSlots.find(slot => slot?.instanceId === id));
         const requiredMaterials = Math.max(1, def.summonMaterialCount);
@@ -2269,6 +2304,7 @@ export const useStore = create<Store>()(
         if (s.battleground.mode === 'active') s.battleground.turnTaken = true;
         // Preserve Dream Lattice: Solarvex Ward tracking removed (dead set)
         s.turn.turnNumber = (s.turn.turnNumber ?? 0) + 1;
+        returnLightBoundAbyss(s.deck);
         enforceAngelExtraDeckInvariant(s.deck);
         if (s.deck.drawPile.length < 5 && s.deck.discardPile.length > 0) {
           s.deck.drawPile = DeckSystem.reshuffleDiscard(s.deck.drawPile, s.deck.discardPile);
@@ -2422,6 +2458,7 @@ export const useStore = create<Store>()(
         if (!deckCard) return;
         const def = ScoreSystem.getDefinition(deckCard.definitionId);
         if (!def) return;
+        if (getUnmetCardRequirement(def, s.turn, s.deck, deckCard.instanceId)) return;
 
         if (def.type === 'Light' || def.type === 'Dark') {
           const emptyBack = s.board.backSlots.findIndex(slot => slot === null);
@@ -2479,6 +2516,27 @@ export const useStore = create<Store>()(
           return;
         }
       });
+    },
+
+    raiseSpectrumLevel: (sacrificeInstanceId) => {
+      const state = get();
+      if (state.turn.phase !== 'playing' || state.turn.pendingEffect !== null || state.turn.shatterInfiniteLight || state.turn.attackSequence) return false;
+      if (getSpectrumLevelUpBlocker(state.turn, state.deck.hand.length)) return false;
+      if (!state.deck.hand.some(card => card.instanceId === sacrificeInstanceId)) return false;
+      set(s => {
+        const level = getTurnSpectrumLevel(s.turn);
+        const cost = getSpectrumLevelUpCost(level);
+        const cardIndex = s.deck.hand.findIndex(card => card.instanceId === sacrificeInstanceId);
+        if (cardIndex === -1 || s.turn.limitlessLightStacks < cost) return;
+        const [card] = s.deck.hand.splice(cardIndex, 1);
+        s.deck.lightBoundAbyss = [...(s.deck.lightBoundAbyss ?? []), card];
+        s.turn.limitlessLightStacks -= cost;
+        s.turn.spectrumLevel = level + 1;
+        recordLossEvent(s, [{ definitionId: card.definitionId }], 'discard');
+        emitQuestProgressToProgress(s.progress, { kind: 'spend_light_stacks', amount: cost });
+        recompute(s);
+      });
+      return true;
     },
 
     forceRemoveBoardCard: (instanceId) => {
@@ -2639,6 +2697,7 @@ export const useStore = create<Store>()(
         }
         const cosmosBefore = s.turn.limitlessCosmosStacks ?? 0;
         const turnAfterCost = { ...s.turn, limitlessLightStacks: s.turn.limitlessLightStacks - cost };
+        if (getUnmetCardRequirement(def, turnAfterCost, s.deck, slot.instanceId)) return;
         const result = CardEffectExecutor.execute(
           toDeckCard(slot),
           turnAfterCost,
@@ -2723,7 +2782,7 @@ export const useStore = create<Store>()(
         const dx = x - 0.5;
         const dy = y - 0.5;
         const radius = Math.hypot(dx, dy);
-        if (radius < 0.12 || radius > 0.48) return;
+        if (radius < ORBIT_MIN_RADIUS || radius > ORBIT_MAX_RADIUS) return;
         const angle = Math.atan2(dy, dx);
         const previous = sequence.lastPointerAngle;
         if (previous === undefined) {
@@ -2743,7 +2802,7 @@ export const useStore = create<Store>()(
         sequence.pointerOrbitStreak = consistentDirection ? (sequence.pointerOrbitStreak ?? 0) + 1 : 1;
         const elapsed = Math.max(8, nowMs - (sequence.pointerStartedAt ?? nowMs - 16));
         const radiansPerSecond = absDelta / (elapsed / 1000);
-        const circularMotion = absDelta >= 0.035 && absDelta <= 0.95 && radialDelta <= 0.08 && (sequence.pointerOrbitStreak ?? 0) >= 3;
+        const circularMotion = isOrbitSample(absDelta, radialDelta) && (sequence.pointerOrbitStreak ?? 0) >= 3;
         if (circularMotion) {
           sequence.pointerOrbitAccumulated = (sequence.pointerOrbitAccumulated ?? 0) + absDelta;
           // Attack power rises continuously while the cursor traces a valid
@@ -2846,7 +2905,7 @@ export const useStore = create<Store>()(
         const dx = x - 0.5;
         const dy = y - 0.5;
         const radius = Math.hypot(dx, dy);
-        if (radius < 0.12 || radius > 0.48) return;
+        if (radius < ORBIT_MIN_RADIUS || radius > ORBIT_MAX_RADIUS) return;
         const angle = Math.atan2(dy, dx);
         if (shatter.lastPointerAngle === undefined) {
           shatter.lastPointerAngle = angle;
@@ -2862,7 +2921,8 @@ export const useStore = create<Store>()(
         const consistentDirection = shatter.pointerOrbitDirection === undefined || shatter.pointerOrbitDirection === direction;
         if (!consistentDirection) shatter.pointerOrbitAccumulated = 0;
         shatter.pointerOrbitDirection = direction;
-        if (absDelta >= 0.035 && absDelta <= 0.95 && radialDelta <= 0.08 && consistentDirection) {
+        if (isOrbitSample(absDelta, radialDelta) && consistentDirection) {
+          shatter.orbitPower = (shatter.orbitPower ?? 0) + absDelta / (Math.PI * 2);
           shatter.pointerOrbitAccumulated = (shatter.pointerOrbitAccumulated ?? 0) + absDelta;
           const completedTurns = Math.floor((shatter.pointerOrbitAccumulated ?? 0) / (Math.PI * 2));
           if (completedTurns > 0) {
@@ -2885,7 +2945,7 @@ export const useStore = create<Store>()(
           return;
         }
         if (shatter.phase === 'active') {
-          const rawAmount = shatter.stacks * 1_000;
+          const rawAmount = Math.round(Math.max(shatter.stacks, shatter.orbitPower ?? 0) * 1_000);
           const earnedBefore = s.turn.divineLightEarnedThisTurn;
           if (rawAmount > 0) grantDivineLight(s, rawAmount);
           shatter.payout = s.turn.divineLightEarnedThisTurn - earnedBefore;
@@ -3112,12 +3172,21 @@ export const useStore = create<Store>()(
               return;
             }
           }
+          if (pending.sourceCard === 'ability:transcendent-vault-unwritten-futures' && selected.length !== requiredSelections) return;
           const salvagedCards = pending.cards.filter(c => selected.includes(c.instanceId));
           pendingTakenSubtypeCounts = countSubtypeCards(salvagedCards);
           resolvedSubtype = salvagedCards.length === 1 ? (CardRegistry.get(salvagedCards[0].definitionId)?.type ?? null) as CardSubtypeFilter | null : null;
           resolvedCardInstanceId = salvagedCards.length === 1 ? salvagedCards[0].instanceId : null;
           s.deck.discardPile = s.deck.discardPile.filter(c => !selected.includes(c.instanceId));
           s.deck.hand.push(...salvagedCards);
+          if (pending.sourceCard === 'ability:transcendent-vault-unwritten-futures') {
+            grantDivineLight(s, 12_000);
+            const drawn = DeckSystem.draw(s.deck.drawPile, 2);
+            s.deck.drawPile = drawn.remaining;
+            s.deck.hand.push(...drawn.drawn);
+            if (!s.turn.abilityCooldownUntil) s.turn.abilityCooldownUntil = {};
+            s.turn.abilityCooldownUntil['transcendent-reliquary-all-nothing'] = Date.now() + 120_000;
+          }
         } else if (pending.type === 'embrace_infinite') {
           const keptIds = new Set(selected.slice(0, pending.keep));
           const keptCards = pending.cards.filter(c => keptIds.has(c.instanceId));
@@ -3415,9 +3484,10 @@ export const useStore = create<Store>()(
     combineForInfinite: (recipe) => {
       const state = get();
       // Verify the player owns enough copies of each ingredient
+      const progressMap = state.progress as unknown as Record<string, number>;
       for (const ingredient of recipe.ingredients) {
         if (ingredient.currency) {
-          if (state.progress[ingredient.currency] < ingredient.count) return `Missing ${ingredient.currency}: need ${ingredient.count}`;
+          if ((progressMap[ingredient.currency] ?? 0) < ingredient.count) return `Missing ${ingredient.currency}: need ${ingredient.count}`;
         } else if (ingredient.definitionId) {
           const owned = state.progress.collection[ingredient.definitionId] ?? 0;
           if (owned < ingredient.count) return `Missing copies for ${ingredient.definitionId}`;
@@ -3453,10 +3523,11 @@ export const useStore = create<Store>()(
       }
 
       set(s => {
+        const progressMap = s.progress as unknown as Record<string, number>;
         // Consume ingredient copies
         for (const ingredient of recipe.ingredients) {
           if (ingredient.currency) {
-            s.progress[ingredient.currency] -= ingredient.count;
+            progressMap[ingredient.currency] = (progressMap[ingredient.currency] ?? 0) - ingredient.count;
           } else if (ingredient.definitionId) {
             s.progress.collection[ingredient.definitionId] = (s.progress.collection[ingredient.definitionId] ?? 0) - ingredient.count;
             // Also reduce holoCollection so it can't exceed total
@@ -3774,13 +3845,15 @@ export const useStore = create<Store>()(
       if (!meetsAbilityOwnershipGate(ability, state.progress.collection, state.progress.infiniteCollection)) return false;
       if (state.progress.ownedAbilities?.[abilityId]) return false;
       const materialCost = getAbilityMaterialCost(ability);
-      if (Object.entries(materialCost).some(([currency, amount]) => state.progress[currency as GardenRewardCurrency] < (amount ?? 0))) return false;
+      const progressMap = state.progress as unknown as Record<string, number>;
+      if (Object.entries(materialCost).some(([currency, amount]) => (progressMap[currency] ?? 0) < (amount ?? 0))) return false;
       set(s => {
+        const liveProgress = s.progress as unknown as Record<string, number>;
         if (!s.progress.ownedAbilities) s.progress.ownedAbilities = {};
         if (s.progress.ownedAbilities[abilityId]) return;
-        if (Object.entries(materialCost).some(([currency, amount]) => s.progress[currency as GardenRewardCurrency] < (amount ?? 0))) return;
+        if (Object.entries(materialCost).some(([currency, amount]) => (liveProgress[currency] ?? 0) < (amount ?? 0))) return;
         for (const [currency, amount] of Object.entries(materialCost) as Array<[GardenRewardCurrency, number]>) {
-          s.progress[currency] -= amount;
+          liveProgress[currency] = (liveProgress[currency] ?? 0) - amount;
         }
         s.progress.ownedAbilities[abilityId] = true;
         syncEnigmaProgressFromBoard(s, true);
@@ -3856,16 +3929,9 @@ export const useStore = create<Store>()(
             lastReward: null,
             lastRewards: {},
           };
-          // Reset board and draw fresh opening hand for the next encounter
-          for (let i = 0; i < s.board.frontSlots.length; i++) s.board.frontSlots[i] = null;
-          for (let i = 0; i < s.board.backSlots.length; i++) s.board.backSlots[i] = null;
-          s.board.activeBoardEffects = [];
-          s.deck.discardPile.push(...s.deck.hand);
-          s.deck.hand = [];
-          if (s.deck.discardPile.length > 0) {
-            s.deck.drawPile = DeckSystem.reshuffleDiscard(s.deck.drawPile, s.deck.discardPile);
-            s.deck.discardPile = [];
-          }
+          // Each encounter starts from a fresh deck: summoned ASAs return to the Extra Deck,
+          // every main-deck card (hand, board, discard) is rebuilt into a new draw pile.
+          resetDeckForGardenEncounter(s);
           const { drawn, remaining } = DeckSystem.draw(s.deck.drawPile, 5);
           s.deck.drawPile = remaining;
           s.deck.hand = drawn;
@@ -3890,15 +3956,7 @@ export const useStore = create<Store>()(
         };
         // Clean up any remaining in-run turn state so the player returns cleanly to menu
         if (s.turn.phase !== 'idle' && s.bossFight.mode === 'idle' && s.battleground.mode === 'idle') {
-          for (let i = 0; i < s.board.frontSlots.length; i++) s.board.frontSlots[i] = null;
-          for (let i = 0; i < s.board.backSlots.length; i++) s.board.backSlots[i] = null;
-          s.board.activeBoardEffects = [];
-          s.deck.discardPile.push(...s.deck.hand);
-          s.deck.hand = [];
-          if (s.deck.discardPile.length > 0) {
-            s.deck.drawPile = DeckSystem.reshuffleDiscard(s.deck.drawPile, s.deck.discardPile);
-            s.deck.discardPile = [];
-          }
+          resetDeckForGardenEncounter(s);
           s.turn = { ...defaultTurn, phase: 'idle' };
           recompute(s);
         }
@@ -4010,6 +4068,57 @@ export const useStore = create<Store>()(
           s.deck.hand.push(...drawn.drawn);
           reduceCausalityCooldowns(s, 0, true);
           grantDivineLight(s, 75_000);
+          stampAbilityCooldown(s);
+        });
+        return;
+      }
+      if (ability.id === 'transcendent-starbound-glimmer') {
+        if (state.turn.limitlessLightStacks < 6) return;
+        set(s => {
+          s.turn.limitlessLightStacks -= 6;
+          grantDivineLight(s, 10_000);
+          const drawn = DeckSystem.draw(s.deck.drawPile, 3);
+          s.deck.drawPile = drawn.remaining;
+          s.deck.hand.push(...drawn.drawn);
+          stampAbilityCooldown(s);
+        });
+        return;
+      }
+      if (ability.id === 'transcendent-first-catalyst') {
+        if (state.turn.limitlessLightStacks < 8) return;
+        set(s => {
+          s.turn.limitlessLightStacks -= 8;
+          s.turn.limitlessLightStacks += 4;
+          const drawn = DeckSystem.draw(s.deck.drawPile, 2);
+          s.deck.drawPile = drawn.remaining;
+          s.deck.hand.push(...drawn.drawn);
+          stampAbilityCooldown(s);
+        });
+        return;
+      }
+      if (ability.id === 'transcendent-reliquary-all-nothing') {
+        if (state.turn.limitlessLightStacks < 10 || state.deck.discardPile.length < 2) return;
+        set(s => {
+          s.turn.limitlessLightStacks -= 10;
+          s.turn.pendingEffect = {
+            type: 'salvage',
+            cards: [...s.deck.discardPile],
+            filter: null,
+            count: 2,
+            sourceCard: 'ability:transcendent-vault-unwritten-futures',
+          };
+          s.turn.pendingEffectQueue = [];
+        });
+        return;
+      }
+      if (ability.id === 'transcendent-bridge-light-life') {
+        if (state.turn.limitlessLightStacks < 12) return;
+        set(s => {
+          s.turn.limitlessLightStacks -= 12;
+          grantDivineLight(s, 30_000);
+          const drawn = DeckSystem.draw(s.deck.drawPile, 3);
+          s.deck.drawPile = drawn.remaining;
+          s.deck.hand.push(...drawn.drawn);
           stampAbilityCooldown(s);
         });
         return;

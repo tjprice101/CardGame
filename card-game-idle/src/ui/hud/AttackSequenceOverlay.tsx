@@ -3,6 +3,7 @@ import { useStore, selectTurn } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { getLiveCardFaceBackgroundStyle, getLiveCardShimmerClassName } from '@/ui/cardBackgrounds';
 import { uiTypography } from '@/ui/theme';
+import { toOrbitSpace } from '@/systems/cards/AttackSequence';
 
 const AMBIENT_STARS = Array.from({ length: 90 }, (_, index) => ({
   id: index,
@@ -38,20 +39,17 @@ export default function AttackSequenceOverlay() {
   const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
     if (!active) return;
     const rect = event.currentTarget.getBoundingClientRect();
-    useStore.getState().registerAttackSequencePointer(
-      (event.clientX - rect.left) / rect.width,
-      (event.clientY - rect.top) / rect.height,
-      Date.now(),
-    );
+    const point = toOrbitSpace(event.clientX, event.clientY, rect);
+    useStore.getState().registerAttackSequencePointer(point.x, point.y, Date.now());
   };
 
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 940, overflow: 'hidden', pointerEvents: 'auto', userSelect: 'none',
       background: bridge ? '#f8f7f2' : '#000',
-      animation: bridge ? undefined : 'attackSequenceFadeBlack 900ms ease-out both',
+      animation: bridge ? 'attackSequenceBridgeIn 180ms ease-out both' : 'attackSequenceFadeBlack 900ms ease-out both',
     }} onPointerMove={handlePointerMove} className={`attack-sequence-overlay attack-sequence-overlay-${sequence.kind}`}>
-      {sequence.phase !== 'priming' && (
+      {(sequence.phase !== 'priming' || bridge) && (
         <div className={`attack-sequence-field attack-sequence-field-${sequence.kind}${bridge ? ' attack-sequence-field-inverted' : ''}`}>
           <div className="attack-sequence-nebula" />
           <div className="attack-sequence-orbit attack-sequence-orbit-a" />

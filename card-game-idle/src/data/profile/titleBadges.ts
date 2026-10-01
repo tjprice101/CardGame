@@ -42,6 +42,27 @@ const totalNullRaidClears = (p: ProgressState): number =>
 const totalTranscendentCards = (p: ProgressState): number =>
   Object.values(p.transcendentCollection ?? {}).reduce((a, b) => a + b, 0);
 
+const FORGE_CARD_IDS = [
+  'tx-neutral-starbound-glimmer',
+  'tx-neutral-null-catalyst',
+  'tx-neutral-void-reliquary',
+  'tx-angel-starbound-null-archangel',
+] as const;
+
+const distinctTranscendentCards = (p: ProgressState): number =>
+  FORGE_CARD_IDS.filter(id => (p.transcendentCollection?.[id] ?? 0) > 0).length;
+
+const CAUSALITY_ETERNAL_IDS = [
+  'btei-causality-first-cause',
+  'btei-causality-last-horizon',
+  'btei-causality-ink-sovereign',
+  'btei-causality-chromatic-verdict',
+  'btei-causality-pearl-engine',
+] as const;
+
+const ownsEveryCausalityEternal = (p: ProgressState): boolean =>
+  CAUSALITY_ETERNAL_IDS.every(id => getEverCollectionCount(p, id) > 0);
+
 const distinctEverOwnedRarity = (p: ProgressState, rarity: string): number =>
   CardRegistry.getAll().filter(card => card.rarity === rarity && getEverCollectionCount(p, card.definitionId) > 0).length;
 
@@ -423,15 +444,72 @@ const MILESTONE_TITLES: TitleBadgeDefinition[] = [
   {
     id: 'title-transcendent-caller',
     text: 'Caller of Transcendence',
-    description: 'Own 3 Transcendent cards.',
+    description: 'Own 3 total copies of Transcendent cards; duplicate copies count.',
     isUnlocked: (p) => totalTranscendentCards(p) >= 3,
     group: 'milestone',
   },
   {
     id: 'title-transcendent-pantheon',
     text: 'Pantheon of Transcendence',
-    description: 'Own 12 Transcendent cards.',
+    description: 'Own 12 total copies of Transcendent cards; duplicate copies count.',
     isUnlocked: (p) => totalTranscendentCards(p) >= 12,
+    group: 'milestone',
+  },
+  // ── Forge of Transcendence ──────────────────────────────────────────────
+  {
+    id: 'title-forge-unsealed',
+    text: 'The Forge Unsealed',
+    description: 'Defeat all 5 Causality event bosses, then spend 1 Key of Transcendence to open the Forge of Transcendence.',
+    isUnlocked: (p) => p.forgeOfTranscendenceUnlocked === true,
+    group: 'milestone',
+  },
+  {
+    id: 'title-first-beyond',
+    text: 'First Beyond',
+    description: 'Acquire any 1 Transcendent card from the Forge of Transcendence.',
+    isUnlocked: (p) => distinctTranscendentCards(p) >= 1,
+    group: 'milestone',
+  },
+  {
+    id: 'title-light-before-stars',
+    text: 'Before the First Star',
+    description: 'Acquire 1 copy of Light Before the First Star from the Forge of Transcendence.',
+    isUnlocked: (p) => (p.transcendentCollection?.['tx-neutral-starbound-glimmer'] ?? 0) > 0,
+    group: 'milestone',
+  },
+  {
+    id: 'title-first-catalyst',
+    text: 'Cause Unbound',
+    description: 'Acquire 1 copy of The First Catalyst from the Forge of Transcendence.',
+    isUnlocked: (p) => (p.transcendentCollection?.['tx-neutral-null-catalyst'] ?? 0) > 0,
+    group: 'milestone',
+  },
+  {
+    id: 'title-all-and-nothing',
+    text: 'Keeper of All and Nothing',
+    description: 'Acquire 1 copy of The Reliquary of All and Nothing from the Forge of Transcendence.',
+    isUnlocked: (p) => (p.transcendentCollection?.['tx-neutral-void-reliquary'] ?? 0) > 0,
+    group: 'milestone',
+  },
+  {
+    id: 'title-between-light-life',
+    text: 'Between Light and Life',
+    description: 'Acquire 1 copy of The Bridge Between Light and Life from the Forge of Transcendence.',
+    isUnlocked: (p) => (p.transcendentCollection?.['tx-angel-starbound-null-archangel'] ?? 0) > 0,
+    group: 'milestone',
+  },
+  {
+    id: 'title-forge-pantheon-complete',
+    text: 'The Four Beyond',
+    description: 'Acquire all 4 distinct Transcendent cards from the Forge of Transcendence.',
+    isUnlocked: (p) => distinctTranscendentCards(p) === FORGE_CARD_IDS.length,
+    group: 'milestone',
+  },
+  {
+    id: 'title-transcendence-shardbearer',
+    text: 'Shardbearer of Transcendence',
+    description: 'Hold 25 Shards of Transcendence at once.',
+    isUnlocked: (p) => (p.shardsOfTranscendence ?? 0) >= 25,
     group: 'milestone',
   },
   {
@@ -508,6 +586,20 @@ const MILESTONE_TITLES: TitleBadgeDefinition[] = [
     isUnlocked: (p) => CardRegistry.getAll().some(card => card.definitionId.startsWith('inf-causality-') && getEverInfiniteCount(p, card.definitionId) > 0),
     group: 'milestone',
     imageAssetKey: 'infinite-cause',
+  },
+  {
+    id: 'title-causality-eternal-pantheon',
+    text: 'Keeper of the Five Causes',
+    description: 'Own all 5 Causality Eternal boss rewards: The First Cause Unwritten, The Last Horizon Remembered, Sovereign Ink of the Black Sun, Chromatic Verdict of Elsewhen, and Pearlescent Engine Beyond Sequence.',
+    isUnlocked: ownsEveryCausalityEternal,
+    group: 'milestone',
+  },
+  {
+    id: 'title-causality-grand-scribe',
+    text: 'Grand Scribe of Elsewhen',
+    description: 'Play 250 Causality cards.',
+    isUnlocked: (p) => causalityCardsPlayed(p) >= 250,
+    group: 'milestone',
   },
   {
     id: 'title-entropic-ascendant',
@@ -688,6 +780,12 @@ const BOSS_TITLE_OVERRIDES: Record<string, { text: string; description: string }
   // Neutrality — expansion
   'boss-neutrality-equilibrium-rex': { text: 'Past the Balance Point', description: 'Tip the Equilibrium Rex past its own balance point.' },
   'boss-neutrality-prime-judge': { text: 'Acquitted in Silence', description: 'Walk free from the Prime Judge\'s last verdict.' },
+  // Causality — Eternity's Wake
+  'boss-causality-first-author': { text: 'Unwritten by the First Author', description: 'Defeat the First Author before its opening line becomes law.' },
+  'boss-causality-meridian-eater': { text: 'Beyond the Last Meridian', description: 'Survive the Meridian Eater and reclaim the horizon it consumed.' },
+  'boss-causality-black-sun-scribe': { text: 'Inkless Before the Black Sun', description: 'Break the Scribe of the Black Sun\'s record of defeat.' },
+  'boss-causality-elsewhen-judge': { text: 'Acquitted in Every When', description: 'Outlast the Elsewhen Judge across every contradictory verdict.' },
+  'boss-causality-pearl-core': { text: 'Heart of the Open Manuscript', description: 'Defeat the Pearlescent Core at the center of every possible manuscript.' },
 };
 function buildBossClearTitles(): TitleBadgeDefinition[] {
   return BOSS_DEFINITIONS.map((boss) => {
@@ -695,7 +793,7 @@ function buildBossClearTitles(): TitleBadgeDefinition[] {
     return {
       id: bossClearTitleId(boss.id),
       text: ov?.text ?? `Slayer of ${boss.name}`,
-      description: ov?.description ?? `Defeat ${boss.name} in Eternity's Wake.`,
+      description: ov ? `Defeat ${boss.name} in Eternity's Wake. ${ov.description}` : `Defeat ${boss.name} in Eternity's Wake.`,
       isUnlocked: (p) => (p.bossClearCounts[boss.id] ?? 0) >= 1,
       group: 'boss' as const,
     };

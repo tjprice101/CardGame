@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { defaultGameState, useStore } from '@/state/store';
-import { ABILITY_REGISTRY, getAbilityTier } from '@/data/abilities/abilityDefinitions';
+import { ABILITY_REGISTRY, getAbilityMaterialCost, getAbilityTier } from '@/data/abilities/abilityDefinitions';
+import { CardRegistry } from '@/cards/CardRegistry';
 import type { GameState } from '@/types/game';
 
 function resetStore(): void {
@@ -22,6 +23,21 @@ function equip(abilityId: string): void {
   }));
 }
 
+function prepareTranscendentAbility(abilityId: string, stacks: number): void {
+  useStore.setState(state => ({
+    ...state,
+    progress: {
+      ...state.progress,
+      divineLight: 9_000_000,
+      ownedAbilities: { ...(state.progress.ownedAbilities ?? {}), [abilityId]: true },
+      savedDecks: state.progress.savedDecks.map(deck => deck.id === state.progress.activeDeckId
+        ? { ...deck, abilityLoadout: { ...(deck.abilityLoadout ?? {}), 1: abilityId } }
+        : deck),
+    },
+    turn: { ...state.turn, phase: 'playing', limitlessLightStacks: stacks, limitlessCosmosStacks: 0 },
+  }));
+}
+
 describe('materialized ability runtime', () => {
   it('classifies Causality ability tiers from ownership gates', () => {
     expect(getAbilityTier(ABILITY_REGISTRY.get('causality-author-first-cause')!)).toBe('foundational');
@@ -30,6 +46,117 @@ describe('materialized ability runtime', () => {
     expect(getAbilityTier(ABILITY_REGISTRY.get('causality-archive-elsewhen')!)).toBe('eternal');
     expect(getAbilityTier(ABILITY_REGISTRY.get('causality-final-cause')!)).toBe('infinite');
     expect(getAbilityTier(ABILITY_REGISTRY.get('causality-infinite-manuscript')!)).toBe('infinite');
+  });
+
+  it('adds a capstone Transcendent ability per Forge card with the required Divine Light + Shards cost', () => {
+    const ids = ['transcendent-starbound-glimmer', 'transcendent-first-catalyst', 'transcendent-reliquary-all-nothing', 'transcendent-bridge-light-life'];
+    for (const id of ids) {
+      const ability = ABILITY_REGISTRY.get(id)!;
+      expect(ability).toBeDefined();
+      expect(getAbilityTier(ability)).toBe('infinite');
+      expect(getAbilityMaterialCost(ability)).toEqual({ divineLight: 8_000_000, shardsOfTranscendence: 30 });
+    }
+  });
+
+  it('charges the Transcendent ability purchase cost once and rejects duplicate purchases', () => {
+    resetStore();
+    useStore.setState(state => ({
+      ...state,
+      progress: { ...state.progress, divineLight: 8_000_000, shardsOfTranscendence: 30 },
+    }));
+    expect(useStore.getState().purchaseAbility('transcendent-starbound-glimmer')).toBe(true);
+    expect(useStore.getState().progress.divineLight).toBe(0);
+    expect(useStore.getState().progress.shardsOfTranscendence).toBe(0);
+    expect(useStore.getState().progress.ownedAbilities?.['transcendent-starbound-glimmer']).toBe(true);
+    expect(useStore.getState().purchaseAbility('transcendent-starbound-glimmer')).toBe(false);
+  });
+
+  it('uses distinct ability identities rather than repeating the Forge card names', () => {
+    const abilityCardPairs = [
+      ['transcendent-starbound-glimmer', 'tx-neutral-starbound-glimmer'],
+      ['transcendent-first-catalyst', 'tx-neutral-null-catalyst'],
+      ['transcendent-reliquary-all-nothing', 'tx-neutral-void-reliquary'],
+      ['transcendent-bridge-light-life', 'tx-angel-starbound-null-archangel'],
+    ];
+    for (const [abilityId, cardId] of abilityCardPairs) {
+      const ability = ABILITY_REGISTRY.get(abilityId)!;
+      expect(ability.name).not.toBe(CardRegistry.get(cardId)?.name);
+      expect(ability.description).not.toMatch(/Cosmos|Causality/i);
+    }
+  });
+
+  it('activates all four Transcendent abilities without charging the one-time purchase currencies again', () => {
+    resetStore();
+    const firstDawn = 'transcendent-starbound-glimmer';
+    prepareTranscendentAbility(firstDawn, 6);
+    const beforeLight = useStore.getState().progress.divineLight;
+    const beforeHand = useStore.getState().deck.hand.length;
+    useStore.getState().activateAbility(1);
+    expect(useStore.getState().turn.limitlessLightStacks).toBe(0);
+    expect(useStore.getState().turn.limitlessCosmosStacks).toBe(0);
+    expect(useStore.getState().deck.hand.length).toBe(beforeHand + 3);
+    expect(useStore.getState().progress.divineLight).toBeGreaterThan(beforeLight);
+    expect(useStore.getState().turn.abilityCooldownUntil?.[firstDawn]).toBeGreaterThan(Date.now());
+
+    resetStore();
+    const axiom = 'transcendent-first-catalyst';
+    prepareTranscendentAbility(axiom, 8);
+    useStore.setState(state => ({
+      ...state,
+      board: {
+        ...state.board,
+        backSlots: [{ instanceId: 'cooldown-card', definitionId: 'light-neutrality-1', type: 'Light', rarity: 'Common', finish: 'normal', side: 'ain', faceState: 'front', limitlessCharge: 0, attackCooldowns: { 'some-attack': 3 }, backSlot: 0 }, null, null, null],
+      },
+    }));
+    const catalystCooldownBefore = useStore.getState().board.backSlots[0]?.attackCooldowns['some-attack'];
+    useStore.getState().activateAbility(1);
+    expect(useStore.getState().board.backSlots[0]?.attackCooldowns['some-attack']).toBe(catalystCooldownBefore);
+    expect(useStore.getState().turn.limitlessLightStacks).toBe(4);
+    expect(useStore.getState().deck.hand).toHaveLength(2);
+
+    resetStore();
+    const vault = 'transcendent-reliquary-all-nothing';
+    prepareTranscendentAbility(vault, 10);
+    useStore.setState(state => ({
+      ...state,
+      deck: { ...state.deck, discardPile: [
+        { instanceId: 'discard-a', definitionId: 'light-neutrality-1', finish: 'normal' },
+        { instanceId: 'discard-b', definitionId: 'dark-neutrality-1', finish: 'normal' },
+      ] },
+    }));
+    useStore.getState().activateAbility(1);
+    expect(useStore.getState().turn.pendingEffect?.type).toBe('salvage');
+    expect(useStore.getState().turn.limitlessLightStacks).toBe(0);
+    useStore.getState().resolvePending(['discard-a', 'discard-b']);
+    expect(useStore.getState().turn.pendingEffect).toBeNull();
+    expect(useStore.getState().deck.hand.map(card => card.instanceId)).toEqual(expect.arrayContaining(['discard-a', 'discard-b']));
+    expect(useStore.getState().progress.divineLight).toBeGreaterThan(9_000_000);
+    expect(useStore.getState().turn.abilityCooldownUntil?.[vault]).toBeGreaterThan(Date.now());
+
+    resetStore();
+    const confluence = 'transcendent-bridge-light-life';
+    prepareTranscendentAbility(confluence, 12);
+    useStore.setState(state => ({
+      ...state,
+      board: {
+        ...state.board,
+        backSlots: [
+          { instanceId: 'causality-card', definitionId: 'light-causality-1', type: 'Light', rarity: 'Rare', finish: 'normal', side: 'ain', faceState: 'front', limitlessCharge: 0, attackCooldowns: { 'causality-attack': 3 }, backSlot: 0 },
+          { instanceId: 'neutrality-card', definitionId: 'light-neutrality-1', type: 'Light', rarity: 'Common', finish: 'normal', side: 'ain', faceState: 'front', limitlessCharge: 0, attackCooldowns: { 'neutrality-attack': 3 }, backSlot: 1 },
+          null,
+          null,
+        ],
+      },
+    }));
+    const finalLight = useStore.getState().progress.divineLight;
+    useStore.getState().activateAbility(1);
+    expect(useStore.getState().turn.limitlessCosmosStacks).toBe(0);
+    expect(useStore.getState().turn.limitlessLightStacks).toBe(0);
+    expect(useStore.getState().board.backSlots[0]?.attackCooldowns['causality-attack']).toBe(3);
+    expect(useStore.getState().board.backSlots[1]?.attackCooldowns['neutrality-attack']).toBe(3);
+    expect(useStore.getState().deck.hand).toHaveLength(3);
+    expect(useStore.getState().progress.divineLight).toBeGreaterThan(finalLight);
+    expect(useStore.getState().turn.abilityCooldownUntil?.[confluence]).toBeGreaterThan(Date.now());
   });
 
   it('requires the complete base Causality collection and escalates Eternal/Infinite gates', () => {

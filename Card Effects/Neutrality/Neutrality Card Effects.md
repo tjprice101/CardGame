@@ -14,23 +14,20 @@ Premium Neutrality cards are awarded outside packs:
 
 - Enigmatic: Enigma rewards.
 - Eternal: Eternity's Wake rewards.
-- Transcendent: Null Raid progression.
 - Infinite: Infinitude crafts.
+- Transcendent: Forge of Transcendence.
 
 Valley of Null is the Neutrality Garden expedition. Nullified Lattice, Null-seared Light, and Nullified Oblivion-matter are Neutrality crafting materials, not universal currencies for future card sets.
 
 ## Light Cards
 
-Light cards can be placed as Soph or Ain.
-
 - Soph side: face-down, charges by +1 whenever a hand card is played.
-- At 2+ charge, Soph can flip to Ain and bank its charge as Limitless Light Stacks, or sacrifice to convert a percentage of its stored charge into Limitless Light Stacks.
-- Each Light card has a distinct Soph-placement effect that resolves when it is placed face-down.
 - Ain side: uses Ain Attack and Soph Attack.
 - Ain Attack reads stacks without spending them.
 - Soph Attack may spend stacks; payout uses the pre-spend stack pool.
+- Every Light card across all live sources has a distinct authored Soph-placement effect.
 
-All Light attacks use authored base Divine Light, cooldown, and scaling data. Triune scaling reads Limitless Light Stacks, front-row Ain Soph Aur count, and Collection Power.
+All Light attacks use authored base Divine Light, cooldown, and declared scaling data.
 
 ## Ability System
 
@@ -61,7 +58,10 @@ Activation-cost policy:
 - Persistent Enigmatic utilities are authored individually; Amplifier of the Void costs 0 and remains on the board with cooldown.
 
 Amplifier of the Void draws 2 cards and grants 3 Limitless Light Stacks. If the post-activation pool reaches 5 stacks, it grants an additional 1,500 Divine Light.
-- Persistent Transcendent utilities currently cost 3-4.
+
+## Transcendent Abilities
+
+The Forge abilities are separate from Neutrality cards and from the four Transcendent cards. Their purchase cost is 8,000,000 Divine Light plus 30 Shards of Transcendence each. Their activations use shared Limitless Light Stacks, Divine Light, draw, and generic discard zones only; they must not depend on Cosmos or any set-specific mechanic.
 
 Dark activations are atomic: if a target-dependent effect cannot resolve, stacks are not spent and the card stays in place.
 

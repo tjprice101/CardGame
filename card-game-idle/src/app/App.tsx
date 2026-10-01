@@ -63,6 +63,8 @@ import { MusicManager, type MusicTrackId } from '@/audio/MusicManager';
 import { MainMenuRadio } from '@/audio/MainMenuRadio';
 import { MainTurnRadio } from '@/audio/MainTurnRadio';
 import { EternityBossRadio } from '@/audio/EternityBossRadio';
+import { useIsMusicSuppressed } from '@/audio/musicSuppression';
+import { RAISE_SPECTRUM_EVENT } from '@/ui/hud/SpectrumControl';
 import type { NowPlayingEvent } from '@/ui/components/RadioNowPlaying';
 import { usePartyStore } from '@/state/partyStore';
 
@@ -422,14 +424,32 @@ export default function App() {
   // ── Music ────────────────────────────────────────────────────────────
   // Volume slider drives the master music gain in real time. A value of 0
   // (or the "Music Enabled" checkbox unchecked, which forces volume to 0)
-  // pauses playback entirely.
+  // pauses playback entirely. Music also pauses on reward/result screens and
+  // while the game is paused (settings open mid-game, or the window hidden).
+  const componentMusicSuppressed = useIsMusicSuppressed();
+  const [windowHidden, setWindowHidden] = useState(() => typeof document !== 'undefined' && document.hidden);
   useEffect(() => {
-    const vol = settings.musicVolume ?? 0.5;
+    const onVisibility = () => setWindowHidden(document.hidden);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, []);
+  const inActiveGame = turn.phase === 'mulligan' || turn.phase === 'playing' || bossFight.mode === 'active';
+  const musicSuppressed = componentMusicSuppressed
+    || windowHidden
+    || (showSettings && inActiveGame)
+    || bossFight.mode === 'victory' || bossFight.mode === 'defeat'
+    || gardenDungeon.phase === 'victory' || gardenDungeon.phase === 'defeat'
+    || battleground.mode === 'finished'
+    || showDailyReward;
+  const effectiveMusicVolume = musicSuppressed ? 0 : (settings.musicVolume ?? 0.5);
+
+  useEffect(() => {
+    const vol = effectiveMusicVolume;
     MusicManager.setVolume(vol);
     MainMenuRadio.setVolume(vol);
     MainTurnRadio.setVolume(vol);
     EternityBossRadio.setVolume(vol);
-  }, [settings.musicVolume]);
+  }, [effectiveMusicVolume]);
 
   // ── SFX volume ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -515,7 +535,7 @@ export default function App() {
           setRadioCurrentTrack(info);
         });
         MainMenuRadio.setOnPausedChange((p) => setRadioPaused(p));
-        MainMenuRadio.start(settings.musicVolume ?? 0.5);
+        MainMenuRadio.start(effectiveMusicVolume);
         MusicManager.stop();
       }
       // Stop the turn radio if we were in a battle
@@ -539,7 +559,7 @@ export default function App() {
           setTurnRadioCurrentTrack(info);
         });
         MainTurnRadio.setOnPausedChange((p) => setTurnRadioPaused(p));
-        MainTurnRadio.start(settings.musicVolume ?? 0.5);
+        MainTurnRadio.start(effectiveMusicVolume);
         MusicManager.stop();
       }
       // Stop the menu radio if transitioning from menu
@@ -555,7 +575,7 @@ export default function App() {
     } else if (track === 'battle-eternity') {
       if (!eternityRadioActiveRef.current) {
         eternityRadioActiveRef.current = true;
-        EternityBossRadio.start(settings.musicVolume ?? 0.5);
+        EternityBossRadio.start(effectiveMusicVolume);
         MusicManager.stop();
       }
     } else {
@@ -690,7 +710,14 @@ export default function App() {
 
       const controls = { ...DEFAULT_CONTROL_BINDINGS, ...(settings.controls ?? {}) };
 
-      // Global radio-UI toggle (default R): show/hide radio widgets without stopping playback.
+      // Raise Spectrum (default R) during an active turn; checked first so an old R radio binding can't shadow it mid-turn.
+      if (e.code === controls.raiseSpectrum && !e.ctrlKey && !e.metaKey && !e.altKey && useStore.getState().turn.phase === 'playing') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent(RAISE_SPECTRUM_EVENT));
+        return;
+      }
+
+      // Global radio-UI toggle (default T): show/hide radio widgets without stopping playback.
       if (e.code === controls.toggleRadioUi && !e.ctrlKey && !e.metaKey && !e.altKey) {
         setRadioUiAutoHidden(false);
         setHideRadioUi(v => !v);

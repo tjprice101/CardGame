@@ -29,6 +29,7 @@ interface LightCardDefinition {
   definitionId: string;
   type: 'Light';
   rarity: CardRarity;
+  spectrumLevel: SpectrumLevel;
   name: string;
   description: string;
   artKey: string;
@@ -51,6 +52,7 @@ interface DarkCardDefinition {
   definitionId: string;
   type: 'Dark';
   rarity: CardRarity;
+  spectrumLevel: SpectrumLevel;
   name: string;
   description: string;
   artKey: string;
@@ -74,6 +76,7 @@ interface AinSophAurDefinition {
   definitionId: string;
   type: 'AinSophAur';
   rarity: CardRarity;
+  spectrumLevel: SpectrumLevel;
   name: string;
   description: string;
   artKey: string;
@@ -91,7 +94,15 @@ interface AinSophAurDefinition {
 - Enigmatic: Enigma rewards.
 - Eternal: Eternity's Wake boss rewards.
 - Infinite: Infinitude crafting.
-- Transcendent: Null Raid progression.
+- Transcendent: Forge of Transcendence.
+
+## Spectrum Level
+
+Every card has a `spectrumLevel` from 0 to 5. It is an authored play/summon requirement, separate from rarity. A card's level may not fall below its rarity floor: Enigmatic 1, Eternal 2, Infinite 4, and Transcendent 5. Spectrum Power bands also account for rarity and origin; higher-rarity attack bands remain above lower-rarity bands.
+
+Every turn starts at Spectrum Level 0. `raiseSpectrumLevel(handInstanceId)` spends `5 + currentLevel` Limitless Light Stacks and moves one chosen hand card into `DeckState.lightBoundAbyss`; levels are capped at 5. Abyss cards cannot be retrieved during the turn. They return when the deck zones reset. Cards above the current level cannot be played, and Ain Soph Aur cards cannot be summoned. Phantom Matrix free summons may reach one level above the current level.
+
+Origin power order is base packs < event packs < Enigma rewards < boss Eternals < Infinitude Infinites < Forge Transcendents. Spectrum Level positions a card within its rarity/origin band; origin bonuses must never let a lower rarity exceed the next rarity's attack band. Every Light card across every live source must have a distinct authored Soph placement effect.
 
 ## Adding Cards
 

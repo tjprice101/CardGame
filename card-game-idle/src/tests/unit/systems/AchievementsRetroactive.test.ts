@@ -42,6 +42,26 @@ describe('achievements retroactive unlocking', () => {
     expect(isAchievementUnlocked(progress, 'title-transcendent-caller')).toBe(false);
   });
 
+  it('recognizes Forge unlock, Shard, and each Transcendent card achievement', () => {
+    const progress = cloneProgress();
+    progress.forgeOfTranscendenceUnlocked = true;
+    progress.shardsOfTranscendence = 25;
+    progress.transcendentCollection = {
+      'tx-neutral-starbound-glimmer': 1,
+      'tx-neutral-null-catalyst': 1,
+      'tx-neutral-void-reliquary': 1,
+      'tx-angel-starbound-null-archangel': 1,
+    };
+
+    expect(isAchievementUnlocked(progress, 'title-forge-unsealed')).toBe(true);
+    expect(isAchievementUnlocked(progress, 'title-transcendence-shardbearer')).toBe(true);
+    expect(isAchievementUnlocked(progress, 'title-light-before-stars')).toBe(true);
+    expect(isAchievementUnlocked(progress, 'title-first-catalyst')).toBe(true);
+    expect(isAchievementUnlocked(progress, 'title-all-and-nothing')).toBe(true);
+    expect(isAchievementUnlocked(progress, 'title-between-light-life')).toBe(true);
+    expect(isAchievementUnlocked(progress, 'title-forge-pantheon-complete')).toBe(true);
+  });
+
   it('does not treat ordinary Infinite ownership as a crafted Infinity card', () => {
     const progress = cloneProgress();
     progress.collection['inf-oblivion-absolute'] = 1;

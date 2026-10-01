@@ -64,6 +64,8 @@ export interface DeckState {
   drawPile: DeckCard[];
   hand: DeckCard[];
   discardPile: DeckCard[];
+  /** Cards sacrificed to raise Spectrum Level. Unretrievable until the deck zones reset. */
+  lightBoundAbyss?: DeckCard[];
 }
 
 // ── Turn ──────────────────────────────────────────────────────────────────────
@@ -95,7 +97,7 @@ export type PendingEffect =
     }
   | { type: 'opposite_exchange'; handCards: DeckCard[]; deckCards: DeckCard[]; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
   | { type: 'exchange_deck_ends'; topCard: DeckCard; bottomCard: DeckCard; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
-  | { type: 'salvage'; cards: DeckCard[]; filter: CardSubtypeFilter[] | null; count: number; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
+  | { type: 'salvage'; cards: DeckCard[]; filter: CardSubtypeFilter[] | null; count: number; sourceCard?: string; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
   | { type: 'embrace_infinite'; cards: DeckCard[]; allCards: DeckCard[]; keep: number };
 
 export interface TurnState {
@@ -107,6 +109,8 @@ export interface TurnState {
   cardsPlayedThisTurn: number;
   neutralityAbilityActivationsThisTurn?: number;
   limitlessLightStacks: number;
+  /** Current Spectrum Level (0-5). Cards above it cannot be played or summoned. Resets each turn. */
+  spectrumLevel?: number;
   limitlessCosmosStacks?: number;
   causalityCardsPlayedThisTurn?: number;
   causalityDivineLightThisTurn?: number;
@@ -203,6 +207,8 @@ export interface ShatterInfiniteLightState {
   lastPointerRadius?: number;
   pointerOrbitDirection?: 1 | -1;
   pointerOrbitAccumulated?: number;
+  /** Continuous orbit progress in revolutions, shown live while the cursor circles. */
+  orbitPower?: number;
 }
 
 // ── Saved Decks ───────────────────────────────────────────────────────────────
@@ -471,18 +477,20 @@ export type KeybindActionId =
   | 'togglePartyUi'
   | 'activateAbility1'
   | 'activateAbility2'
-  | 'activateAbility3';
+  | 'activateAbility3'
+  | 'raiseSpectrum';
 
 /** Default keyboard control bindings (KeyboardEvent.code values). */
 export const DEFAULT_CONTROL_BINDINGS: Record<KeybindActionId, string> = {
   swapExtraDeck: 'KeyE',
   openTutorial: 'Slash',
   closeOverlay: 'Escape',
-  toggleRadioUi: 'KeyR',
+  toggleRadioUi: 'KeyT',
   togglePartyUi: 'KeyP',
   activateAbility1: 'Digit1',
   activateAbility2: 'Digit2',
   activateAbility3: 'Digit3',
+  raiseSpectrum: 'KeyR',
 };
 
 export type UiLanguage = 'en' | 'es' | 'fr';

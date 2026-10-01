@@ -17,6 +17,8 @@ import type { DeckCard, GameState } from '@/types/game';
 function resetStore(): void {
   const baseState = JSON.parse(JSON.stringify(defaultGameState)) as GameState;
   useStore.setState(state => ({ ...state, ...baseState }));
+  // Wiring tests exercise every card; Spectrum gating is covered by SpectrumLevel.test.ts.
+  useStore.setState(state => ({ ...state, turn: { ...state.turn, spectrumLevel: 5 } }));
 }
 
 function resolveAttackSequence(): void {
@@ -31,21 +33,34 @@ function resolveAttackSequence(): void {
   expect(useStore.getState().turn.attackSequence?.phase).toBe('result');
 }
 
-function countConditionalLightConversionCost(effects: Array<{ type: string; [key: string]: unknown }>): number {
-  let total = 0;
+function predictLightStackDelta(
+  effects: Array<{ type: string; [key: string]: unknown }>,
+  state: { stacks: number; cosmos: number; cardsPlayed: number; discardLights?: number },
+): number {
+  const start = state.stacks;
   for (const effect of effects) {
     if (effect.type === 'conditional') {
-      const thenEffects = Array.isArray((effect as { then?: unknown[] }).then)
-        ? (effect as { then: Array<{ type: string; lightCost?: number; value?: number }> }).then
-        : [];
-      total += countConditionalLightConversionCost(thenEffects as Array<{ type: string; [key: string]: unknown }>);
+      const condition = effect.condition as { type: string; value?: number };
+      const met = condition.type === 'light_stacks_gte' ? state.stacks >= (condition.value ?? 0)
+        : condition.type === 'cosmos_gte' ? state.cosmos >= (condition.value ?? 0)
+          : condition.type === 'cards_played_gte' ? state.cardsPlayed >= (condition.value ?? 0)
+            : condition.type === 'first_card_this_turn' ? state.cardsPlayed === 0
+              : false;
+      if (met) predictLightStackDelta(effect.then as Array<{ type: string; [key: string]: unknown }>, state);
       continue;
     }
-    if (effect.type === 'convert_light_to_cosmos' && typeof effect.lightCost === 'number') {
-      total += effect.lightCost;
+    if (effect.type === 'convert_light_to_cosmos') {
+      state.stacks -= effect.lightCost as number;
+      state.cosmos += effect.cosmosGain as number;
     }
+    if (effect.type === 'light_stacks_flat') state.stacks += effect.value as number;
+    if (effect.type === 'salvage_either_light_or_dark' && (state.discardLights ?? 0) >= (effect.count as number)) {
+      state.stacks += effect.lightStacks as number;
+    }
+    if (effect.type === 'cosmos_flat') state.cosmos += effect.value as number;
+    if (effect.type === 'consume_cosmos') state.cosmos -= effect.value as number;
   }
-  return total;
+  return state.stacks - start;
 }
 
 function deckCard(instanceId: string, definitionId: string): DeckCard {
@@ -186,7 +201,7 @@ describe('complete card runtime wiring', () => {
         turn: { ...state.turn, phase: 'playing', limitlessLightStacks: 1_000 },
         deck: {
           ...state.deck,
-          hand: [deckCard(instanceId, definition.definitionId), deckCard('held-dark', 'dark-neutrality-1')],
+          hand: [deckCard(instanceId, definition.definitionId), deckCard('held-dark', 'dark-neutrality-1'), deckCard('held-light', 'light-neutrality-3')],
           drawPile: [
             deckCard('draw-light', 'light-neutrality-1'),
             deckCard('draw-dark', 'dark-neutrality-1'),
@@ -358,8 +373,11 @@ describe('complete card runtime wiring', () => {
       useStore.getState().activateDark(instanceId);
       const state = useStore.getState();
       const activationCost = definition.activationCost.kind === 'fixed' ? (definition.activationCost.value ?? 0) : 0;
-      const conversionCost = countConditionalLightConversionCost(definition.sophEffects as Array<{ type: string; [key: string]: unknown }>);
-      expect(state.turn.limitlessLightStacks, definition.definitionId).toBe(stacksBefore - activationCost - conversionCost);
+      const stackDelta = predictLightStackDelta(
+        definition.sophEffects as Array<{ type: string; [key: string]: unknown }>,
+        { stacks: stacksBefore - activationCost, cosmos: 0, cardsPlayed: 0, discardLights: 2 },
+      );
+      expect(state.turn.limitlessLightStacks, definition.definitionId).toBe(stacksBefore - activationCost + stackDelta);
 
       if (definition.persistent) {
         expect(state.board.backSlots[0]?.instanceId).toBe(instanceId);
@@ -437,9 +455,12 @@ describe('complete card runtime wiring', () => {
       const summoned = useStore.getState().board.frontSlots[0];
       expect(summoned?.definitionId, definition.definitionId).toBe(definition.definitionId);
       expect(definition.onSummonEffects.length, `${definition.definitionId} summon effect`).toBeGreaterThan(0);
-      const summonConversionCost = countConditionalLightConversionCost(definition.onSummonEffects as Array<{ type: string; [key: string]: unknown }>);
+      const summonStackDelta = predictLightStackDelta(
+        definition.onSummonEffects as Array<{ type: string; [key: string]: unknown }>,
+        { stacks: stacksBeforeSummon, cosmos: 0, cardsPlayed: 0 },
+      );
       expect(useStore.getState().turn.limitlessLightStacks, `${definition.definitionId} summon stack`).toBe(
-        stacksBeforeSummon + AIN_SOPH_AUR_SUMMON_STACK_REWARD - summonConversionCost,
+        stacksBeforeSummon + AIN_SOPH_AUR_SUMMON_STACK_REWARD + summonStackDelta,
       );
 
       const beforeBridge = useStore.getState().progress.divineLight;

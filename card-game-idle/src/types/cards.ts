@@ -6,6 +6,8 @@ export type CardRarity = 'Common' | 'Rare' | 'Epic' | 'Legendary' | 'Enigmatic' 
 export type CardFinish = 'normal' | 'holo';
 export type CardFaceState = 'front' | 'back';
 export type CardSide = 'ain' | 'soph';
+/** Spectrum Level a player must have reached this turn to play/summon the card. */
+export type SpectrumLevel = 0 | 1 | 2 | 3 | 4 | 5;
 
 export type CardScalingExpr =
   | { readonly kind: 'constant'; readonly value: number }
@@ -29,6 +31,7 @@ export interface LightCardDefinition {
   readonly definitionId: string;
   readonly type: 'Light';
   readonly rarity: CardRarity;
+  readonly spectrumLevel: SpectrumLevel;
   readonly name: string;
   readonly description: string;
   readonly artKey: string;
@@ -43,6 +46,7 @@ export interface DarkCardDefinition {
   readonly definitionId: string;
   readonly type: 'Dark';
   readonly rarity: CardRarity;
+  readonly spectrumLevel: SpectrumLevel;
   readonly name: string;
   readonly description: string;
   readonly artKey: string;
@@ -109,6 +113,7 @@ export interface AinSophAurDefinition {
   readonly definitionId: string;
   readonly type: 'AinSophAur';
   readonly rarity: CardRarity;
+  readonly spectrumLevel: SpectrumLevel;
   readonly name: string;
   readonly description: string;
   readonly artKey: string;

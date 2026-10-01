@@ -2,7 +2,7 @@
 
 Garden of Cards is set-filtered. Valley of Null, Nullified Lattice, Null-seared Light, and Nullified Oblivion-matter belong to Neutrality. Rift of Causality, Seed of Causality, Causal Bloom, Shattered Causal Transcript, and Heart of Causality belong to Causality. These material economies are not interchangeable.
 
-Ability Materialization contains Neutrality and Causality set filters. Decks still equip only three abilities total. Neutrality has seven abilities with Eternal and Infinite ownership gates. Causality has six gate-defined abilities: Author the First Cause and Causal Cartography are Foundational; Pearlescent Mandate and Archive of Elsewhen are Eternal; Final Cause and Infinite Manuscript are Infinite.
+Ability Materialization contains Neutrality, Causality, and Transcendent filters. Decks still equip only three abilities total. Neutrality has seven abilities with Eternal and Infinite ownership gates. Causality has six gate-defined abilities: Author the First Cause and Causal Cartography are Foundational; Pearlescent Mandate and Archive of Elsewhen are Eternal; Final Cause and Infinite Manuscript are Infinite. The four Transcendent abilities are First Dawn Accord, Axiom of Acceleration, Vault of Unwritten Futures, and Confluence of All Origins; each costs 8,000,000 Divine Light plus 30 Shards of Transcendence to purchase.
 
 # Progression And Challenges
 
@@ -19,6 +19,12 @@ Starter accounts, new saves, and wiped saves start with zero currency balances: 
 Collection Power comes from card mastery and is computed with `computeGlobalResonanceScore(progress)`. It scales Divine Light grants through the central grant path:
 
 Card-born Tier thresholds are 10, 25, 50, 125, 250, 625, 1,250, and 2,500 Card-light.
+
+## Spectrum Level
+
+Spectrum Level is the per-turn progression level from 0 to 5. Cards can only be played or summoned when their required level is at or below the current level. Level-up costs `5 + current level` Limitless Light Stacks and one chosen hand card, sent to the Light-bound Abyss. Level-up is a free action, not a card play. The Abyss is sealed until deck zones reset; level resets to 0 each turn and at new Garden encounters, boss fights, and Battleground matches. Phantom Matrix may free-summon an ASA up to one level above current.
+
+Rarity floors are Enigmatic 1, Eternal 2, Infinite 4, Transcendent 5. Spectrum attack power is balanced by both rarity and origin; the rarity bands are non-overlapping so higher-rarity attack baselines stay above lower-rarity baselines. Deck Builder shows a level filter and curve; keep enough level-0 cards to start a turn.
 
 ```text
 maximum resonance = registered card count * highest-tier resonance contribution
@@ -48,7 +54,16 @@ The login reward surface is a persistent monthly gacha-style calendar track. Mis
 - Enigmatic cards come from Enigmas.
 - Eternal cards come from Eternity's Wake bosses.
 - Infinite cards are crafted in Infinitude from specific Eternal recipes.
-- Transcendent cards come from Null Raid progression.
+- Transcendent cards come from the Forge of Transcendence.
+
+The four materialized Transcendent abilities are separate from the four Transcendent cards and are not owned through a card. They use only shared mechanics: Limitless Light Stacks, Divine Light, draw, and generic hand/draw/discard zones. They do not generate or spend Cosmos, target Causality cards/cooldowns, or depend on another set's systems. Their purchase cost is paid once; their listed Limitless Light Stack cost is paid on activation.
+
+- First Dawn Accord: spend 6 stacks; gain 10,000 base Divine Light and draw 3 (90s cooldown).
+- Axiom of Acceleration: spend 8 stacks; gain 4 stacks and draw 2 (105s cooldown).
+- Vault of Unwritten Futures: spend 10 stacks; select 2 discard cards, gain 12,000 base Divine Light, and draw 2 (120s cooldown).
+- Confluence of All Origins: spend 12 stacks; gain 30,000 base Divine Light and draw 3 (150s cooldown).
+
+Shard drop rolls are gated until all five Forge Causality bosses have been cleared and the Forge is open. Each qualifying boss clear has a 0.1% base chance, multiplied by the selected x2/x3 fight count. The final encounter of each available Garden expedition has a 0.1% roll. Monthly Login Calendar bonus rolls occur on days 10 and 22, also at 0.1%. Drop-rate labels remain hidden until both unlock conditions are satisfied.
 
 Achievements and unlock gates should distinguish those rarity sources instead of treating all premium cards as one bucket.
 

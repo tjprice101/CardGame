@@ -1,5 +1,6 @@
 export type GardenRewardCurrency = 'nullifiedLattice' | 'nullSearedLight' | 'nullifiedOblivionMatter'
-  | 'seedOfCausality' | 'causalBloom' | 'shatteredCausalTranscript' | 'heartOfCausality';
+  | 'seedOfCausality' | 'causalBloom' | 'shatteredCausalTranscript' | 'heartOfCausality'
+  | 'divineLight' | 'shardsOfTranscendence';
 
 export interface GardenEncounterDefinition {
   readonly id: string;

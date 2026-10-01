@@ -24,6 +24,8 @@ import {
 } from '@/ui/cardBackgrounds';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
+import ShardDropRate from '@/ui/components/ShardDropRate';
+import { FORGE_EVENT_BOSS_IDS, areShardDropRatesVisible, formatShardDropChance } from '@/data/forge/forgeDefinitions';
 import BossCodex from './BossCodex';
 import { getBossBaseMasteryPerCard, previewMasteryReward } from '@/systems/progression/cardMastery';
 
@@ -361,6 +363,13 @@ export default function EternitysWake({ onClose }: Props) {
                   </span>
                 </div>
               </div>
+
+              {areShardDropRatesVisible(progress) && FORGE_EVENT_BOSS_IDS.includes(boss.id) && (
+                <ShardDropRate
+                  label={`Shard of Transcendence · ${formatShardDropChance(selectedFightCount)} per clear${selectedFightCount > 1 ? ` (x${selectedFightCount})` : ''}`}
+                  style={{ alignSelf: 'flex-start' }}
+                />
+              )}
 
               {/* Reward card */}
               {rewardDef && (

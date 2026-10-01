@@ -38,6 +38,7 @@ export default function ControlsSection() {
     { id: 'openTutorial',  label: 'Open Tutorial',          hint: 'Show the in-game tutorial overlay.' },
     { id: 'closeOverlay',  label: 'Close Overlay',          hint: 'Dismiss the topmost modal.' },
     { id: 'toggleRadioUi', label: 'Toggle Radio UI',        hint: 'Show or hide on-screen radio controls/toasts.' },
+    { id: 'raiseSpectrum', label: 'Raise Spectrum Level',   hint: 'Open the Light-bound Abyss picker to raise your Spectrum Level during a turn.' },
     { id: 'togglePartyUi', label: 'Toggle Party UI',        hint: 'Show or hide the Card-bound Co-op overlay.' },
     { id: 'activateAbility1', label: 'Materialized Ability — Slot 1', hint: 'Activate the ability equipped in slot 1.' },
     { id: 'activateAbility2', label: 'Materialized Ability — Slot 2', hint: 'Activate the ability equipped in slot 2.' },

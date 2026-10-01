@@ -4,6 +4,7 @@ import type { CardDefinition } from '@/types/cards';
 
 import { CardRegistry } from '../../cards/CardRegistry';
 import { canSatisfySummonRequirements, getSummonRequirements } from './AinSophSummonRequirements';
+import { getUnmetCardRequirement } from './PlayRequirements';
 
 import { getActiveCoopRng as _getActiveCoopRng } from '@/state/coopSyncStore';
 import { TurnSystem } from './TurnSystem';
@@ -69,6 +70,8 @@ export class CardEffectExecutor {
     const pendingEffects: PendingEffect[] = [];
 
     const multiplier = 1;
+    let pendingDiscards = 0;
+    const availableToDiscard = () => mutableDeck.hand.filter(card => card.instanceId !== deckCard.instanceId).length - pendingDiscards;
 
     const isHighRarityMechanicCard = (_cardDef: CardDefinition | undefined): boolean => Boolean(_cardDef && (
       _cardDef.rarity === 'Eternal'
@@ -163,10 +166,14 @@ export class CardEffectExecutor {
         }
 
         case 'discard_choice':
+          if (availableToDiscard() < effect.value) return false;
+          pendingDiscards += effect.value;
           pendingEffects.push({ type: 'discard_choice', count: effect.value, sourceCard: deckCard.instanceId });
           break;
 
         case 'discard_draw':
+          if (availableToDiscard() < effect.discard) return false;
+          pendingDiscards += effect.discard;
           pendingEffects.push({
             type: 'discard_choice',
             count: effect.discard,
@@ -409,9 +416,12 @@ export class CardEffectExecutor {
   static checkPlayable(
     def: CardDefinition,
     _handSize: number,
-    _turn: TurnState,
+    turn: TurnState,
     board?: BoardState,
+    deck?: Pick<DeckState, 'hand' | 'drawPile' | 'discardPile'>,
+    sourceInstanceId?: string,
   ): boolean {
+    if (deck && getUnmetCardRequirement(def, turn, deck, sourceInstanceId)) return false;
     if (def.type === 'AinSophAur') {
       if (!board) return true;
       const materials = board.backSlots.filter((slot): slot is NonNullable<typeof slot> => slot !== null);

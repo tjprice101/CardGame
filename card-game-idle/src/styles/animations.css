@@ -554,6 +554,27 @@ select {
   }
 }
 
+.shard-drop-rate {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 0 10px rgba(255, 46, 126, 0.35);
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  line-height: 1.25;
+}
+
+.shard-drop-rate__text {
+  background: linear-gradient(90deg, #ffffff 0%, #ffb3dc 35%, #ff4f9a 65%, #e0102e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 @keyframes transcendentFoilShift {
   0% {
     background-position: 50% -20%, 24% 16%, 34% 22%, 50% 12%, 50% 10%, center, -18% 50%;
@@ -1758,6 +1779,7 @@ html.reduced-motion .trial-guide-pulse {
 
 /* ── Shatter the Infinite Light ── */
 @keyframes attackSequenceFadeBlack { from { opacity: 0; background: transparent; } to { opacity: 1; background: #000; } }
+@keyframes attackSequenceBridgeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes attackSequenceFadeWhite { from { opacity: 0; background: transparent; } to { opacity: 1; background: #f8f7f2; } }
 @keyframes attackSequenceCardFloat { from { translate: 0 -6px; } to { translate: 0 7px; } }
 @keyframes attackSequenceSolarPulse { 0%,100% { scale: .86; opacity: .2; } 50% { scale: 1.08; opacity: .52; } }
@@ -1766,7 +1788,7 @@ html.reduced-motion .trial-guide-pulse {
 .attack-sequence-field { position: absolute; inset: 0; overflow: hidden; background: radial-gradient(circle at 50% 45%, rgba(86,58,18,0.2), transparent 40%), linear-gradient(145deg, #020107, #0b071b 48%, #020914 78%, #000); animation: shatterStarfieldReveal 700ms ease-out both; }
 .attack-sequence-field::before, .attack-sequence-field::after { content: ''; position: absolute; inset: -18%; background-image: radial-gradient(circle, rgba(255,246,205,0.9) 0 1px, transparent 1.7px), radial-gradient(circle, rgba(255,201,82,0.7) 0 0.7px, transparent 1.3px); background-size: 71px 67px, 107px 97px; background-position: 0 0, 29px 41px; opacity: 0.36; animation: shatterStarfieldDrift 20s linear infinite; }
 .attack-sequence-field::after { opacity: 0.2; transform: rotate(16deg) scale(1.1); animation-direction: reverse; animation-duration: 29s; }
-.attack-sequence-field-inverted { background: radial-gradient(circle at 50% 45%, rgba(255,45,90,0.12), transparent 42%), linear-gradient(145deg, #fff, #eeeaf0 52%, #f9f7f0); }
+.attack-sequence-field-inverted { background: radial-gradient(circle at 50% 45%, rgba(255,45,90,0.12), transparent 42%), linear-gradient(145deg, #fff, #eeeaf0 52%, #f9f7f0); animation: none; }
 .attack-sequence-field-inverted::before, .attack-sequence-field-inverted::after { filter: invert(1); opacity: 0.24; }
 .attack-sequence-nebula { position: absolute; inset: -18%; background: conic-gradient(from 118deg at 50% 50%, transparent 0 20%, rgba(255,190,58,0.12) 30%, transparent 42% 68%, rgba(205,220,255,0.1) 78%, transparent 88%); filter: blur(25px); animation: shatterNebulaTurn 22s ease-in-out infinite alternate; }
 .attack-sequence-field-inverted .attack-sequence-nebula { background: conic-gradient(from 118deg at 50% 50%, transparent 0 20%, rgba(255,40,95,0.16) 30%, transparent 43% 67%, rgba(15,10,20,0.12) 78%, transparent 88%); }

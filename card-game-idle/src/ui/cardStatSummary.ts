@@ -8,6 +8,7 @@ import type { CardEffect, CardSubtypeFilter, EffectCondition } from '@/types/eff
 import { CardRegistry } from '@/cards/CardRegistry';
 import { formatDisplayCardText, getDisplayCardTypeLabel } from '@/ui/preferences';
 import { formatSummonRequirement, getSummonRequirements } from '@/systems/cards/AinSophSummonRequirements';
+import { getCardSpectrumLevel } from '@/systems/cards/SpectrumLevel';
 
 export interface CardSummarySection {
   title: string;
@@ -210,6 +211,13 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
   const sections: CardSummarySection[] = [];
   const authoredDescription = resolveAbilityDescription(card, options);
   const transcendentAbilityPrefix = 'Transcendent Ability: If this card is in your deck, your maximum hand size is now 10.';
+  const spectrumLevel = getCardSpectrumLevel(card);
+
+  pushSummarySection(sections, 'Spectrum', [
+    spectrumLevel === 0
+      ? `Lv 0 · ${card.type === 'AinSophAur' ? 'Summonable' : 'Playable'} at any Spectrum Level`
+      : `Lv ${spectrumLevel} · Requires Spectrum Level ${spectrumLevel} to ${card.type === 'AinSophAur' ? 'summon' : 'play'}`,
+  ]);
 
   if (card.definitionId.startsWith('light-neutrality-')
     || card.definitionId.startsWith('dark-neutrality-')

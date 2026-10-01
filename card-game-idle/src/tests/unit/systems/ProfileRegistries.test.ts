@@ -204,6 +204,19 @@ describe('title badge registry', () => {
     expect(isTitleUnlocked('title-battleground-overlord', p)).toBe(true);
   });
 
+  it('unlocks the complete Causality Eternal reward title', () => {
+    const p = baseProgress({
+      collection: {
+        'btei-causality-first-cause': 1,
+        'btei-causality-last-horizon': 1,
+        'btei-causality-ink-sovereign': 1,
+        'btei-causality-chromatic-verdict': 1,
+        'btei-causality-pearl-engine': 1,
+      },
+    });
+    expect(isTitleUnlocked('title-causality-eternal-pantheon', p)).toBe(true);
+  });
+
   it('unlocks Infinite card titles from ever-owned Infinite history', () => {
     const infTitle = TITLE_BADGES.find(t => t.group === 'infinite');
     expect(infTitle).toBeTruthy();
@@ -225,6 +238,14 @@ describe('dynamic title generation', () => {
     const rawBossId = bossTitle!.id.replace(/^title-bossclear-/, '');
     expect(isTitleUnlocked(bossTitle!.id, baseProgress())).toBe(false);
     expect(isTitleUnlocked(bossTitle!.id, baseProgress({ bossClearCounts: { [rawBossId]: 1 } }))).toBe(true);
+  });
+
+  it('uses a unique authored title for every live Causality boss', () => {
+    const causalityTitles = TITLE_BADGES.filter(title => title.id.startsWith('title-bossclear-boss-causality-'));
+    expect(causalityTitles).toHaveLength(5);
+    expect(new Set(causalityTitles.map(title => title.text)).size).toBe(causalityTitles.length);
+    expect(causalityTitles.every(title => !title.text.startsWith('Slayer of '))).toBe(true);
+    expect(causalityTitles.every(title => title.description.includes('Eternity\'s Wake'))).toBe(true);
   });
 
   it('mints an infinite-card title that unlocks when the card lands in the infiniteCollection', () => {

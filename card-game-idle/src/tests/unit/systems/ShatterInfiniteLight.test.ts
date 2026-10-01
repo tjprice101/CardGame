@@ -164,4 +164,29 @@ describe('Shatter the Infinite Light', () => {
     }
     expect(useStore.getState().turn.shatterInfiniteLight?.stacks).toBeGreaterThan(0);
   });
+
+  it('shows orbit power rising during a partial revolution and pays on it', () => {
+    resetStore();
+    const { frontSlots, backSlots } = buildFullShatterBoard();
+    useStore.setState(state => ({
+      ...state,
+      turn: { ...state.turn, phase: 'playing' },
+      board: { frontSlots: frontSlots as any, backSlots: backSlots as any, activeBoardEffects: [] },
+    }));
+    const before = Date.now();
+    useStore.getState().activateShatterTheInfiniteLight();
+    useStore.getState().tickShatterInfiniteLight(before + SHATTER_PRIME_MS + 1);
+
+    for (let sample = 0; sample <= 16; sample += 1) {
+      const angle = sample * (Math.PI * 2 / 32);
+      useStore.getState().registerShatterInfinityPointer(0.5 + Math.cos(angle) * 0.24, 0.5 + Math.sin(angle) * 0.24);
+    }
+    const mid = useStore.getState().turn.shatterInfiniteLight!;
+    expect(mid.stacks).toBe(0);
+    expect(mid.orbitPower ?? 0).toBeGreaterThan(0.4);
+    expect(mid.orbitPower ?? 0).toBeLessThan(1);
+
+    useStore.getState().tickShatterInfiniteLight(before + SHATTER_PRIME_MS + SHATTER_ACTIVE_MS + 1);
+    expect(useStore.getState().turn.shatterInfiniteLight?.payout).toBeGreaterThan(0);
+  });
 });

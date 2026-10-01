@@ -3,6 +3,7 @@ import { useStore, selectTurn, selectDivineLight } from '@/state/store';
 import { formatNumber } from '@/utils/bignum';
 import { uiTypography } from '@/ui/theme';
 import { SHATTER_ACTIVE_MS } from '@/systems/cards/ShatterTheInfiniteLight';
+import { toOrbitSpace } from '@/systems/cards/AttackSequence';
 
 const AMBIENT_STAR_COUNT = 120;
 interface AmbientStar {
@@ -68,10 +69,8 @@ export default function ShatterInfiniteLightOverlay() {
   const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
     if (phase !== 'active') return;
     const rect = event.currentTarget.getBoundingClientRect();
-    useStore.getState().registerShatterInfinityPointer(
-      (event.clientX - rect.left) / rect.width,
-      (event.clientY - rect.top) / rect.height,
-    );
+    const point = toOrbitSpace(event.clientX, event.clientY, rect);
+    useStore.getState().registerShatterInfinityPointer(point.x, point.y);
   };
 
   const secondsLeft = Math.max(0, (shatter.phaseEndsAt - Date.now()) / 1000);
@@ -156,6 +155,11 @@ export default function ShatterInfiniteLightOverlay() {
           >
             ✦ Limitless Infinity ×{shatter.stacks}
           </div>
+          {phase === 'active' && (
+            <div style={{ fontFamily: uiTypography.display, fontSize: 14, letterSpacing: 1.5, color: '#ffd7c4', marginTop: 2 }}>
+              ◌ {(shatter.orbitPower ?? 0).toFixed(1)} orbit power
+            </div>
+          )}
           {phase === 'active' && (
             <div style={{ fontFamily: uiTypography.display, fontSize: 20, marginTop: 10, color: '#ffb3a0' }}>
               {secondsLeft.toFixed(1)}s
