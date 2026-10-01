@@ -105,8 +105,8 @@ describe('dailyLogin.evaluateDailyLogin', () => {
     expect(result.claimable).toBe(false);
     expect(result.pendingStreak).toBe(3);
     expect(result.previousStreak).toBe(3);
-    expect(result.monthlyDay).toBe(4);
-    expect(result.monthlyReward).toBeDefined();
+    expect(result.monthlyDay).toBeUndefined();
+    expect(result.monthlyReward).toBeUndefined();
   });
 
   it('does not reopen a legacy save that claimed today before monthly tracking existed', () => {
@@ -149,13 +149,30 @@ describe('dailyLogin.evaluateDailyLogin', () => {
     expect(result.previousStreak).toBe(6);
   });
 
-  it('only exposes the next day in the login event when the player returns after a gap', () => {
+  it('claims the actual UTC calendar date rather than advancing by the streak after a gap', () => {
     const result = evaluateDailyLogin(
       makeProgress({ lastClaimedDayIndex: today - 4, streak: 2, monthlyTrackKey: getMonthlyTrackKey(now) }),
       now,
     );
     expect(result.claimable).toBe(true);
-    expect(result.monthlyDay).toBe(3);
-    expect(result.pendingReward.shards).toBe(35);
+    const currentCalendarDay = new Date(now).getUTCDate();
+    expect(result.monthlyDay).toBe(currentCalendarDay);
+    expect(result.monthlyReward).toEqual(monthlyRewardForDay(currentCalendarDay, now));
+  });
+
+  it("does not offer a calendar reward already claimed for today's UTC date", () => {
+    const currentCalendarDay = new Date(now).getUTCDate();
+    const result = evaluateDailyLogin(
+      makeProgress({
+        lastClaimedDayIndex: today - 1,
+        streak: 4,
+        monthlyTrackKey: getMonthlyTrackKey(now),
+        monthlyClaimedDays: [currentCalendarDay],
+      }),
+      now,
+    );
+    expect(result.claimable).toBe(true);
+    expect(result.monthlyDay).toBeUndefined();
+    expect(result.monthlyReward).toBeUndefined();
   });
 });

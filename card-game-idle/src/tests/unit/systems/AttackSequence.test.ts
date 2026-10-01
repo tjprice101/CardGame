@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { defaultGameState, useStore } from '@/state/store';
 import { lightCards } from '@/data/cards/lightCards';
+import { ainSophAurCards } from '@/data/cards/ainSophAurCards';
 import type { GameState } from '@/types/game';
 import {
   getAttackSequenceDuration,
@@ -130,9 +131,9 @@ describe('attack orbit sequences', () => {
     expect(getAttackSequenceMultiplier('ain', 0, sequence.orbitScore)).toBeGreaterThan(3.5);
   });
 
-  it('scores a tight circle around the Soph card the same way as an Ain circle', () => {
+  it('lets Soph and Bridge score fine circles that remain below Ain angular sensitivity', () => {
     const rect = { left: 0, top: 0, width: 1920, height: 1080 };
-    const runCircle = (kind: 'ain' | 'soph') => {
+    const runCircle = (kind: 'ain' | 'soph' | 'bridge') => {
       const base = structuredClone(defaultGameState) as GameState;
       const definition = lightCards[0];
       const instanceId = `attack-sequence-${kind}-tight`;
@@ -142,23 +143,42 @@ describe('attack orbit sequences', () => {
         instanceId, definitionId: definition.definitionId, type: 'Light', rarity: definition.rarity,
         finish: 'normal', side: 'ain', faceState: 'front', limitlessCharge: 0, attackCooldowns: {}, backSlot: 0,
       };
+      if (kind === 'bridge') {
+        const asa = ainSophAurCards[0];
+        base.board.frontSlots[0] = {
+          instanceId,
+          definitionId: asa.definitionId,
+          type: 'AinSophAur',
+          rarity: asa.rarity,
+          finish: 'normal',
+          side: 'ain',
+          faceState: 'front',
+          cardClass: 'ain-soph-aur',
+          limitlessCharge: 0,
+          attackCooldowns: {},
+          boardSlot: 0,
+        };
+      }
       useStore.setState(state => ({ ...state, ...base }));
       if (kind === 'ain') useStore.getState().activateLightAinAttack(instanceId);
-      else useStore.getState().activateLightSophAttack(instanceId);
+      else if (kind === 'soph') useStore.getState().activateLightSophAttack(instanceId);
+      else useStore.getState().activateAsaBridge(instanceId);
       const priming = useStore.getState().turn.attackSequence!;
       useStore.getState().tickAttackSequence(priming.phaseEndsAt + 1);
       for (let sample = 0; sample < 120; sample += 1) {
-        const angle = sample * 0.4;
-        // ~130px radius around the visible core (centered at 52% height).
-        const point = toOrbitSpace(960 + Math.cos(angle) * 130, 1080 * 0.52 + Math.sin(angle) * 130, rect);
+        const angle = sample * 0.012;
+        const radius = 130 + (sample % 2) * 12;
+        const point = toOrbitSpace(960 + Math.cos(angle) * radius, 1080 * 0.52 + Math.sin(angle) * radius, rect);
         useStore.getState().registerAttackSequencePointer(point.x, point.y, priming.phaseEndsAt + 1 + sample * 12);
       }
       return useStore.getState().turn.attackSequence!.orbitScore ?? 0;
     };
     const ain = runCircle('ain');
     const soph = runCircle('soph');
-    expect(ain).toBeGreaterThan(2);
-    expect(soph).toBeCloseTo(ain, 5);
+    const bridge = runCircle('bridge');
+    expect(ain).toBe(0);
+    expect(soph).toBeGreaterThan(0.15);
+    expect(bridge).toBeGreaterThan(0.15);
   });
 
   it('does not reward non-circular pointer movement', () => {

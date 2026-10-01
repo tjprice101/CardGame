@@ -135,6 +135,23 @@ describe('avatar registry', () => {
     expect(isAvatarUnlocked('avatar-holo-curator', p)).toBe(true);
     expect(isAvatarUnlocked('avatar-infinite', p)).toBe(true);
   });
+
+  it('unlocks Eternity Wake boss avatars upon defeating the corresponding boss', () => {
+    const p = baseProgress({
+      bossClearCounts: { 'boss-hollow-king': 1, 'boss-causality-first-author': 2 },
+    });
+    expect(isAvatarUnlocked('pic-wake-hollow-queen', p)).toBe(true);
+    expect(isAvatarUnlocked('pic-wake-first-author', p)).toBe(true);
+    expect(isAvatarUnlocked('pic-wake-time-eater', p)).toBe(false);
+  });
+
+  it('unlocks Forge achievement avatars when the corresponding title achievement is unlocked', () => {
+    const p = baseProgress({
+      forgeOfTranscendenceUnlocked: true,
+    });
+    expect(isAvatarUnlocked('pic-forge-unsealed', p)).toBe(true);
+    expect(isAvatarUnlocked('pic-forge-shardbearer', p)).toBe(false);
+  });
 });
 
 describe('title badge registry', () => {

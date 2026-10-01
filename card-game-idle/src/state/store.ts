@@ -191,18 +191,18 @@ function resolveStackCost(cost: { kind: 'fixed' | 'percentage' | 'range'; value?
 }
 
 function enforceHandCap(s: Store): void {
-  const overflow = s.deck.hand.length - getMaxHandSize(s.deck);
+  const overflow = s.deck.hand.length - getMaxHandSize(s.deck, s.turn.transcendentVaultHandLimitBonus ?? 0);
   if (overflow <= 0) return;
   const pending: PendingEffect = { type: 'discard_choice', count: overflow, sourceCard: 'hand_overflow' };
   if (s.turn.pendingEffect === null) s.turn.pendingEffect = pending;
   else s.turn.pendingEffectQueue = [...(s.turn.pendingEffectQueue ?? []), pending];
 }
 
-/** Base max hand size is 8; any Transcendent card in the deck or Extra Deck raises it to 10 (its Transcendent Ability). */
-function getMaxHandSize(deck: Store['deck']): number {
+/** Base max hand size is 8; Transcendent cards and Vault of Unwritten Futures can raise it temporarily. */
+function getMaxHandSize(deck: Store['deck'], temporaryBonus = 0): number {
   const hasTranscendent = deck.deckList.some(entry => TRANSCENDENT_ANGEL_IDS.has(entry.definitionId))
     || deck.extraDeck.some(entry => TRANSCENDENT_ANGEL_IDS.has(entry.definitionId));
-  return hasTranscendent ? 10 : 8;
+  return (hasTranscendent ? 10 : 8) + temporaryBonus;
 }
 
 const defaultProgress: ProgressState = {
@@ -2084,6 +2084,18 @@ function tickHandPlayCooldowns(s: Store): void {
   }
 
   accrueSophCharges(s.board.backSlots);
+  if ((s.turn.transcendentDawnFavorPlaysRemaining ?? 0) > 0) {
+    grantDivineLight(s, 1_500);
+    s.turn.transcendentDawnFavorPlaysRemaining!--;
+  }
+  if ((s.turn.transcendentAxiomAcceleratedPlaysRemaining ?? 0) > 0) {
+    for (const card of s.board.backSlots) {
+      if (card?.side === 'soph' && card.faceState === 'back') {
+        card.limitlessCharge = (card.limitlessCharge ?? 0) + 1;
+      }
+    }
+    s.turn.transcendentAxiomAcceleratedPlaysRemaining!--;
+  }
   for (const slot of [...s.board.frontSlots, ...s.board.backSlots]) {
     if (!slot || !('attackCooldowns' in slot)) continue;
     for (const key of Object.keys(slot.attackCooldowns)) {
@@ -2802,7 +2814,10 @@ export const useStore = create<Store>()(
         sequence.pointerOrbitStreak = consistentDirection ? (sequence.pointerOrbitStreak ?? 0) + 1 : 1;
         const elapsed = Math.max(8, nowMs - (sequence.pointerStartedAt ?? nowMs - 16));
         const radiansPerSecond = absDelta / (elapsed / 1000);
-        const circularMotion = isOrbitSample(absDelta, radialDelta) && (sequence.pointerOrbitStreak ?? 0) >= 3;
+        const ainMotion = sequence.kind === 'ain';
+        const circularMotion = isOrbitSample(absDelta, radialDelta, sequence.kind)
+          && consistentDirection
+          && (!ainMotion || (sequence.pointerOrbitStreak ?? 0) >= 3);
         if (circularMotion) {
           sequence.pointerOrbitAccumulated = (sequence.pointerOrbitAccumulated ?? 0) + absDelta;
           // Attack power rises continuously while the cursor traces a valid
@@ -2839,6 +2854,11 @@ export const useStore = create<Store>()(
           const slot = frontSlot ?? backSlot;
           const def = CardRegistry.get(sequence.cardDefinitionId);
           if (slot && def) {
+            if ((s.turn.transcendentConfluenceAttackBonus ?? 0) > 0) {
+              sequence.multiplier += s.turn.transcendentConfluenceAttackBonus!;
+              s.turn.transcendentConfluenceAttackBonus = 0;
+            }
+            sequence.payout = Math.round(sequence.basePayout * sequence.multiplier);
             const earnedBefore = s.turn.divineLightEarnedThisTurn;
             grantDivineLight(s, sequence.payout, def.definitionId);
             sequence.payout = s.turn.divineLightEarnedThisTurn - earnedBefore;
@@ -3168,9 +3188,7 @@ export const useStore = create<Store>()(
               .filter((type): type is CardSubtypeFilter => !!type && allowedSubtypeTypes.has(type as CardSubtypeFilter));
             const requiredTypes = new Set<CardSubtypeFilter>(pending.filter);
             const chosenTypes = new Set<CardSubtypeFilter>(selectedTypes);
-            if ([...requiredTypes].some(type => !chosenTypes.has(type))) {
-              return;
-            }
+            if ([...requiredTypes].some(type => !chosenTypes.has(type))) return;
           }
           if (pending.sourceCard === 'ability:transcendent-vault-unwritten-futures' && selected.length !== requiredSelections) return;
           const salvagedCards = pending.cards.filter(c => selected.includes(c.instanceId));
@@ -3180,10 +3198,7 @@ export const useStore = create<Store>()(
           s.deck.discardPile = s.deck.discardPile.filter(c => !selected.includes(c.instanceId));
           s.deck.hand.push(...salvagedCards);
           if (pending.sourceCard === 'ability:transcendent-vault-unwritten-futures') {
-            grantDivineLight(s, 12_000);
-            const drawn = DeckSystem.draw(s.deck.drawPile, 2);
-            s.deck.drawPile = drawn.remaining;
-            s.deck.hand.push(...drawn.drawn);
+            s.turn.transcendentVaultHandLimitBonus = 2;
             if (!s.turn.abilityCooldownUntil) s.turn.abilityCooldownUntil = {};
             s.turn.abilityCooldownUntil['transcendent-reliquary-all-nothing'] = Date.now() + 120_000;
           }
@@ -3227,7 +3242,7 @@ export const useStore = create<Store>()(
 
         s.deck = normalizeDeckInstanceIds(s.deck);
 
-        const overflow = s.deck.hand.length - getMaxHandSize(s.deck);
+        const overflow = s.deck.hand.length - getMaxHandSize(s.deck, s.turn.transcendentVaultHandLimitBonus ?? 0);
         if (overflow > 0) {
           pendingQueue.push({ type: 'discard_choice', count: overflow, sourceCard: 'hand_overflow' });
         }
@@ -4076,10 +4091,7 @@ export const useStore = create<Store>()(
         if (state.turn.limitlessLightStacks < 6) return;
         set(s => {
           s.turn.limitlessLightStacks -= 6;
-          grantDivineLight(s, 10_000);
-          const drawn = DeckSystem.draw(s.deck.drawPile, 3);
-          s.deck.drawPile = drawn.remaining;
-          s.deck.hand.push(...drawn.drawn);
+          s.turn.transcendentDawnFavorPlaysRemaining = 3;
           stampAbilityCooldown(s);
         });
         return;
@@ -4088,10 +4100,7 @@ export const useStore = create<Store>()(
         if (state.turn.limitlessLightStacks < 8) return;
         set(s => {
           s.turn.limitlessLightStacks -= 8;
-          s.turn.limitlessLightStacks += 4;
-          const drawn = DeckSystem.draw(s.deck.drawPile, 2);
-          s.deck.drawPile = drawn.remaining;
-          s.deck.hand.push(...drawn.drawn);
+          s.turn.transcendentAxiomAcceleratedPlaysRemaining = 3;
           stampAbilityCooldown(s);
         });
         return;
@@ -4115,10 +4124,7 @@ export const useStore = create<Store>()(
         if (state.turn.limitlessLightStacks < 12) return;
         set(s => {
           s.turn.limitlessLightStacks -= 12;
-          grantDivineLight(s, 30_000);
-          const drawn = DeckSystem.draw(s.deck.drawPile, 3);
-          s.deck.drawPile = drawn.remaining;
-          s.deck.hand.push(...drawn.drawn);
+          s.turn.transcendentConfluenceAttackBonus = 2;
           stampAbilityCooldown(s);
         });
         return;

@@ -78,7 +78,7 @@ export default function InventoryModal({ onClose }: Props) {
         <section>
           <div style={{ fontFamily: uiTypography.display, fontSize: 13, letterSpacing: 1.6, textTransform: 'uppercase', color: warmTheme.accentSoft, marginBottom: 10 }}>Currencies</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
-            <CurrencyTile name="Divine Light" value={Math.floor(progress.divineLight ?? 0).toLocaleString()} description="Earned from turns and boss damage." iconUrl={resourceIcon('divine-light.png')} />
+            <CurrencyTile name="Divine Light" value={Math.floor(progress.divineLight ?? 0).toLocaleString()} description="The universal currency of the Forge: a vast reserve of light distilled from the first dawn." iconUrl={resourceIcon('divine-light.png')} />
             <CurrencyTile name="Aberrated Shards" value={Math.floor(progress.aberratedShards ?? 0).toLocaleString()} description="Spent on packs in the Card Store." iconUrl={resourceIcon('aberrated-shards.png')} />
             <CurrencyTile name="Card-light Shards" value={Math.floor(progress.fractureShards ?? 0).toLocaleString()} description="Refined from duplicate cards." iconUrl={resourceIcon('card-light-shards.png')} />
             <CurrencyTile

@@ -66,9 +66,11 @@ describe('Spectrum Level catalog', () => {
   });
 
   it('shows the Spectrum Level as the first preview line', async () => {
-    const { getCardPreviewLines } = await import('@/ui/cardStatSummary');
+    const { getCardFullStatText, getCardPreviewLines } = await import('@/ui/cardStatSummary');
     const def = findCard(candidate => candidate.spectrumLevel === 3);
-    expect(getCardPreviewLines(def, 1)[0]).toContain('Requires Spectrum Level 3');
+    expect(getCardPreviewLines(def, 1)[0]).toContain('Spectrum Level 3');
+    expect(getCardFullStatText(def)).toContain('Spectrum Level 3');
+    expect(getCardFullStatText(def)).not.toMatch(/\bLv 3\b/);
   });
 });
 

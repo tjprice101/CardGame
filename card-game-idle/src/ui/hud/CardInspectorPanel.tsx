@@ -27,6 +27,25 @@ function previewStackCost(cost: StackCostDefinition | undefined, stacks: number)
   return Math.max(0, cost.value ?? 0);
 }
 
+function AttackStat({ label, payout, cooldown, cost }: { label: string; payout: number; cooldown: number; cost?: number }) {
+  return (
+    <div style={{ minWidth: 0, padding: '5px 7px', borderRadius: 6, background: 'rgba(74,48,21,0.06)', border: '1px solid rgba(74,48,21,0.12)' }}>
+      <div style={{ color: 'rgba(74,48,21,0.68)', fontSize: 8, fontWeight: 700, letterSpacing: 0.9, textTransform: 'uppercase' }}>{label}</div>
+      <div style={{ marginTop: 2, color: warmTheme.accentDeep, fontSize: 11, fontWeight: 700, lineHeight: 1.25 }}>
+        Current payout: {payout.toLocaleString()} Divine Light
+      </div>
+      <div style={{ marginTop: 2, color: 'rgba(52,36,20,0.76)', fontSize: 9, lineHeight: 1.3 }}>
+        Cooldown: {cooldown} {cooldown === 1 ? 'card' : 'cards'} played
+      </div>
+      {!!cost && (
+        <div style={{ marginTop: 2, color: 'rgba(52,36,20,0.76)', fontSize: 9, lineHeight: 1.3 }}>
+          Cost: {cost} Limitless Light {cost === 1 ? 'Stack' : 'Stacks'}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function CardInspectorPanel({ definitionId }: CardInspectorPanelProps) {
   const definition = definitionId ? CardRegistry.get(definitionId) : undefined;
   const board = useStore(selectBoard);
@@ -130,33 +149,32 @@ export default function CardInspectorPanel({ definitionId }: CardInspectorPanelP
                     + resolveCardScaling(definition.bridgeAttack.scaling, scalingContext),
                   ));
                   return (
-                    <span>{definition.bridgeAttack.name} · Now {projected} Divine Light{cost > 0 ? `, costs ${cost} Stacks` : ''} · Cooldown {definition.bridgeAttack.cooldownCards} cards</span>
+                    <AttackStat label={definition.bridgeAttack.name} payout={projected} cooldown={definition.bridgeAttack.cooldownCards} cost={cost} />
                   );
                 })()}
               </>
             )}
             {definition.type === 'Light' && (
-              <>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 5 }}>
                 {(() => {
                   const projected = Math.max(0, Math.round(
                     definition.ainAttack.baseDivineLight
                     + resolveCardScaling(definition.ainAttack.scaling, scalingContext),
                   ));
-                  return <span>Ain Attack · Now {projected} Divine Light · Cooldown {definition.ainAttack.cooldownCards} cards</span>;
+                  return <AttackStat label="Ain Attack" payout={projected} cooldown={definition.ainAttack.cooldownCards} />;
                 })()}
                 {(() => {
                   const cost = previewStackCost(definition.sophAttack.stackCost, turn.limitlessLightStacks);
                   const projected = Math.max(0, Math.round(
                     definition.sophAttack.baseDivineLight
-                    + resolveCardScaling(definition.sophAttack.scaling, scalingContext)
-                    ,
+                    + resolveCardScaling(definition.sophAttack.scaling, scalingContext),
                   ));
-                  return <span>Soph Attack · Now {projected} Divine Light{cost > 0 ? `, costs ${cost} Stacks` : ''} · Cooldown {definition.sophAttack.cooldownCards} cards</span>;
+                  return <AttackStat label="Soph Attack" payout={projected} cooldown={definition.sophAttack.cooldownCards} cost={cost} />;
                 })()}
-              </>
+              </div>
             )}
             {definition.type === 'Dark' && (
-              <span>Ain utility · after use: {definition.postActivationFate}</span>
+              <span>After activation, returns to your {definition.postActivationFate}.</span>
             )}
           </div>
           <div style={{ height: 1, marginTop: 10, background: `linear-gradient(90deg, ${SET_ACCENT}88, transparent)` }} />

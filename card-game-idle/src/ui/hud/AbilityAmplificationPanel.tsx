@@ -24,6 +24,20 @@ export default function AbilityAmplificationPanel() {
   const activeWhiteout = turn.whiteoutDomainUntil && turn.whiteoutDomainUntil > Date.now()
     ? ABILITY_REGISTRY.get('whiteout-domain')?.buff
     : undefined;
+  const transcendentEffects = [
+    (turn.transcendentDawnFavorPlaysRemaining ?? 0) > 0
+      ? { id: 'dawn-favor', text: `${turn.transcendentDawnFavorPlaysRemaining} plays: +1,500 base Divine Light each` }
+      : null,
+    (turn.transcendentAxiomAcceleratedPlaysRemaining ?? 0) > 0
+      ? { id: 'axiom-acceleration', text: `${turn.transcendentAxiomAcceleratedPlaysRemaining} plays: +1 charge to each face-down Soph` }
+      : null,
+    (turn.transcendentVaultHandLimitBonus ?? 0) > 0
+      ? { id: 'vault-hand-limit', text: `Hand limit +${turn.transcendentVaultHandLimitBonus} for this turn` }
+      : null,
+    (turn.transcendentConfluenceAttackBonus ?? 0) > 0
+      ? { id: 'confluence-attack', text: `Next attack: +${turn.transcendentConfluenceAttackBonus} multiplier` }
+      : null,
+  ].filter((effect): effect is { id: string; text: string } => effect !== null);
 
   return (
     <section style={{ color: 'rgba(244,244,248,0.9)', fontFamily: uiTypography.body }}>
@@ -49,6 +63,11 @@ export default function AbilityAmplificationPanel() {
       </div>
       <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(110,185,240,0.22)' }}>
         <div style={{ color: '#d8f0ff', fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 0.8 }}>Active Buffs</div>
+        {transcendentEffects.map(effect => (
+          <div key={effect.id} style={{ marginTop: 7, padding: '7px 8px', borderLeft: '2px solid #f2cf78', background: 'rgba(242,207,120,0.08)', color: '#f2dfb2', fontSize: 9, lineHeight: 1.4 }}>
+            {effect.text}
+          </div>
+        ))}
         {[activeBuff && turn.divineFieldUntil ? { buff: activeBuff, until: turn.divineFieldUntil, color: '#9be8a8' } : null, activeWhiteout && turn.whiteoutDomainUntil ? { buff: activeWhiteout, until: turn.whiteoutDomainUntil, color: '#f1f3ff' } : null].filter(Boolean).map(entry => entry && (
           <div key={entry.buff.id} style={{ display: 'flex', alignItems: 'center', gap: 9, marginTop: 8, padding: 8, borderRadius: 7, border: `1px solid ${entry.color}73`, background: 'rgba(255,255,255,0.06)' }}>
             <img src={buffIconUrl(entry.buff.iconAssetKey) || PLACEHOLDER_ICON} alt="" aria-hidden="true" width={48} height={48} style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 5, opacity: 0.85 }} />
@@ -58,7 +77,7 @@ export default function AbilityAmplificationPanel() {
             </div>
           </div>
         ))}
-        {!activeBuff && !activeWhiteout && <div style={{ marginTop: 7, color: 'rgba(244,244,248,0.42)', fontSize: 9 }}>No active buffs.</div>}
+        {!activeBuff && !activeWhiteout && transcendentEffects.length === 0 && <div style={{ marginTop: 7, color: 'rgba(244,244,248,0.42)', fontSize: 9 }}>No active buffs.</div>}
       </div>
     </section>
   );

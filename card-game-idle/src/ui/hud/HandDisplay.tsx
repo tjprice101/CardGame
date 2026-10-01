@@ -517,11 +517,14 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
           const def = CardRegistry.get(deckCard.definitionId);
           const selected = !isExtraDeckView && (turn.mulliganSelected ?? []).includes(deckCard.instanceId);
           const isHovered = hoveredId === deckCard.instanceId;
+          const meetsSpectrumLevel = !def || getCardSpectrumLevel(def) <= getTurnSpectrumLevel(turn);
           const isPlayable = isExtraDeckView
             ? (isPlaying && !!def && def.type === 'AinSophAur' && (freeSummonSelection
               ? getCardSpectrumLevel(def) <= getTurnSpectrumLevel(turn) + 1
               : CardEffectExecutor.checkPlayable(def, 0, turn, board, deck)))
-            : (!isPlaying || !def || CardEffectExecutor.checkPlayable(def, hand.length, turn, board, deck, deckCard.instanceId));
+            : isMulligan
+              ? meetsSpectrumLevel
+              : (!isPlaying || !def || CardEffectExecutor.checkPlayable(def, hand.length, turn, board, deck, deckCard.instanceId));
           const unmetRequirement = !isExtraDeckView && isPlaying && def ? getUnmetCardRequirement(def, turn, deck, deckCard.instanceId) : null;
           const previewText = def ? getCardPreviewText(def, 2) : 'Card data unavailable';
           const descMetrics = getAdaptiveDescriptionMetrics('hand', previewText);

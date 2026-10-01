@@ -12,6 +12,8 @@ interface Props {
 const SECTIONS: { label: string; prefix: string }[] = [
   { label: 'Set Sigils', prefix: 'pic-sigil-' },
   { label: 'Set Mastery', prefix: 'pic-master-' },
+  { label: "Eternity's Wake Boss Trophies", prefix: 'pic-wake-' },
+  { label: 'Forge of Transcendence', prefix: 'pic-forge-' },
   { label: 'Classic Achievements', prefix: 'pic-classic-' },
 ];
 
@@ -101,7 +103,7 @@ export default function ProfilePictureModal({ currentAvatarId, onClose, onApply 
         </div>
 
         {/* ── Avatar grid ── */}
-        <div style={{ flex: 1, minHeight: 0, padding: '14px 24px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '14px 24px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
           {avatarsBySection.map(sec => (
             <div key={sec.prefix}>
               {/* Section header */}

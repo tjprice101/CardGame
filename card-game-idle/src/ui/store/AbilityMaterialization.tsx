@@ -12,7 +12,7 @@ const abilityIconFallbackUrl = (key: string) => {
 };
 
 type SetFilter = 'all' | 'Neutrality' | 'Causality' | 'Transcendent';
-type TierFilter = 'all' | 'foundational' | 'eternal' | 'infinite';
+type TierFilter = 'all' | 'foundational' | 'eternal' | 'infinite' | 'transcendent';
 type TypeFilter = 'all' | 'buff' | 'instant' | 'summon' | 'utility';
 type OwnershipFilter = 'all' | 'unowned' | 'owned';
 type SortOption = 'cost-asc' | 'cost-desc' | 'name-asc' | 'tier';
@@ -80,7 +80,7 @@ export default function AbilityMaterialization() {
       if (sortBy === 'cost-desc') return totalCost(b) - totalCost(a);
       if (sortBy === 'name-asc') return a.name.localeCompare(b.name);
       if (sortBy === 'tier') {
-        const tierRank = { foundational: 1, eternal: 2, infinite: 3 };
+        const tierRank = { foundational: 1, eternal: 2, infinite: 3, transcendent: 4 };
         return tierRank[getAbilityTier(a)] - tierRank[getAbilityTier(b)];
       }
       return 0;
@@ -138,6 +138,7 @@ export default function AbilityMaterialization() {
                 { id: 'foundational', label: 'Foundational' },
                 { id: 'eternal', label: 'Eternal Tier' },
                 { id: 'infinite', label: 'Infinite Tier' },
+                { id: 'transcendent', label: 'Transcendent Tier' },
               ].map(tier => (
                 <button
                   key={tier.id}
@@ -270,7 +271,13 @@ export default function AbilityMaterialization() {
             const gateLabel = getGateRequirementLabel(ability.ownershipGate);
             const tier = getAbilityTier(ability);
 
-            const tierColor = tier === 'infinite' ? '#c4a6ff' : tier === 'eternal' ? '#ff8585' : '#7dd4f8';
+            const tierColor = tier === 'transcendent'
+              ? '#f5d372'
+              : tier === 'infinite'
+                ? '#c4a6ff'
+                : tier === 'eternal'
+                  ? '#ff8585'
+                  : '#7dd4f8';
 
             return (
               <article

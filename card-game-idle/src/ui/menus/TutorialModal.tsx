@@ -583,7 +583,8 @@ function ForgeBody() {
           Spectrum Level 5 rules and attacks. Separately, the Forge offers four materialized abilities: First Dawn
           Accord, Axiom of Acceleration, Vault of Unwritten Futures, and Confluence of All Origins. Each costs
           8,000,000 Divine Light and 30 Shards of Transcendence to purchase. Activations spend only Limitless Light
-          Stacks and use shared Divine Light/card-zone effects; they do not use Cosmos or set-specific mechanics.
+          Stacks to grant distinct turn effects: play-triggered Divine Light, bonus Soph charge, expanded hand capacity,
+          or a stronger next attack. They do not use Cosmos or set-specific mechanics.
         </div>
       </div>
     </>

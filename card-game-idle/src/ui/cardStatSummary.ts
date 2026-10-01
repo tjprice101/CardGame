@@ -213,10 +213,10 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
   const transcendentAbilityPrefix = 'Transcendent Ability: If this card is in your deck, your maximum hand size is now 10.';
   const spectrumLevel = getCardSpectrumLevel(card);
 
-  pushSummarySection(sections, 'Spectrum', [
+  pushSummarySection(sections, 'Requirement', [
     spectrumLevel === 0
-      ? `Lv 0 · ${card.type === 'AinSophAur' ? 'Summonable' : 'Playable'} at any Spectrum Level`
-      : `Lv ${spectrumLevel} · Requires Spectrum Level ${spectrumLevel} to ${card.type === 'AinSophAur' ? 'summon' : 'play'}`,
+      ? 'Spectrum Level 0 · No minimum level required'
+      : `Spectrum Level ${spectrumLevel} required to ${card.type === 'AinSophAur' ? 'summon' : 'play'}`,
   ]);
 
   if (card.definitionId.startsWith('light-neutrality-')

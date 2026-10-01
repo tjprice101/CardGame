@@ -47,7 +47,7 @@ After all four weekly challenge rewards are claimed, the weekly rotation can be 
 
 ## Monthly Login Calendar
 
-The login reward surface is a persistent monthly gacha-style calendar track. Missing a day never resets progress: every past unclaimed day remains available for catch-up. The track mixes Aberrated Shards, base-card copies, holofoil base-card copies, and Card-light grants applied to all currently owned cards.
+The login reward surface is a persistent monthly calendar. A claim awards the reward for the current UTC calendar date, not the next streak number; consecutive-login streak rewards are separate. The monthly track mixes Aberrated Shards, base-card copies, holofoil base-card copies, Card-light grants applied to owned cards, and occasional Shards of Transcendence.
 
 ## Rarity Progression
 
@@ -56,12 +56,12 @@ The login reward surface is a persistent monthly gacha-style calendar track. Mis
 - Infinite cards are crafted in Infinitude from specific Eternal recipes.
 - Transcendent cards come from the Forge of Transcendence.
 
-The four materialized Transcendent abilities are separate from the four Transcendent cards and are not owned through a card. They use only shared mechanics: Limitless Light Stacks, Divine Light, draw, and generic hand/draw/discard zones. They do not generate or spend Cosmos, target Causality cards/cooldowns, or depend on another set's systems. Their purchase cost is paid once; their listed Limitless Light Stack cost is paid on activation.
+The four materialized Transcendent abilities are separate from the four Transcendent cards and are not owned through a card. They are set-independent and use shared turn, card-play, hand/discard, and attack systems. They do not generate or spend Cosmos, target Causality cards/cooldowns, or depend on another set's systems. Their purchase cost is paid once; their listed Limitless Light Stack cost is paid on activation.
 
-- First Dawn Accord: spend 6 stacks; gain 10,000 base Divine Light and draw 3 (90s cooldown).
-- Axiom of Acceleration: spend 8 stacks; gain 4 stacks and draw 2 (105s cooldown).
-- Vault of Unwritten Futures: spend 10 stacks; select 2 discard cards, gain 12,000 base Divine Light, and draw 2 (120s cooldown).
-- Confluence of All Origins: spend 12 stacks; gain 30,000 base Divine Light and draw 3 (150s cooldown).
+- First Dawn Accord: spend 6 stacks; your next 3 cards played each grant 1,500 base Divine Light (90s cooldown).
+- Axiom of Acceleration: spend 8 stacks; your next 3 card plays each add 1 extra charge to every face-down Soph card (105s cooldown).
+- Vault of Unwritten Futures: spend 10 stacks; select 2 cards from your discard pile and raise your hand limit by 2 for the rest of the turn (120s cooldown).
+- Confluence of All Origins: spend 12 stacks; your next Ain, Soph, or Bridge attack gains +2 multiplier (150s cooldown).
 
 Shard drop rolls are gated until all five Forge Causality bosses have been cleared and the Forge is open. Each qualifying boss clear has a 0.1% base chance, multiplied by the selected x2/x3 fight count. The final encounter of each available Garden expedition has a 0.1% roll. Monthly Login Calendar bonus rolls occur on days 10 and 22, also at 0.1%. Drop-rate labels remain hidden until both unlock conditions are satisfied.
 

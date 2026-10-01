@@ -20,7 +20,10 @@ export function toOrbitSpace(clientX: number, clientY: number, rect: { left: num
   return { x: 0.5 + (clientX - centerX) / minSide, y: 0.5 + (clientY - centerY) / minSide };
 }
 
-export function isOrbitSample(absDelta: number, radialDelta: number): boolean {
+export function isOrbitSample(absDelta: number, radialDelta: number, kind?: AttackSequenceKind): boolean {
+  if (kind === 'soph' || kind === 'bridge') {
+    return absDelta >= 0.008 && absDelta <= 0.95 && radialDelta <= 0.14;
+  }
   return absDelta >= 0.035 && absDelta <= 0.95 && radialDelta <= 0.08;
 }
 

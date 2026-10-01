@@ -20,7 +20,6 @@ import { resolveCardScaling } from '@/systems/cards/CardScaling';
 import { SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
 import { canActivateShatterTheInfiniteLight } from '@/systems/cards/ShatterTheInfiniteLight';
 import { getUnmetCardRequirement } from '@/systems/cards/PlayRequirements';
-import SpectrumControl from './SpectrumControl';
 import { formatSummonRequirement, getSummonRequirements, matchesSummonRequirement } from '@/systems/cards/AinSophSummonRequirements';
 import { computeGlobalResonanceScore } from '@/systems/progression/cardMastery';
 import type {
@@ -308,33 +307,6 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
       overflowX: 'visible',
       width: 'max-content',
     }}>
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        right: 0,
-        transform: 'translateY(-100%)',
-        pointerEvents: 'none',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 6,
-      }}>
-        {canPlay && <SpectrumControl />}
-        <div style={{
-          pointerEvents: 'none',
-          padding: '4px 11px',
-          borderRadius: 999,
-          border: '1px solid rgba(255,232,158,0.48)',
-          background: 'rgba(35,24,18,0.78)',
-          color: '#ffe89e',
-          fontFamily: BODY_FONT,
-          fontSize: 9,
-          fontWeight: 700,
-          letterSpacing: 0.4,
-          boxShadow: '0 3px 12px rgba(0,0,0,0.24)',
-        }}>
-          Limitless Light Stacks {turn.limitlessLightStacks}
-        </div>
-      </div>
       {canEmbraceInfinite && (
         <div style={{ marginBottom: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, pointerEvents: 'auto' }}>
           <button

@@ -110,11 +110,10 @@ export function evaluateDailyLogin(
     : dl.monthlyTrackKey === undefined && lastDay === today
       ? [dayOfMonth]
       : [];
-  const nextSequentialDay = lastDay < 0 ? 1 : Math.max(1, previousStreak + 1);
   const monthlyClaimableDay = legacyAlreadyClaimedToday
     ? undefined
-    : !claimedDays.includes(nextSequentialDay)
-      ? nextSequentialDay
+    : !claimedDays.includes(dayOfMonth)
+      ? dayOfMonth
       : undefined;
 
   if (lastDay < 0) {
@@ -134,7 +133,9 @@ export function evaluateDailyLogin(
       pendingStreak: previousStreak,
       previousStreak,
       pendingReward: dailyRewardForStreak(previousStreak),
-      monthlyTrackKey: trackKey, monthlyDay: monthlyClaimableDay, monthlyReward: monthlyClaimableDay ? monthlyRewardForDay(monthlyClaimableDay, now) : undefined,
+      monthlyTrackKey: trackKey,
+      monthlyDay: undefined,
+      monthlyReward: undefined,
     };
   }
 

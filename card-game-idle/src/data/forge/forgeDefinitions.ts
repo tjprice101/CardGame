@@ -42,9 +42,6 @@ export interface ForgeCardLore {
 /** Shards of Transcendence cost to acquire 1 copy of a Forge gallery card. */
 export const FORGE_CARD_SHARD_COST = 25;
 
-const RAINBOW_BANNER =
-  'conic-gradient(from 180deg at 50% 50%, #ff2fd0, #ff9d3d, #fff35c, #4dffb8, #4d9dff, #b24dff, #ff2fd0)';
-
 const forgeAsset = (file: string): string => `url('${import.meta.env.BASE_URL}assets/forge/${file}')`;
 
 /**
@@ -85,9 +82,9 @@ export const FORGE_CARD_LORE: readonly ForgeCardLore[] = [
     displayName: 'The Bridge Between Light and Life',
     tagline: 'The one that bridged the light so life could exist at all.',
     lore: 'Not summoned, not drafted, not owned — it simply arrived once, and the world began.',
-    bannerGradient: RAINBOW_BANNER,
-    splashGradient: 'radial-gradient(circle at 50% 30%, #ffffff 0%, #fff6d8 22%, #181410 78%)',
-    navBannerImage: RAINBOW_BANNER,
+    bannerGradient: forgeAsset('forge-card-4-art.png'),
+    splashGradient: forgeAsset('forge-card-4-splash.png'),
+    navBannerImage: forgeAsset('forge-card-4-banner.png'),
   },
 ];
 

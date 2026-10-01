@@ -111,6 +111,10 @@ export interface TurnState {
   limitlessLightStacks: number;
   /** Current Spectrum Level (0-5). Cards above it cannot be played or summoned. Resets each turn. */
   spectrumLevel?: number;
+  transcendentDawnFavorPlaysRemaining?: number;
+  transcendentAxiomAcceleratedPlaysRemaining?: number;
+  transcendentVaultHandLimitBonus?: number;
+  transcendentConfluenceAttackBonus?: number;
   limitlessCosmosStacks?: number;
   causalityCardsPlayedThisTurn?: number;
   causalityDivineLightThisTurn?: number;

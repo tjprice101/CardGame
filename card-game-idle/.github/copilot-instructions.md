@@ -65,7 +65,7 @@
 - Causality endgame includes five Wake bosses/Eternals, five playable Causality Infinites with Causality-only recipes, and Rift of Causality with four materials. Preserve the category filters and recipe restriction.
 - Causality progression rewards include Causality titles/achievements, profile pictures, reward themes, and splash slots. Prompts live in `Midjourney Art/Causality Progression Rewards Prompts.md`.
 - Weekly challenges include two Super Weekly conversions after all four weekly rewards are claimed; both target deterministic Eternity's Wake bosses and complete independently on boss victory.
-- Daily login rewards use a persistent monthly catch-up calendar. Card-born thresholds are 10, 25, 50, 125, 250, 625, 1,250, and 2,500 Card-light.
+- Daily login rewards use a persistent monthly calendar keyed to the current UTC date; streak rewards are separate. Card-born thresholds are 10, 25, 50, 125, 250, 625, 1,250, and 2,500 Card-light.
 - Causality ability tiers are ownership-gate based: the two `allCausalityBase` abilities are Foundational, the two `anyCausalityEternal` abilities are Eternal, and the two `anyCausalityInfinite` abilities are Infinite. Do not classify them by purchase cost.
 - The main menu uses the responsive Play / Collection / Progress Command Deck in `MainMenuHub.tsx`; preserve its contextual artwork, visible lock requirements, and complete destination coverage.
 - The Board panel and Card-born Stacks panel belong in the shared left-side HUD rail and must remain flow-positioned rather than independently absolutely positioned.

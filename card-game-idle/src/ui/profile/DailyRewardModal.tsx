@@ -90,7 +90,7 @@ export default function DailyRewardModal({ onClose }: Props) {
         <div>
           <div style={{ color: warmTheme.accentSoft, fontSize: 9, letterSpacing: 3, textTransform: 'uppercase' }}>Monthly Expedition</div>
           <h1 className="ui-title-glow" style={{ margin: '3px 0 2px', fontSize: 'clamp(18px, 2.2vw, 26px)', letterSpacing: 1.4 }}>Login Calendar</h1>
-          <div style={{ color: warmTheme.textMuted, fontSize: 10 }}>Every day remains available until claimed. Your progress never resets.</div>
+          <div style={{ color: warmTheme.textMuted, fontSize: 10 }}>Claim today's calendar reward once per UTC day. Login streak rewards are tracked separately.</div>
         </div>
         <div style={{ textAlign: 'right', color: warmTheme.textMuted, fontSize: 10 }}>
           <div style={{ color: warmTheme.text, fontSize: 14, fontWeight: 'bold' }}>{monthLabel}</div>

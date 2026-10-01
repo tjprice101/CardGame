@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { defaultGameState, useStore } from '@/state/store';
 import { ABILITY_REGISTRY, getAbilityMaterialCost, getAbilityTier } from '@/data/abilities/abilityDefinitions';
 import { CardRegistry } from '@/cards/CardRegistry';
+import { getAttackSequenceMultiplier } from '@/systems/cards/AttackSequence';
 import type { GameState } from '@/types/game';
 
 function resetStore(): void {
@@ -53,7 +54,7 @@ describe('materialized ability runtime', () => {
     for (const id of ids) {
       const ability = ABILITY_REGISTRY.get(id)!;
       expect(ability).toBeDefined();
-      expect(getAbilityTier(ability)).toBe('infinite');
+      expect(getAbilityTier(ability)).toBe('transcendent');
       expect(getAbilityMaterialCost(ability)).toEqual({ divineLight: 8_000_000, shardsOfTranscendence: 30 });
     }
   });
@@ -85,78 +86,91 @@ describe('materialized ability runtime', () => {
     }
   });
 
-  it('activates all four Transcendent abilities without charging the one-time purchase currencies again', () => {
+  it('makes First Dawn Accord reward three later card plays', () => {
     resetStore();
-    const firstDawn = 'transcendent-starbound-glimmer';
-    prepareTranscendentAbility(firstDawn, 6);
-    const beforeLight = useStore.getState().progress.divineLight;
-    const beforeHand = useStore.getState().deck.hand.length;
+    const ability = 'transcendent-starbound-glimmer';
+    prepareTranscendentAbility(ability, 6);
+    useStore.setState(state => ({
+      ...state,
+      deck: { ...state.deck, hand: [{ instanceId: 'dawn-card', definitionId: 'light-neutrality-1', finish: 'normal' }] },
+    }));
     useStore.getState().activateAbility(1);
     expect(useStore.getState().turn.limitlessLightStacks).toBe(0);
-    expect(useStore.getState().turn.limitlessCosmosStacks).toBe(0);
-    expect(useStore.getState().deck.hand.length).toBe(beforeHand + 3);
-    expect(useStore.getState().progress.divineLight).toBeGreaterThan(beforeLight);
-    expect(useStore.getState().turn.abilityCooldownUntil?.[firstDawn]).toBeGreaterThan(Date.now());
+    expect(useStore.getState().turn.transcendentDawnFavorPlaysRemaining).toBe(3);
+    const earnedBefore = useStore.getState().turn.divineLightEarnedThisTurn;
+    useStore.getState().playCard('dawn-card');
+    expect(useStore.getState().turn.divineLightEarnedThisTurn).toBeGreaterThan(earnedBefore);
+    expect(useStore.getState().turn.transcendentDawnFavorPlaysRemaining).toBe(2);
+    expect(useStore.getState().turn.abilityCooldownUntil?.[ability]).toBeGreaterThan(Date.now());
+  });
 
+  it('makes Axiom of Acceleration add a second charge to face-down Soph cards on three plays', () => {
     resetStore();
-    const axiom = 'transcendent-first-catalyst';
-    prepareTranscendentAbility(axiom, 8);
+    const ability = 'transcendent-first-catalyst';
+    prepareTranscendentAbility(ability, 8);
     useStore.setState(state => ({
       ...state,
+      deck: { ...state.deck, hand: [{ instanceId: 'axiom-card', definitionId: 'light-neutrality-1', finish: 'normal' }] },
       board: {
         ...state.board,
-        backSlots: [{ instanceId: 'cooldown-card', definitionId: 'light-neutrality-1', type: 'Light', rarity: 'Common', finish: 'normal', side: 'ain', faceState: 'front', limitlessCharge: 0, attackCooldowns: { 'some-attack': 3 }, backSlot: 0 }, null, null, null],
+        backSlots: [{ instanceId: 'soph-card', definitionId: 'light-neutrality-1', type: 'Light', rarity: 'Common', finish: 'normal', side: 'soph', faceState: 'back', limitlessCharge: 0, attackCooldowns: {}, backSlot: 0 }, null, null, null],
       },
     }));
-    const catalystCooldownBefore = useStore.getState().board.backSlots[0]?.attackCooldowns['some-attack'];
     useStore.getState().activateAbility(1);
-    expect(useStore.getState().board.backSlots[0]?.attackCooldowns['some-attack']).toBe(catalystCooldownBefore);
-    expect(useStore.getState().turn.limitlessLightStacks).toBe(4);
-    expect(useStore.getState().deck.hand).toHaveLength(2);
+    expect(useStore.getState().turn.limitlessLightStacks).toBe(0);
+    useStore.getState().playCard('axiom-card');
+    expect(useStore.getState().board.backSlots[0]?.limitlessCharge).toBe(2);
+    expect(useStore.getState().turn.transcendentAxiomAcceleratedPlaysRemaining).toBe(2);
+    expect(useStore.getState().turn.abilityCooldownUntil?.[ability]).toBeGreaterThan(Date.now());
+  });
 
+  it('makes Vault of Unwritten Futures salvage two cards and raise the hand limit for the turn', () => {
     resetStore();
-    const vault = 'transcendent-reliquary-all-nothing';
-    prepareTranscendentAbility(vault, 10);
+    const ability = 'transcendent-reliquary-all-nothing';
+    prepareTranscendentAbility(ability, 10);
     useStore.setState(state => ({
       ...state,
-      deck: { ...state.deck, discardPile: [
-        { instanceId: 'discard-a', definitionId: 'light-neutrality-1', finish: 'normal' },
-        { instanceId: 'discard-b', definitionId: 'dark-neutrality-1', finish: 'normal' },
-      ] },
+      deck: {
+        ...state.deck,
+        hand: Array.from({ length: 8 }, (_, index) => ({ instanceId: `hand-${index}`, definitionId: 'light-neutrality-1', finish: 'normal' })),
+        discardPile: [
+          { instanceId: 'discard-a', definitionId: 'light-neutrality-1', finish: 'normal' },
+          { instanceId: 'discard-b', definitionId: 'dark-neutrality-1', finish: 'normal' },
+        ],
+      },
     }));
     useStore.getState().activateAbility(1);
     expect(useStore.getState().turn.pendingEffect?.type).toBe('salvage');
     expect(useStore.getState().turn.limitlessLightStacks).toBe(0);
     useStore.getState().resolvePending(['discard-a', 'discard-b']);
     expect(useStore.getState().turn.pendingEffect).toBeNull();
-    expect(useStore.getState().deck.hand.map(card => card.instanceId)).toEqual(expect.arrayContaining(['discard-a', 'discard-b']));
-    expect(useStore.getState().progress.divineLight).toBeGreaterThan(9_000_000);
-    expect(useStore.getState().turn.abilityCooldownUntil?.[vault]).toBeGreaterThan(Date.now());
+    expect(useStore.getState().deck.hand).toHaveLength(10);
+    expect(useStore.getState().turn.transcendentVaultHandLimitBonus).toBe(2);
+    expect(useStore.getState().turn.abilityCooldownUntil?.[ability]).toBeGreaterThan(Date.now());
+  });
 
+  it('makes Confluence of All Origins add +2 to the next attack multiplier', () => {
     resetStore();
-    const confluence = 'transcendent-bridge-light-life';
-    prepareTranscendentAbility(confluence, 12);
+    const ability = 'transcendent-bridge-light-life';
+    prepareTranscendentAbility(ability, 12);
     useStore.setState(state => ({
       ...state,
       board: {
         ...state.board,
-        backSlots: [
-          { instanceId: 'causality-card', definitionId: 'light-causality-1', type: 'Light', rarity: 'Rare', finish: 'normal', side: 'ain', faceState: 'front', limitlessCharge: 0, attackCooldowns: { 'causality-attack': 3 }, backSlot: 0 },
-          { instanceId: 'neutrality-card', definitionId: 'light-neutrality-1', type: 'Light', rarity: 'Common', finish: 'normal', side: 'ain', faceState: 'front', limitlessCharge: 0, attackCooldowns: { 'neutrality-attack': 3 }, backSlot: 1 },
-          null,
-          null,
-        ],
+        backSlots: [{ instanceId: 'confluence-card', definitionId: 'light-neutrality-1', type: 'Light', rarity: 'Common', finish: 'normal', side: 'ain', faceState: 'front', limitlessCharge: 0, attackCooldowns: {}, backSlot: 0 }, null, null, null],
       },
     }));
-    const finalLight = useStore.getState().progress.divineLight;
     useStore.getState().activateAbility(1);
-    expect(useStore.getState().turn.limitlessCosmosStacks).toBe(0);
     expect(useStore.getState().turn.limitlessLightStacks).toBe(0);
-    expect(useStore.getState().board.backSlots[0]?.attackCooldowns['causality-attack']).toBe(3);
-    expect(useStore.getState().board.backSlots[1]?.attackCooldowns['neutrality-attack']).toBe(3);
-    expect(useStore.getState().deck.hand).toHaveLength(3);
-    expect(useStore.getState().progress.divineLight).toBeGreaterThan(finalLight);
-    expect(useStore.getState().turn.abilityCooldownUntil?.[confluence]).toBeGreaterThan(Date.now());
+    expect(useStore.getState().turn.transcendentConfluenceAttackBonus).toBe(2);
+    useStore.getState().activateLightAinAttack('confluence-card');
+    const priming = useStore.getState().turn.attackSequence!;
+    useStore.getState().tickAttackSequence(priming.phaseEndsAt + 1);
+    const active = useStore.getState().turn.attackSequence!;
+    useStore.getState().tickAttackSequence(active.phaseEndsAt + 1);
+    expect(useStore.getState().turn.attackSequence?.multiplier).toBe(getAttackSequenceMultiplier('ain', 0, 0) + 2);
+    expect(useStore.getState().turn.transcendentConfluenceAttackBonus).toBe(0);
+    expect(useStore.getState().turn.abilityCooldownUntil?.[ability]).toBeGreaterThan(Date.now());
   });
 
   it('requires the complete base Causality collection and escalates Eternal/Infinite gates', () => {

@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useStore, selectDeck, selectTurn } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
-import { warmTheme } from '@/ui/theme';
+import { uiTypography, warmTheme } from '@/ui/theme';
 import { useThemeVersion } from '@/ui/useThemeVersion';
 import { getCardNameRibbonStyle, getCardRulesPanelStyle, getLiveCardFaceBackgroundStyle, getLiveCardShimmerClassName } from '@/ui/cardBackgrounds';
 import { getCardPreviewText } from '@/ui/cardStatSummary';
@@ -46,7 +46,6 @@ export default function DeckStatus() {
   const deck = useStore(selectDeck);
   const turn = useStore(selectTurn);
   const [openPile, setOpenPile] = useState<PileType | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const canInspectDeck = turn.phase === 'idle';
 
   useEffect(() => {
@@ -54,14 +53,9 @@ export default function DeckStatus() {
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setOpenPile(null);
     };
-    const closeOnOutsidePointer = (event: PointerEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) setOpenPile(null);
-    };
     window.addEventListener('keydown', closeOnEscape);
-    window.addEventListener('pointerdown', closeOnOutsidePointer);
     return () => {
       window.removeEventListener('keydown', closeOnEscape);
-      window.removeEventListener('pointerdown', closeOnOutsidePointer);
     };
   }, [openPile]);
 
@@ -93,7 +87,7 @@ export default function DeckStatus() {
   }, [openPile, deck.drawPile, deck.discardPile, deck.lightBoundAbyss, deck.hand, deck.extraDeck]);
 
   return (
-    <div ref={containerRef} style={styles.container}>
+    <div style={styles.container}>
       <button
         style={{
           ...styles.pill,
@@ -150,56 +144,72 @@ export default function DeckStatus() {
 
       {openPile && (openPile !== 'deck' || canInspectDeck) && (
         <div
-          className="ornate-scroll"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${openPile === 'abyss' ? 'Light-bound Abyss' : openPile} card viewer`}
           style={{
-            position: 'absolute',
-            top: 0,
-            right: 'calc(100% + 10px)',
-            width: 380,
-            maxHeight: 420,
-            borderRadius: 12,
-            border: `1px solid ${warmTheme.borderStrong}`,
-            background: warmTheme.surfaceStrong,
-            boxShadow: warmTheme.shadow,
-            padding: 10,
+            position: 'fixed',
+            inset: 0,
+            zIndex: 12000,
+            background: 'rgba(5,5,10,0.94)',
+            backdropFilter: 'blur(8px)',
             display: 'flex',
             flexDirection: 'column',
+            color: warmTheme.text,
+            fontFamily: 'Georgia, serif',
+            padding: 'clamp(16px, 3vh, 32px) clamp(18px, 4vw, 56px)',
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <div style={{ fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', color: warmTheme.accentDeep }}>
-              {openPile === 'abyss' ? 'Light-bound Abyss' : openPile} ({pileEntries.length})
+          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, paddingBottom: 16, borderBottom: `1px solid ${warmTheme.border}` }}>
+            <div>
+              <div style={{ color: warmTheme.textMuted, fontSize: 9, letterSpacing: 2.2, textTransform: 'uppercase' }}>Card Zones</div>
+              <div style={{ marginTop: 4, fontFamily: uiTypography.display, fontSize: 23, color: warmTheme.text, textTransform: 'capitalize' }}>
+                {openPile === 'abyss' ? 'Light-bound Abyss' : openPile} <span style={{ color: warmTheme.textMuted, fontSize: 14 }}>· {pileEntries.length}</span>
+              </div>
+              {(openPile === 'discard' || openPile === 'abyss') && (
+                <div style={{ marginTop: 5, color: warmTheme.textMuted, fontSize: 11, lineHeight: 1.4 }}>
+                  {openPile === 'discard' ? 'Cards discarded this turn.' : 'Cards sacrificed to raise Spectrum Level. They return when your deck zones reset.'}
+                </div>
+              )}
             </div>
             <button
+              type="button"
+              aria-label="Exit card pile viewer"
               onClick={() => setOpenPile(null)}
               style={{
-                border: `1px solid ${warmTheme.border}`,
-                background: warmTheme.surface,
-                color: warmTheme.textMuted,
-                borderRadius: 6,
-                fontSize: 10,
+                border: `1px solid ${warmTheme.borderStrong}`,
+                background: warmTheme.surfaceStrong,
+                color: warmTheme.text,
+                borderRadius: 8,
+                fontSize: 11,
                 cursor: 'pointer',
-                fontFamily: 'Georgia, serif',
-                padding: '2px 8px',
+                fontFamily: uiTypography.display,
+                padding: '8px 18px',
+                letterSpacing: 0.8,
+                textTransform: 'uppercase',
+                flexShrink: 0,
               }}
             >
-              Close
+              Exit
             </button>
-          </div>
+          </header>
           {pileEntries.length === 0 && (
-            <div style={{ fontSize: 11, color: warmTheme.textMuted, textAlign: 'center', padding: '8px 0' }}>
-              Empty
+            <div style={{ flex: 1, display: 'grid', placeItems: 'center', fontSize: 14, color: warmTheme.textMuted }}>
+              This pile is empty.
             </div>
           )}
           {pileEntries.length > 0 && (
             <div
               className="ornate-scroll"
               style={{
+                flex: 1,
+                minHeight: 0,
                 overflowY: 'auto',
-                paddingTop: 4,
+                padding: '20px 2px 8px',
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(104px, 1fr))',
-                gap: 8,
+                gridTemplateColumns: 'repeat(auto-fill, minmax(148px, 1fr))',
+                alignContent: 'start',
+                gap: 14,
               }}
             >
               {pileEntries.map((entry) => (
@@ -208,7 +218,9 @@ export default function DeckStatus() {
                     className={getLiveCardShimmerClassName(entry.def, entry.finish)}
                     style={{
                       position: 'relative',
-                      height: 132,
+                      width: '100%',
+                      maxWidth: 190,
+                      aspectRatio: '148 / 204',
                       borderRadius: 8,
                       border: `1px solid ${warmTheme.border}`,
                       overflow: 'hidden',
@@ -217,17 +229,17 @@ export default function DeckStatus() {
                     }}
                     title={`${entry.name} (${getDisplayCardTypeLabel(entry.type)})`}
                   >
-                    <div style={getCardNameRibbonStyle('boardMini')}>
-                      <div style={{ fontSize: 7, color: 'rgba(244,244,248,0.62)', textTransform: 'uppercase', textAlign: 'center', letterSpacing: 0.7 }}>
+                    <div style={getCardNameRibbonStyle('grid')}>
+                      <div style={{ fontSize: 8, color: 'rgba(244,244,248,0.72)', textTransform: 'uppercase', textAlign: 'center', letterSpacing: 0.7 }}>
                         {getDisplayCardTypeLabel(entry.type)}
                       </div>
-                      <div style={{ fontSize: 9, color: 'rgba(244,244,248,0.92)', textAlign: 'center', lineHeight: 1.1, marginTop: 2 }}>
+                      <div style={{ fontSize: 11, color: 'rgba(244,244,248,0.96)', textAlign: 'center', lineHeight: 1.15, marginTop: 2 }}>
                         {entry.name}
                       </div>
                     </div>
-                    <div style={getCardRulesPanelStyle('boardMini')}>
-                      <div style={{ fontSize: 7, color: 'rgba(244,244,248,0.78)', lineHeight: 1.2, textAlign: 'center', display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 4, overflow: 'hidden' }}>
-                        {entry.def ? getCardPreviewText(entry.def, 2) : ''}
+                    <div style={getCardRulesPanelStyle('grid')}>
+                      <div style={{ fontSize: 8, color: 'rgba(244,244,248,0.86)', lineHeight: 1.25, textAlign: 'center', display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 4, overflow: 'hidden' }}>
+                        {entry.def ? getCardPreviewText(entry.def, 3) : ''}
                       </div>
                     </div>
                   </div>
