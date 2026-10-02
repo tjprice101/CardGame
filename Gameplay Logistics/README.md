@@ -32,7 +32,7 @@ These are explanatory documents, not runtime source files. When behavior changes
 - Base Causality and Transcendent card backs live in `public/assets/card-backgrounds/causality/Causality Card-backing.png` and `public/assets/card-backgrounds/infinite/Transcendant Card-backing.png`; `cardBackgrounds.ts` is the routing source of truth.
 - Collection Power uses `1 + Resonance / 1000`, is applied once, and has a registry-derived natural maximum that rises automatically as cards are added.
 - Card-born Tier thresholds are 10, 25, 50, 125, 250, 625, 1,250, and 2,500 Card-light.
-- Card-browser menus must show complete proportional cards. Shrink cards or split the workflow into submenus before allowing card artwork, title ribbons, or rules panels to crop or squash.
+- Card-browser menus must show complete proportional card artwork and the screened splotched-ink frame, without overlaid title or rules bars. Shrink cards or split the workflow into submenus before allowing the art or frame to crop or squash.
 - The main menu now uses a responsive Play / Collection / Progress Command Deck with a single contextual art banner instead of presenting every destination at once.
 - Board statistics and Card-born Stacks share a flow-positioned left HUD rail so variable panel height cannot create overlap.
 - Causality materialized abilities are implemented in the runtime ability registry and shop: two base-gated, two Eternal-gated, and two Infinite-gated abilities. Decks still equip only three total abilities.

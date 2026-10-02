@@ -1,9 +1,8 @@
 /**
  * tutorialContent.ts
  *
- * Single source of truth for all in-game tutorial text.
- * Consumed by TutorialModal.tsx — the component is pure presentation;
- * all copy lives here.
+ * Section metadata and rarity reference data for the in-game tutorial.
+ * TutorialModal.tsx owns the section body copy and presentation.
  *
  * Structure mirrors the existing tutorial sections (id = stable key used
  * by TutorialModal for navigation, label = tab label, title/subtitle for
@@ -54,7 +53,7 @@ export const RARITY_TIERS: RarityTier[] = [
   { name: 'Eternal',  source: "Eternity's Wake boss drops",    description: 'Apex Ain/Soph cards with stronger attacks, deeper utility, and bespoke bridge effects.' },
   { name: 'Infinite', source: 'Infinitude crafting',           description: 'Apex tier. Forged by consuming specific Eternals, with the strongest Ain/Soph scaling.' },
   { name: 'Enigmatic', source: 'Enigma rewards',               description: 'Quest-like reward cards with their own black, white, and golden metallic foil treatment.' },
-  { name: 'Transcendent', source: 'Forge of Transcendence',    description: 'Belongs to no set. Only 4 exist. Each has the shared maximum-hand-size passive and its own Spectrum Level 5 rules. Four separate Forge abilities can also be materialized with Divine Light and Shards of Transcendence; they use no other set mechanics.' },
+  { name: 'Transcendent', source: 'Forge of Transcendence',    description: 'Belongs to no set. Vol. 1 contains four initial cards, with additional Transcendent volumes arriving in future expansions. Each has the shared maximum-hand-size passive and its own Spectrum Level 5 rules. Four separate Forge abilities can also be materialized with Divine Light and Shards of Transcendence; they use no other set mechanics.' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -81,9 +80,9 @@ export const TUTORIAL_SECTIONS: TutorialSection[] = [
   { id: 'turn-flow',      label: 'Turn Flow',         title: 'Turn Flow',                subtitle: 'Begin → Mulligan → Play → End.' },
   { id: 'board',          label: 'Board & Cards',     title: 'The Board',                subtitle: 'Slots, card types, and click behavior.' },
   { id: 'attacks',        label: 'Ain / Soph',        title: 'Ain / Soph Combat',        subtitle: 'Charges, attacks, Bridge the Light, and the full-board finisher.' },
-  { id: 'patience',       label: 'Light Stacks',      title: 'Limitless Light Stacks',   subtitle: 'The shared resource behind the Neutrality engine.' },
+  { id: 'patience',       label: 'Light Stacks',      title: 'Limitless Light Stacks',   subtitle: 'How the shared turn resource is generated and spent.' },
   { id: 'sets',           label: 'Abilities',         title: 'Ability Amplification',    subtitle: 'Materialized abilities and their runtime effects.' },
-  { id: 'rarities',       label: 'Rarities',          title: 'Rarity Tiers',             subtitle: 'From Common through Infinite.' },
+  { id: 'rarities',       label: 'Rarities',          title: 'Rarity Tiers',             subtitle: 'How each card rarity is earned.' },
   { id: 'modes',          label: 'Modes',             title: 'Wake, Infinitude & Packs', subtitle: 'Boss fights, crafting, and the store.' },
   { id: 'card-born-tier', label: 'Card-born Tier',    title: 'Card-born Tier',           subtitle: 'Card-light mastery, Resonance, and Collection Power.' },
   { id: 'progression',    label: 'Progression',       title: 'Progression & Cosmetics',  subtitle: 'Shards, holofoils, profile, and themes.' },

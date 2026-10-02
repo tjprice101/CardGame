@@ -13,13 +13,13 @@ Card art across gameplay, pack opening, pending-choice modals, collection, deck 
 - `getCardNameRibbonStyle`
 - `getCardRulesPanelStyle`
 
-Default card presentation is art plus top name/type ribbon plus bottom rules/effect panel. Respect `settings.cardArtDisplay` where the surface is a true card face.
+Default card presentation is full-bleed art beneath the shared screen-blended splotched-ink frame, with no top name/type ribbon or bottom rules panel. Show names and rules in inspectors, tooltips, or detail views outside the card art. Respect `settings.cardArtDisplay` where the surface is a true card face.
 
 Live turn surfaces must use the live helpers so hand, board, Battleground, pile inspectors, and pending choices share one composed artwork and rarity treatment. Standard holo, Eternal, Infinite, Enigmatic, and Transcendent cards use one lightweight transform-only shimmer during play; do not restore per-card filter/background-position animation stacks.
 
-Every menu that browses cards must preserve the complete card aspect ratio, artwork, name ribbon, and rules panel. Shrink cards or split crowded workflows into dedicated submenus before allowing clipping, squashing, or overflow. The surrounding menu adapts to cards; cards do not deform to rescue the menu layout.
+Every menu that browses cards must preserve the complete card aspect ratio, artwork, and frame. Shrink cards or split crowded workflows into dedicated submenus before allowing clipping, squashing, or overflow. The surrounding menu adapts to cards; cards do not deform to rescue the menu layout.
 
-Face-down Soph cards render only the canonical card backing plus state badges such as charge. They do not render the front-face name ribbon, effect panel, rarity overlay, or shimmer. Avoid raw `<img>` overlays that create a second artwork layer or sit above foil effects.
+Face-down Soph cards render only the canonical card backing plus state badges such as charge. They do not render the front-face artwork/frame, rarity overlay, or shimmer. Avoid raw `<img>` overlays that create a second artwork layer or sit above foil effects.
 
 ## Turn HUD And Main Menu
 

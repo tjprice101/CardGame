@@ -14,7 +14,6 @@ import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import { formatSummonRequirement, getSummonRequirements } from '@/systems/cards/AinSophSummonRequirements';
 import {
   cardFacePalette,
-  getCardArtTopBottomBorderOverlayStyleForCard,
   getCardBackgroundUrl,
   getCardFaceMetrics,
   getLiveCardFaceBackgroundStyle,
@@ -366,7 +365,7 @@ export default function EternitysWake({ onClose }: Props) {
 
               {areShardDropRatesVisible(progress) && FORGE_EVENT_BOSS_IDS.includes(boss.id) && (
                 <ShardDropRate
-                  label={`Shard of Transcendence · ${formatShardDropChance(selectedFightCount)} per clear${selectedFightCount > 1 ? ` (x${selectedFightCount})` : ''}`}
+                  label={`Shard of Transcendence · ${formatShardDropChance(selectedFightCount)} (1–3 Shards) per clear${selectedFightCount > 1 ? ` (x${selectedFightCount})` : ''}`}
                   style={{ alignSelf: 'flex-start' }}
                 />
               )}
@@ -410,7 +409,6 @@ export default function EternitysWake({ onClose }: Props) {
                             alignItems: 'stretch',
                           }}
                         >
-                          <div style={getCardArtTopBottomBorderOverlayStyleForCard(rewardDef)} />
                           <div style={getCardNameRibbonStyle('grid')}>
                             <div style={{
                               color: cardFacePalette.textMuted,

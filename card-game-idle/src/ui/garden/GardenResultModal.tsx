@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useStore, selectGardenDungeon, selectProgress } from '@/state/store';
 import { GARDEN_DUNGEONS, GARDEN_REWARD_LABELS } from '@/data/dungeons/gardenDungeonDefinitions';
+import TranscendentShardRewardBanner from '@/ui/components/TranscendentShardRewardBanner';
 import { SfxManager } from '@/audio/SfxManager';
 import { uiTypography } from '@/ui/theme';
 
@@ -30,8 +31,9 @@ export default function GardenResultModal() {
   const dungeon = GARDEN_DUNGEONS.find(d => d.id === gardenDungeon.dungeonId);
   const encounter = dungeon?.encounters[gardenDungeon.encounterIndex];
   const isFinalEncounter = dungeon ? gardenDungeon.encounterIndex >= dungeon.encounters.length - 1 : false;
-  const rewards = Object.entries(gardenDungeon.lastRewards ?? {})
-    .filter((entry): entry is [keyof typeof GARDEN_REWARD_LABELS, number] => entry[1] > 0);
+  const transcendentShardsEarned = gardenDungeon.lastRewards?.shardsOfTranscendence ?? 0;
+  const materialRewards = Object.entries(gardenDungeon.lastRewards ?? {})
+    .filter((entry): entry is [keyof typeof GARDEN_REWARD_LABELS, number] => entry[1] > 0 && entry[0] !== 'shardsOfTranscendence');
 
   return (
     <div
@@ -147,12 +149,19 @@ export default function GardenResultModal() {
               gap: 8,
             }}
           >
+            {transcendentShardsEarned > 0 && (
+              <TranscendentShardRewardBanner
+                count={transcendentShardsEarned}
+                totalOwned={progress.shardsOfTranscendence ?? 0}
+                style={{ margin: '0 0 12px' }}
+              />
+            )}
             <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)' }}>
               Encounter Reward
             </div>
-            {rewards.length > 0 ? (
+            {materialRewards.length > 0 ? (
               <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 18 }}>
-                {rewards.map(([rewardKey, amount]) => {
+                {materialRewards.map(([rewardKey, amount]) => {
                   const rewardLabel = GARDEN_REWARD_LABELS[rewardKey];
                   const rewardDefinition = dungeon?.encounters.find(item => item.reward?.currency === rewardKey)?.reward;
                   return (
@@ -187,7 +196,9 @@ export default function GardenResultModal() {
               </div>
             ) : (
               <div style={{ color: 'rgba(238,244,255,0.5)', fontSize: 12 }}>
-                No material reward is configured for this encounter.
+                {transcendentShardsEarned > 0
+                  ? 'All expedition materials secured.'
+                  : 'No material reward is configured for this encounter.'}
               </div>
             )}
           </div>

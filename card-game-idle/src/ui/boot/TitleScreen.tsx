@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { uiTypography, warmTheme } from '@/ui/theme';
 import { useStore, selectSettings } from '@/state/store';
+import { CardRegistry } from '@/cards/CardRegistry';
+import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
 import {
   DEFAULT_MAIN_MENU_BACKGROUND_ID,
   getDefaultMainMenuBackground,
@@ -36,10 +38,13 @@ function withAlpha(color: string, alpha: number): string {
 
 const BASE = import.meta.env.BASE_URL;
 
-/** Helper: build a card-backgrounds asset URL. */
-function card(set: string, name: string): string {
-  return `${BASE}assets/card-backgrounds/${set}/${encodeURIComponent(name)}.png`;
+/** Resolve showcase art through the card registry so rarity-specific overrides are honored. */
+function card(definitionId: string): string {
+  const definition = CardRegistry.get(definitionId);
+  return definition ? getCardBackgroundUrl(definition) ?? '' : '';
 }
+
+const CARD_FRONT_FRAME = `${BASE}assets/card-backgrounds/card-front-frame-splotched-ink.png`;
 
 /** Card width — shared constant so height (via aspect-ratio) stays consistent. */
 const CARD_W = 'clamp(128px, 13.5vw, 196px)';
@@ -63,17 +68,17 @@ interface CardSpec {
 // ── Left cluster — current Neutrality / Enigmatic showcase ─────────────────
 const LEFT_CARDS: CardSpec[] = [
   {
-    src: card('neutrality', 'Lumen Stag'),
+    src: card('light-neutrality-1'),
     rot: -15, opacity: 0.52, dur: 5.0, delay: 0.4, fadeEdge: 'left',
     pos: { left: '-2%', top: '16%' },
   },
   {
-    src: card('neutrality', 'Lumen Genesis'),
+    src: card('enig-neutral-lumen-genesis'),
     rot: -8, opacity: 0.74, dur: 5.4, delay: 1.2,
     pos: { left: '4%', top: '29%' },
   },
   {
-    src: card('neutrality', 'The White Null'),
+    src: card('ain-soph-aur-neutrality-1'),
     rot: -2, opacity: 0.92, dur: 4.6, delay: 0.8,
     pos: { left: '10%', top: '43%' },
   },
@@ -82,17 +87,17 @@ const LEFT_CARDS: CardSpec[] = [
 // ── Right cluster — current Neutrality / Transcendent showcase ───────────────
 const RIGHT_CARDS: CardSpec[] = [
   {
-    src: card('neutrality', 'Null Catalyst'),
+    src: card('tx-neutral-null-catalyst'),
     rot: 15, opacity: 0.52, dur: 4.8, delay: 0.7, fadeEdge: 'right',
     pos: { right: '-2%', top: '16%' },
   },
   {
-    src: card('neutrality', 'Starbound Glimmer'),
+    src: card('tx-neutral-starbound-glimmer'),
     rot: 8, opacity: 0.74, dur: 5.2, delay: 1.5,
     pos: { right: '4%', top: '29%' },
   },
   {
-    src: card('neutrality', 'Starbound Null Archangel'),
+    src: card('tx-angel-starbound-null-archangel'),
     rot: 2, opacity: 0.92, dur: 4.4, delay: 0.2,
     pos: { right: '10%', top: '43%' },
   },
@@ -113,7 +118,7 @@ function ShowcaseCard({ c, reduced }: { c: CardSpec; reduced: boolean }) {
         position: 'absolute',
         ...c.pos,
         width: CARD_W,
-        aspectRatio: '5 / 7',
+        aspectRatio: '148 / 204',
         transform: `rotate(${c.rot}deg)`,
         transformOrigin: 'bottom center',
         opacity: c.opacity,
@@ -125,7 +130,8 @@ function ShowcaseCard({ c, reduced }: { c: CardSpec; reduced: boolean }) {
       <div style={{
         width: '100%',
         height: '100%',
-        backgroundImage: `url(${c.src})`,
+        backgroundImage: `url("${CARD_FRONT_FRAME}"), url("${c.src}")`,
+        backgroundBlendMode: 'screen, normal',
         backgroundSize: 'cover',
         backgroundPosition: 'center top',
         borderRadius: 9,

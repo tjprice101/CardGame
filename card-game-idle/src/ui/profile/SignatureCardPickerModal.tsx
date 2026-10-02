@@ -270,11 +270,14 @@ export default function SignatureCardPickerModal({ slotIndex, onClose, onPick }:
                       }}
                       onMouseEnter={e => {
                         (e.currentTarget as HTMLElement).style.boxShadow = `0 8px 24px ${rarityColor}66, 0 0 12px ${rarityColor}44`;
-                        (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)';
+                        (e.currentTarget as HTMLElement).style.outline = `1px solid ${rarityColor}aa`;
+                        (e.currentTarget as HTMLElement).style.outlineOffset = '2px';
+                        (e.currentTarget as HTMLElement).style.filter = 'brightness(1.08)';
                       }}
                       onMouseLeave={e => {
                         (e.currentTarget as HTMLElement).style.boxShadow = 'none';
-                        (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
+                        (e.currentTarget as HTMLElement).style.outline = '';
+                        (e.currentTarget as HTMLElement).style.filter = '';
                       }}
                       title={`${d.name} · ${d.rarity}`}
                     >

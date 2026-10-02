@@ -1,14 +1,14 @@
 import { useEffect } from 'react';
-import { useStore, selectBossFight } from '@/state/store';
+import { useStore, selectBossFight, selectProgress } from '@/state/store';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
 import { CardRegistry } from '@/cards/CardRegistry';
+import TranscendentShardRewardBanner from '@/ui/components/TranscendentShardRewardBanner';
 import {
   getBossFightMasteryPerCard,
 } from '@/systems/progression/cardMastery';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import {
   cardFacePalette,
-  getCardArtTopBottomBorderOverlayStyleForCard,
   getCardFaceMetrics,
   getLiveCardFaceBackgroundStyle,
   getLiveCardShimmerClassName,
@@ -53,6 +53,7 @@ const REWARD_FACE_HEIGHT = 164;
 
 export default function BossResultModal() {
   const bossFight = useStore(selectBossFight);
+  const progress = useStore(selectProgress);
   const dismissBossResult = useStore(s => s.dismissBossResult);
 
   const isVictory = bossFight.mode === 'victory';
@@ -247,6 +248,14 @@ export default function BossResultModal() {
           )}
         </div>
 
+        {/* ── Transcendent Shard Drop banner (if dropped) ───────────────── */}
+        {isVictory && (bossFight.rewardSummary?.transcendentShardsEarned ?? 0) > 0 && (
+          <TranscendentShardRewardBanner
+            count={bossFight.rewardSummary!.transcendentShardsEarned!}
+            totalOwned={progress.shardsOfTranscendence ?? 0}
+          />
+        )}
+
         {/* ── Reward card panel (victory only) ──────────────────────────── */}
         {isVictory && rewardDef && (
           <div style={{
@@ -291,7 +300,6 @@ export default function BossResultModal() {
                     alignItems: 'stretch',
                   }}
                 >
-                  <div style={getCardArtTopBottomBorderOverlayStyleForCard(rewardDef)} />
                   <div style={getCardNameRibbonStyle('grid')}>
                     <div style={{
                       color: cardFacePalette.textMuted,
@@ -402,16 +410,17 @@ export default function BossResultModal() {
             letterSpacing: 4,
             textTransform: 'uppercase',
             boxShadow: `0 0 20px ${ACCENT}33, inset 0 1px 0 rgba(255,255,255,0.06)`,
-            transition: 'box-shadow 160ms ease, transform 160ms ease',
+            transition: 'box-shadow 160ms ease, outline-color 160ms ease',
             animation: 'resultPanelSlideUp 0.6s 0.62s ease both',
           }}
           onMouseEnter={e => {
             (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 0 32px ${ACCENT}66, inset 0 1px 0 rgba(255,255,255,0.1)`;
-            (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)';
+            (e.currentTarget as HTMLButtonElement).style.outline = `1px solid ${ACCENT}`;
+            (e.currentTarget as HTMLButtonElement).style.outlineOffset = '2px';
           }}
           onMouseLeave={e => {
             (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 0 20px ${ACCENT}33, inset 0 1px 0 rgba(255,255,255,0.06)`;
-            (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)';
+            (e.currentTarget as HTMLButtonElement).style.outline = '';
           }}
         >
           {isVictory ? 'Collect' : 'Continue'}

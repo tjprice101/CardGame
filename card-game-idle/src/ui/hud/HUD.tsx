@@ -26,9 +26,11 @@ function TopStatusBar({ onOpenDivineLightScreen }: { onOpenDivineLightScreen: ()
   const turn = useStore(selectTurn);
   const bossFight = useStore(selectBossFight);
   const gardenDungeon = useStore(selectGardenDungeon);
+  const battleground = useStore(selectBattleground);
 
   const isBoss = bossFight.mode === 'active';
   const isGarden = gardenDungeon.phase === 'active';
+  const showScore = !isBoss && !isGarden && battleground.mode !== 'active';
   const tint = SET_ACCENT;
   const setName = isGarden ? 'Valley of Null' : SET_LABEL;
   const tintCss = isGarden ? '#ffffff' : isBoss ? '#ff6b6b' : tint;
@@ -36,10 +38,15 @@ function TopStatusBar({ onOpenDivineLightScreen }: { onOpenDivineLightScreen: ()
 
   return (
     <div style={{
-      position: 'absolute', top: 0, left: 0, right: 0, height: 52,
-      display: 'flex', alignItems: 'center',
-      justifyContent: 'flex-start',
-      padding: '0 22px',
+      gridArea: 'header',
+      position: 'relative',
+      width: '100%',
+      height: '100%',
+      display: 'grid',
+      gridTemplateColumns: 'minmax(0, 1fr) auto minmax(0, 1fr)',
+      alignItems: 'center',
+      gap: 12,
+      padding: '0 18px',
       background: isGarden
         ? 'linear-gradient(180deg, rgba(3,4,7,0.96) 0%, rgba(6,8,12,0.6) 75%, transparent 100%)'
         : 'linear-gradient(180deg, rgba(5,5,7,0.92) 0%, rgba(5,5,7,0.4) 75%, transparent 100%)',
@@ -52,6 +59,7 @@ function TopStatusBar({ onOpenDivineLightScreen }: { onOpenDivineLightScreen: ()
       <div
         key={`hdr-${turn.turnNumber ?? 1}-${turn.phase}`}
         style={{
+          minWidth: 0,
           display: 'flex', alignItems: 'baseline', gap: 14,
           animation: 'turnHeaderFadeIn 0.9s cubic-bezier(0.22,0.61,0.36,1) both',
         }}
@@ -83,13 +91,17 @@ function TopStatusBar({ onOpenDivineLightScreen }: { onOpenDivineLightScreen: ()
         </span>
       </div>
 
+      <div style={{ justifySelf: 'center' }}>
+        {showScore && <ScoreDisplay />}
+      </div>
+
       {/* Right — Divine Light Acquisition button */}
       <button
         className="divine-light-acquisition-button"
         onClick={onOpenDivineLightScreen}
         title="Divine Light Acquisition — view all Divine Light sources"
         style={{
-          marginLeft: 'auto',
+          justifySelf: 'end',
           pointerEvents: 'auto',
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '7px 16px',
@@ -134,18 +146,16 @@ function TopStatusBar({ onOpenDivineLightScreen }: { onOpenDivineLightScreen: ()
  * request; widened to 260 px for breathing room vs the old 220 px.
  */
 function RightRail({ inspectedCardId, onRequestBeginTurn }: { inspectedCardId: string | null; onRequestBeginTurn?: () => void }) {
-  const bossFight = useStore(selectBossFight);
-  const gardenDungeon = useStore(selectGardenDungeon);
-  const battleground = useStore(selectBattleground);
-  const inBossFight = bossFight.mode === 'active';
-  const inGardenDungeon = gardenDungeon.phase === 'active';
-  const inBattleground = battleground.mode === 'active';
   return (
     <div
+      className="turn-screen-rail"
       style={{
-        position: 'absolute',
-        right: 0, top: 0, bottom: 0,
-        width: 270,
+        gridArea: 'rail',
+        position: 'relative',
+        width: '100%',
+        height: '100%',
+        minWidth: 0,
+        minHeight: 0,
         display: 'flex',
         flexDirection: 'column',
         background: 'linear-gradient(270deg, rgba(5,5,7,0.92) 0%, rgba(8,8,16,0.78) 100%)',
@@ -164,7 +174,7 @@ function RightRail({ inspectedCardId, onRequestBeginTurn }: { inspectedCardId: s
       }} />
 
       {/* Deck pills — clear the compact boss/dungeon strip without pushing the board controls down. */}
-      <div style={{ padding: `${inBossFight || inGardenDungeon ? 148 : inBattleground ? 58 : 58}px 14px 0`, flexShrink: 0 }}>
+      <div style={{ padding: '10px 14px 0', flexShrink: 0 }}>
         <DeckStatus />
       </div>
 
@@ -206,38 +216,26 @@ export default function HUD({ onRequestBeginTurn }: { onRequestBeginTurn?: () =>
   const bossFight = useStore(selectBossFight);
   const battleground = useStore(selectBattleground);
   const gardenDungeon = useStore(selectGardenDungeon);
-  const inBossFight = bossFight.mode === 'active';
-  const inBattleground = battleground.mode === 'active';
-  const inGardenDungeon = gardenDungeon.phase === 'active';
+  const specialMode = bossFight.mode === 'active' || battleground.mode === 'active' || gardenDungeon.phase === 'active';
 
   return (
-    <>
-      {/* Core play surfaces */}
-      <BoardDisplay onHoverCard={setInspectedCardId} />
-      {/* ScoreDisplay overlaps the boss/battleground/garden banner — those headers already present score/timer/currencies */}
-      {!inBattleground && !inGardenDungeon && !inBossFight && <ScoreDisplay />}
-      <div style={{
-        position: 'absolute',
-        top: inBossFight || inBattleground || inGardenDungeon ? 116 : 60,
-        left: 14,
-        zIndex: 45,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-start',
-        gap: 10,
-        pointerEvents: 'none',
-      }}>
-        <AngelStatPanel />
-        <CardBornStacksPanel />
-      </div>
-
-      {/* Top status bar — set · turn · phase */}
+    <div className="turn-screen-layout">
       <TopStatusBar onOpenDivineLightScreen={() => setShowDivineLightScreen(true)} />
 
-      {/* Hand strip */}
-      <HandDisplay onHoverCard={setInspectedCardId} />
+      <main className={`turn-screen-playfield${specialMode ? ' turn-screen-playfield--special' : ''}`}>
+        <aside className="turn-screen-resources">
+        <AngelStatPanel />
+        <CardBornStacksPanel />
+        </aside>
+        <section className="turn-screen-board" aria-label="Turn board">
+          <BoardDisplay onHoverCard={setInspectedCardId} />
+        </section>
+      </main>
 
-      {/* Right control rail — deck pills / set-engines reference / turn button */}
+      <section className="turn-screen-hand" aria-label="Hand">
+        <HandDisplay onHoverCard={setInspectedCardId} />
+      </section>
+
       <RightRail inspectedCardId={inspectedCardId} onRequestBeginTurn={onRequestBeginTurn} />
 
       {/* Pending-effect modal — floats above everything */}
@@ -252,6 +250,6 @@ export default function HUD({ onRequestBeginTurn }: { onRequestBeginTurn?: () =>
       {showDivineLightScreen && (
         <DivineLightAcquisitionScreen onClose={() => setShowDivineLightScreen(false)} />
       )}
-    </>
+    </div>
   );
 }

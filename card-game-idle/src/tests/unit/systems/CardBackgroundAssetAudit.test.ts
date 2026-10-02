@@ -4,7 +4,6 @@ import { describe, expect, it } from 'vitest';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { infiniteCards } from '@/data/cards/infiniteCards';
 import {
-  getCardArtTopBottomBorderOverlayStyleForCard,
   getCardBackgroundUrl,
   getCardFaceBackgroundStyle,
   getLiveCardFaceBackgroundStyle,
@@ -59,7 +58,7 @@ describe('card background asset audit', () => {
     expect(missing).toEqual([]);
   });
 
-  it('keeps holofoil, Enigmatic, Eternal, Infinite, and Transcendent bars visually distinct', () => {
+  it('keeps rarity-specific frame variables while hiding the name and rules bands', () => {
     const byRarity = (rarity: 'Enigmatic' | 'Eternal' | 'Infinite' | 'Transcendent') => {
       if (rarity === 'Infinite') return infiniteCards[0] as unknown as Parameters<typeof getCardFaceBackgroundStyle>[0];
       const card = CardRegistry.getAll().find(candidate => candidate.rarity === rarity);
@@ -90,12 +89,18 @@ describe('card background asset audit', () => {
     expect(ribbons[3]).toBe('#12151e');
     expect(ribbons[4]).toBe('#fbfbfd');
 
-    expect(getCardNameRibbonStyle('grid').background).toContain('--card-face-ribbon');
-    expect(getCardRulesPanelStyle('grid').background).toContain('--card-face-panel');
-    const overlays = treatments.map((_, index) => getCardArtTopBottomBorderOverlayStyleForCard(
-      index === 0 ? holoCard : [byRarity('Enigmatic'), byRarity('Eternal'), byRarity('Infinite'), byRarity('Transcendent')][index - 1],
-    ).backgroundImage);
-    expect(new Set(overlays).size).toBe(5);
+    expect(getCardNameRibbonStyle('grid')).toEqual({ display: 'none' });
+    expect(getCardRulesPanelStyle('grid')).toEqual({ display: 'none' });
+  });
+
+  it('screens the shared frame over every front face but not over card backs', () => {
+    const card = CardRegistry.getAll()[0]!;
+    const front = getCardFaceBackgroundStyle(card);
+    const back = getCardFaceBackgroundStyle(card, 'normal', 'back');
+
+    expect(front.backgroundImage).toContain('card-front-frame-splotched-ink.png');
+    expect(front.backgroundBlendMode?.split(',')[0].trim()).toBe('screen');
+    expect(back.backgroundImage).not.toContain('card-front-frame-splotched-ink.png');
   });
 
   it('uses one cached, lightweight live treatment for every foil rarity', () => {

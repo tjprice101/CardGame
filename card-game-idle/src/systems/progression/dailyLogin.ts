@@ -103,18 +103,28 @@ export function evaluateDailyLogin(
   const previousStreak = dl.streak;
   const trackKey = getMonthlyTrackKey(now);
   const dayOfMonth = new Date(now).getUTCDate();
-  const monthlyLedgerMissing = !dl.monthlyClaimedDays || dl.monthlyClaimedDays.length === 0;
-  const legacyAlreadyClaimedToday = lastDay === today && monthlyLedgerMissing;
-  const claimedDays = dl.monthlyTrackKey === trackKey
-    ? (legacyAlreadyClaimedToday ? [dayOfMonth] : (dl.monthlyClaimedDays ?? []))
-    : dl.monthlyTrackKey === undefined && lastDay === today
-      ? [dayOfMonth]
-      : [];
-  const monthlyClaimableDay = legacyAlreadyClaimedToday
+  const rawClaimedDays = dl.monthlyTrackKey === trackKey
+    ? (dl.monthlyClaimedDays ?? [])
+    : [];
+  // Self-heal: If an account previously claimed a future day of the month
+  // (e.g. from the old sequential streak+1 logic before the calendar-date fix)
+  // while earlier calendar days up through today were skipped, snap those future days
+  // down so today is recognized as claimed and future days are freed.
+  let claimedDays = rawClaimedDays;
+  if (
+    lastDay === today &&
+    dl.monthlyTrackKey === trackKey &&
+    !rawClaimedDays.includes(dayOfMonth) &&
+    rawClaimedDays.some(d => d > dayOfMonth)
+  ) {
+    claimedDays = rawClaimedDays.map(d => (d > dayOfMonth ? dayOfMonth : d));
+  } else if (rawClaimedDays.length === 0 && lastDay === today) {
+    claimedDays = [dayOfMonth];
+  }
+
+  const monthlyClaimableDay = (lastDay === today || claimedDays.includes(dayOfMonth))
     ? undefined
-    : !claimedDays.includes(dayOfMonth)
-      ? dayOfMonth
-      : undefined;
+    : dayOfMonth;
 
   if (lastDay < 0) {
     return {

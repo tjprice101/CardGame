@@ -881,6 +881,7 @@ export default function App() {
 
   return (
     <div
+      className="game-scene-root"
       style={{
         position: 'relative',
         width: '100%',

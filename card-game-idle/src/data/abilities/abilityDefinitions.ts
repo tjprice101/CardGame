@@ -10,6 +10,7 @@ export interface AbilityDefinition {
   readonly name: string;
   readonly description: string;
   readonly cooldownSeconds?: number;
+  readonly durationSeconds?: number;
   readonly stackCost?: number;
   readonly iconAssetKey: string;
   readonly ownershipGate?: 'anyNeutralityEternal' | 'anyNeutralityInfinite' | 'allCausalityBase' | 'anyCausalityEternal' | 'anyCausalityInfinite';
@@ -191,8 +192,9 @@ export const ABILITY_DEFINITIONS: readonly AbilityDefinition[] = [
     id: 'transcendent-reliquary-all-nothing',
     setId: 'Transcendent',
     name: 'Vault of Unwritten Futures',
-    description: 'Spend 10 Limitless Light Stacks to choose 2 cards from your discard pile and raise your hand limit by 2 for the rest of the turn. Cooldown: 120 seconds.',
+    description: 'Spend 10 Limitless Light Stacks to choose 2 cards from your discard pile and raise your hand limit by 2 for 40 seconds. When it expires, discard down to your normal hand limit. Cooldown: 2 minutes.',
     cooldownSeconds: 120,
+    durationSeconds: 40,
     stackCost: 10,
     iconAssetKey: 'forge-ability-vault-unwritten-futures',
   },

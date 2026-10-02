@@ -15,7 +15,7 @@ export const FORGE_EVENT_BOSS_IDS: readonly string[] = BOSS_DEFINITIONS
   .filter(boss => boss.category === FORGE_EVENT_BOSS_CATEGORY)
   .map(boss => boss.id);
 
-/** The 4 placeholder Transcendent card ids repurposed as Forge gallery pieces. */
+/** The 4 placeholder Transcendent card ids repurposed as Forge gallery pieces (Vol. 1). */
 export const FORGE_PLACEHOLDER_CARD_IDS: readonly string[] = [
   'tx-neutral-starbound-glimmer',
   'tx-neutral-null-catalyst',
@@ -23,8 +23,11 @@ export const FORGE_PLACEHOLDER_CARD_IDS: readonly string[] = [
   'tx-angel-starbound-null-archangel',
 ];
 
+export const FORGE_VOL_1_CARD_IDS: readonly string[] = FORGE_PLACEHOLDER_CARD_IDS;
+
 export interface ForgeCardLore {
   definitionId: string;
+  volume?: string;
   /** Placeholder display name shown until real design lands. */
   displayName: string;
   /** Short one-line myth hook shown on the gallery tile. */
@@ -45,13 +48,14 @@ export const FORGE_CARD_SHARD_COST = 25;
 const forgeAsset = (file: string): string => `url('${import.meta.env.BASE_URL}assets/forge/${file}')`;
 
 /**
- * Lore for the 4 Forge gallery cards. See
+ * Lore for the Vol. 1 Forge gallery cards. See
  * "Midjourney Art/Forge of Transcendence Prompts.md" for the art brief and
  * src/data/ascension/transcendentCards.ts for each card's rules text.
  */
 export const FORGE_CARD_LORE: readonly ForgeCardLore[] = [
   {
     definitionId: 'tx-neutral-starbound-glimmer',
+    volume: 'Vol. 1',
     displayName: 'Light Before the First Star',
     tagline: 'The first light that was not born of any star.',
     lore: 'Before sets, before suits, before a single card bore a name, there was a glimmer that refused to belong. It answers to no house and casts no shadow of allegiance.',
@@ -61,6 +65,7 @@ export const FORGE_CARD_LORE: readonly ForgeCardLore[] = [
   },
   {
     definitionId: 'tx-neutral-null-catalyst',
+    volume: 'Vol. 1',
     displayName: 'The First Catalyst',
     tagline: 'The catalyst that first taught cause to have an effect.',
     lore: 'It is said this card was present at the first shuffle, the moment chance itself learned to matter.',
@@ -70,6 +75,7 @@ export const FORGE_CARD_LORE: readonly ForgeCardLore[] = [
   },
   {
     definitionId: 'tx-neutral-void-reliquary',
+    volume: 'Vol. 1',
     displayName: 'The Reliquary of All and Nothing',
     tagline: 'A reliquary that holds nothing, and therefore holds everything.',
     lore: 'What it contains has never been seen by any who kept it.',
@@ -79,6 +85,7 @@ export const FORGE_CARD_LORE: readonly ForgeCardLore[] = [
   },
   {
     definitionId: 'tx-angel-starbound-null-archangel',
+    volume: 'Vol. 1',
     displayName: 'The Bridge Between Light and Life',
     tagline: 'The one that bridged the light so life could exist at all.',
     lore: 'Not summoned, not drafted, not owned — it simply arrived once, and the world began.',
@@ -98,18 +105,23 @@ export function hasBeatenAllForgeEventBosses(bossCodex: Record<string, unknown> 
   return FORGE_EVENT_BOSS_IDS.every(bossId => bossCodex[bossId] !== undefined);
 }
 
-/** Base Shard of Transcendence drop chance per eligible source roll (0.1%). */
-export const SHARD_OF_TRANSCENDENCE_BASE_CHANCE = 0.001;
+/** Base Shard of Transcendence drop chance per eligible source roll (1%). */
+export const SHARD_OF_TRANSCENDENCE_BASE_CHANCE = 0.01;
 
 /**
- * Rolls for a single Shard of Transcendence. Only ever eligible once the
- * Forge has been opened (key spent) — callers must gate on
- * `progress.forgeOfTranscendenceUnlocked` before calling this.
- * @param variantMultiplier x2/x3 Eternity's Wake boss variants scale the base chance linearly.
+ * Rolls for Shards of Transcendence: ~1% chance per clear (scaled by variant fight count if applicable),
+ * dropping in quantities of 1 to 3 with equal ~33.33% weights (1, 2, or 3).
+ * Returns the number of shards dropped (0 if the roll did not trigger).
  */
-export function rollShardOfTranscendence(variantMultiplier = 1): boolean {
+export function rollShardOfTranscendence(variantMultiplier = 1): number {
   const chance = SHARD_OF_TRANSCENDENCE_BASE_CHANCE * Math.max(1, variantMultiplier);
-  return Math.random() < chance;
+  if (Math.random() < chance) {
+    const roll = Math.random();
+    if (roll < 1 / 3) return 1;
+    if (roll < 2 / 3) return 2;
+    return 3;
+  }
+  return 0;
 }
 
 /** Drop rates are only revealed once all Forge event bosses are beaten AND the Forge is opened. */

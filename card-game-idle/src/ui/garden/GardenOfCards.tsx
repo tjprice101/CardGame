@@ -368,7 +368,7 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
                           HP: {encounter.maxHp.toLocaleString()} · Drop: {GARDEN_REWARD_LABELS[encounter.reward.currency]}
                         </div>
                         {showShardRates && index === selected.encounters.length - 1 && (
-                          <ShardDropRate label={`Shard of Transcendence · ${formatShardDropChance()} on clear`} fontSize={10} style={{ marginTop: 5 }} />
+                          <ShardDropRate label={`Shard of Transcendence · ${formatShardDropChance()} (1–3 Shards) on clear`} fontSize={10} style={{ marginTop: 5 }} />
                         )}
                       </div>
                       <div style={{ color: '#ffffff', fontSize: 12, fontWeight: 600, textAlign: 'right', flexShrink: 0 }}>

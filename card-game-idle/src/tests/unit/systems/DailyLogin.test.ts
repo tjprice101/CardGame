@@ -175,4 +175,21 @@ describe('dailyLogin.evaluateDailyLogin', () => {
     expect(result.monthlyDay).toBeUndefined();
     expect(result.monthlyReward).toBeUndefined();
   });
+
+  it('heals an account that claimed a future calendar day (Day 2 on Day 1) prior to the fix', () => {
+    const currentCalendarDay = new Date(now).getUTCDate();
+    // Suppose today is Day 1, and the account previously claimed Day 2 because of streak=1 -> streak+1=2
+    const result = evaluateDailyLogin(
+      makeProgress({
+        lastClaimedDayIndex: today,
+        streak: 2,
+        monthlyTrackKey: getMonthlyTrackKey(now),
+        monthlyClaimedDays: [currentCalendarDay + 1],
+      }),
+      now,
+    );
+    // Already claimed today, so claimable should be false and monthlyDay undefined
+    expect(result.claimable).toBe(false);
+    expect(result.monthlyDay).toBeUndefined();
+  });
 });

@@ -52,6 +52,7 @@ function getThemePalette() {
 }
 
 const GROUP_LABEL: Record<string, string> = {
+  all: 'All Achievements',
   milestone: 'Milestones',
   boss: "Eternity's Wake",
   infinite: 'Infinity Crafted',
@@ -59,6 +60,7 @@ const GROUP_LABEL: Record<string, string> = {
 };
 
 const GROUP_ICON: Record<string, string> = {
+  all: '✦',
   milestone: '◈',
   boss: '☽',
   infinite: '∞',
@@ -66,6 +68,7 @@ const GROUP_ICON: Record<string, string> = {
 };
 
 const GROUP_DESCRIPTION: Record<string, string> = {
+  all: 'Every milestone, boss, crafted-card, and set-completion achievement.',
   milestone: 'Core gameplay milestones — cards played, packs opened, turns completed, and collection thresholds reached.',
   boss: "Defeat Eternity's Wake bosses.",
   infinite: 'Cards crafted through the Infinity menu using the Infinitude system.',
@@ -80,6 +83,7 @@ export default function AchievementsModal({ onClose }: Props) {
   const claimAchievement = useStore(s => s.claimAchievement);
   const claimAllAchievements = useStore(s => s.claimAllAchievements);
   const groupColors: Record<string, string> = {
+    all: warmTheme.accent,
     milestone: warmTheme.accent,
     boss: warmTheme.danger,
     infinite: warmTheme.accentSoft,
@@ -87,27 +91,23 @@ export default function AchievementsModal({ onClose }: Props) {
   };
 
   const summary = useMemo(() => summarizeAchievements(progress), [progress]);
+  const allAchievements = useMemo(() => listAchievements(progress), [progress]);
   const grouped = useMemo(() => {
-    const list = listAchievements(progress);
-    const out: Record<string, typeof list> = {};
-    for (const a of list) {
+    const out: Record<string, typeof allAchievements> = {};
+    for (const a of allAchievements) {
       (out[a.group] ??= []).push(a);
     }
     return out;
-  }, [progress]);
+  }, [allAchievements]);
 
-  const [activeGroup, setActiveGroup] = useState<string>(Object.keys(grouped)[0] ?? 'milestone');
-  const groups = Object.keys(grouped);
+  const [activeGroup, setActiveGroup] = useState<string>('all');
+  const groups = ['all', ...Object.keys(grouped)];
   useEffect(() => {
-    if (!groups.length) {
-      if (activeGroup !== 'milestone') setActiveGroup('milestone');
-      return;
-    }
-    if (!grouped[activeGroup]) setActiveGroup(groups[0]);
-  }, [activeGroup, groups, grouped]);
+    if (activeGroup !== 'all' && !grouped[activeGroup]) setActiveGroup('all');
+  }, [activeGroup, grouped]);
 
-  const effectiveGroup = grouped[activeGroup] ? activeGroup : (groups[0] ?? 'milestone');
-  const items = grouped[effectiveGroup] ?? [];
+  const effectiveGroup = activeGroup === 'all' || grouped[activeGroup] ? activeGroup : 'all';
+  const items = effectiveGroup === 'all' ? allAchievements : grouped[effectiveGroup] ?? [];
   const unlockedInGroup = items.filter(a => a.unlocked).length;
   const accentTriplet = toRgbTriplet(P.accent) ?? [58, 142, 200];
   const accentSoftTriplet = toRgbTriplet(P.accentGold) ?? [90, 171, 218];
@@ -234,7 +234,7 @@ export default function AchievementsModal({ onClose }: Props) {
               color: P.textFaint, fontFamily: uiTypography.display, marginBottom: 6, paddingLeft: 6,
             }}>Categories</div>
             {groups.map(g => {
-              const gItems = grouped[g] ?? [];
+              const gItems = g === 'all' ? allAchievements : grouped[g] ?? [];
               const gUnlocked = gItems.filter(a => a.unlocked).length;
               const isActive = g === effectiveGroup;
               const gc = groupColors[g] ?? P.accent;

@@ -6,12 +6,18 @@ import {
   listAchievements,
   summarizeAchievements,
 } from '@/systems/progression/achievements';
+import { TITLE_BADGES } from '@/data/profile/titleBadges';
 
 function cloneProgress() {
   return JSON.parse(JSON.stringify(defaultGameState.progress)) as typeof defaultGameState.progress;
 }
 
 describe('achievements retroactive unlocking', () => {
+  it('lists every title from the profile registry in the achievement catalogue', () => {
+    const achievementIds = listAchievements(cloneProgress()).map(achievement => achievement.id);
+    expect(achievementIds).toEqual(TITLE_BADGES.map(title => title.id));
+  });
+
   it('unlocks achievements retroactively when criteria is already met', () => {
     const progress = cloneProgress();
     progress.totalCardsPlayed = 1;

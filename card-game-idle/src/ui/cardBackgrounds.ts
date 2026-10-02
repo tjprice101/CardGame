@@ -5,6 +5,7 @@ import { warmTheme } from '@/ui/theme';
 import { getCardThemePackStyle, getFontScale } from '@/ui/preferences';
 
 const CARD_BACKGROUND_ROOT = `${import.meta.env.BASE_URL}assets/card-backgrounds`;
+const CARD_FRONT_FRAME_IMAGE = `url("${CARD_BACKGROUND_ROOT}/card-front-frame-splotched-ink.png")`;
 const FORGE_ART_ROOT = `${import.meta.env.BASE_URL}assets/forge`;
 
 /** The 4 Forge of Transcendence gallery cards use their own dedicated art, not the shared Neutrality/Infinite folders. */
@@ -642,7 +643,8 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
   if (imageUrl) imageLayers.push(`url("${imageUrl}")`);
   if (fallbackImageUrl && fallbackImageUrl !== imageUrl) imageLayers.push(`url("${fallbackImageUrl}")`);
 
-  const layerCount = overlayLayers.length + tintOverlay.length + (imageLayers.length > 0 ? imageLayers.length : 1);
+  const frontFrameLayers = card ? [CARD_FRONT_FRAME_IMAGE] : [];
+  const layerCount = frontFrameLayers.length + overlayLayers.length + tintOverlay.length + (imageLayers.length > 0 ? imageLayers.length : 1);
   const layerPositions = Array(layerCount).fill('center').join(', ');
   const layerSizes = Array(layerCount).fill('cover').join(', ');
   const baseBlendModes = [
@@ -658,6 +660,7 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
     'overlay',
   ];
   const layerBlendModes = [
+    ...frontFrameLayers.map(() => 'screen'),
     ...baseBlendModes,
     ...(imageLayers.length > 0 ? imageLayers.map(() => 'normal') : ['normal']),
   ].join(', ');
@@ -671,9 +674,7 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
     const showOverlay = overlayLayers.length > 0;
     return {
       ...themeVars,
-      backgroundImage: showOverlay
-        ? [...overlayLayers, ...tintOverlay, baseGrad].join(', ')
-        : [...tintOverlay, baseGrad].join(', '),
+      backgroundImage: [...frontFrameLayers, ...(showOverlay ? overlayLayers : []), ...tintOverlay, baseGrad].join(', '),
       backgroundColor: isInfinite ? '#0e0e12' : isEternal ? '#0b090c' : warmTheme.surfaceStrong,
       backgroundPosition: layerPositions,
       backgroundSize: layerSizes,
@@ -686,9 +687,7 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
   const showOverlay = overlayLayers.length > 0;
   return {
     ...themeVars,
-    backgroundImage: showOverlay
-      ? [...overlayLayers, ...tintOverlay, ...imageLayers].join(', ')
-      : [...tintOverlay, ...imageLayers].join(', '),
+    backgroundImage: [...frontFrameLayers, ...(showOverlay ? overlayLayers : []), ...tintOverlay, ...imageLayers].join(', '),
     backgroundColor: isInfinite ? '#0e0e12' : isEternal ? '#0b090c' : warmTheme.surfaceStrong,
     backgroundPosition: layerPositions,
     backgroundSize: layerSizes,
@@ -764,98 +763,13 @@ export function getCardFaceMetrics(variant: CardFaceVariant) {
 }
 
 export function getCardNameRibbonStyle(variant: CardFaceVariant): CSSProperties {
-  return {
-    alignSelf: 'stretch',
-    background: 'var(--card-face-ribbon, #2f2118)',
-    borderBottom: '1px solid var(--card-face-border, rgba(236, 214, 176, 0.55))',
-    boxShadow: '0 1px 0 rgba(255, 255, 255, 0.5)',
-    color: 'var(--card-face-text, #fff8e8)',
-    padding: CARD_FACE_METRICS_BASE[variant].ribbonPadding,
-    animationName: 'var(--card-face-ribbon-animation-name, none)',
-    animationDuration: 'var(--card-face-ribbon-animation-duration, 0s)',
-    animationTimingFunction: 'var(--card-face-animation-timing, ease-in-out)',
-    animationIterationCount: 'var(--card-face-animation-iteration, infinite)',
-    animationDirection: 'var(--card-face-animation-direction, alternate)',
-  };
+  void variant;
+  return { display: 'none' };
 }
 
 export function getCardRulesPanelStyle(variant: CardFaceVariant): CSSProperties {
-  const maxHeights: Partial<Record<CardFaceVariant, string>> = {
-    hand: '32%',
-    pack: '34%',
-    grid: '30%',
-    board: '36%',
-    boardMini: '36%',
-  };
-  return {
-    alignSelf: 'stretch',
-    background: 'var(--card-face-panel, #241a13)',
-    borderTop: '1px solid var(--card-face-border, rgba(236, 214, 176, 0.55))',
-    boxShadow: '0 -10px 22px rgba(68, 49, 32, 0.12)',
-    color: 'var(--card-face-text-soft, rgba(255, 248, 232, 0.92))',
-    padding: CARD_FACE_METRICS_BASE[variant].panelPadding,
-    marginTop: 'auto',
-    maxHeight: maxHeights[variant],
-    overflow: 'hidden',
-    animationName: 'var(--card-face-panel-animation-name, none)',
-    animationDuration: 'var(--card-face-panel-animation-duration, 0s)',
-    animationTimingFunction: 'var(--card-face-animation-timing, ease-in-out)',
-    animationIterationCount: 'var(--card-face-animation-iteration, infinite)',
-    animationDirection: 'var(--card-face-animation-direction, alternate)',
-  };
-}
-
-export function getCardArtTopBottomBorderOverlayStyle(accent = 'rgba(236, 214, 176, 0.9)'): CSSProperties {
-  const accentSoft = 'rgba(236, 214, 176, 0.34)';
-  const accentFade = 'rgba(236, 214, 176, 0.0)';
-  const shadowSoft = 'rgba(28, 16, 9, 0.42)';
-
-  return {
-    position: 'absolute',
-    inset: 0,
-    borderRadius: 'inherit',
-    pointerEvents: 'none',
-    backgroundImage: [
-      `linear-gradient(90deg, ${accentFade} 0%, ${accentSoft} 18%, ${accent} 50%, ${accentSoft} 82%, ${accentFade} 100%)`,
-      `linear-gradient(90deg, ${accentFade} 0%, ${accentSoft} 30%, ${accentSoft} 70%, ${accentFade} 100%)`,
-      'radial-gradient(circle at 50% 0%, rgba(255, 242, 217, 0.55) 0 8px, rgba(255, 242, 217, 0) 13px)',
-      `linear-gradient(90deg, ${accentFade} 0%, ${accentSoft} 18%, ${accent} 50%, ${accentSoft} 82%, ${accentFade} 100%)`,
-      `linear-gradient(90deg, ${accentFade} 0%, ${accentSoft} 30%, ${accentSoft} 70%, ${accentFade} 100%)`,
-      'radial-gradient(circle at 50% 100%, rgba(255, 242, 217, 0.55) 0 8px, rgba(255, 242, 217, 0) 13px)',
-      `linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 20%, rgba(255, 255, 255, 0) 80%, ${shadowSoft} 100%)`,
-    ].join(', '),
-    backgroundSize: '100% 1px, 100% 7px, 26px 14px, 100% 1px, 100% 7px, 26px 14px, 100% 100%',
-    backgroundPosition: 'center 8px, center 9px, center top, center calc(100% - 8px), center calc(100% - 15px), center bottom, center center',
-    backgroundRepeat: 'no-repeat',
-  };
-}
-
-export function getCardArtTopBottomBorderOverlayStyleForCard(card: CardDefinition | null | undefined): CSSProperties {
-  if (card?.rarity === 'Infinite') {
-    return {
-      ...getCardArtTopBottomBorderOverlayStyle('rgba(18, 18, 22, 0.98)'),
-      boxShadow: 'inset 0 10px 18px rgba(248,250,255,0.18), inset 0 -10px 18px rgba(248,250,255,0.18)',
-    };
-  }
-  if (card?.rarity === 'Transcendent') {
-    return {
-      ...getCardArtTopBottomBorderOverlayStyle('rgba(255, 122, 158, 0.96)'),
-      boxShadow: 'inset 0 10px 20px rgba(255, 216, 104, 0.18), inset 0 -10px 20px rgba(255, 216, 104, 0.18)',
-    };
-  }
-  if (card?.rarity === 'Enigmatic') {
-    return {
-      ...getCardArtTopBottomBorderOverlayStyle('rgba(255, 210, 92, 0.98)'),
-      boxShadow: 'inset 0 12px 22px rgba(255, 233, 168, 0.28), inset 0 -12px 22px rgba(255, 233, 168, 0.28)',
-    };
-  }
-  if (card?.rarity === 'Eternal') {
-    return {
-      ...getCardArtTopBottomBorderOverlayStyle('rgba(96, 40, 108, 0.96)'),
-      boxShadow: 'inset 0 11px 22px rgba(226, 126, 176, 0.22), inset 0 -11px 22px rgba(226, 126, 176, 0.22)',
-    };
-  }
-  return getCardArtTopBottomBorderOverlayStyle('rgba(125, 16, 32, 0.96)');
+  void variant;
+  return { display: 'none' };
 }
 
 export function getAdaptiveDescriptionMetrics(variant: CardFaceVariant, text: string) {

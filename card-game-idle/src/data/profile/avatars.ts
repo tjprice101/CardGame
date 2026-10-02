@@ -444,7 +444,7 @@ export const AVATARS: AvatarDefinition[] = [
     name: 'Before the First Star',
     glyph: '⭐',
     imageUrl: '/assets/profile-pictures/forge-profile-light-before-first-star.png',
-    description: 'Obtain Light Before the First Star.',
+    description: 'Obtain Light Before the First Star (Vol. 1).',
     isUnlocked: (p: ProgressState) => isAchievementUnlocked(p, 'title-light-before-stars'),
   },
   {
@@ -452,7 +452,7 @@ export const AVATARS: AvatarDefinition[] = [
     name: 'Cause Unbound',
     glyph: '⌛',
     imageUrl: '/assets/profile-pictures/forge-profile-first-catalyst.png',
-    description: 'Obtain The First Catalyst.',
+    description: 'Obtain The First Catalyst (Vol. 1).',
     isUnlocked: (p: ProgressState) => isAchievementUnlocked(p, 'title-first-catalyst'),
   },
   {
@@ -460,7 +460,7 @@ export const AVATARS: AvatarDefinition[] = [
     name: 'Keeper of All and Nothing',
     glyph: '🏺',
     imageUrl: '/assets/profile-pictures/forge-profile-reliquary-all-nothing.png',
-    description: 'Obtain The Reliquary of All and Nothing.',
+    description: 'Obtain The Reliquary of All and Nothing (Vol. 1).',
     isUnlocked: (p: ProgressState) => isAchievementUnlocked(p, 'title-all-and-nothing'),
   },
   {
@@ -468,7 +468,7 @@ export const AVATARS: AvatarDefinition[] = [
     name: 'Between Light and Life',
     glyph: '🌉',
     imageUrl: '/assets/profile-pictures/forge-profile-bridge-light-life.png',
-    description: 'Obtain The Bridge Between Light and Life.',
+    description: 'Obtain The Bridge Between Light and Life (Vol. 1).',
     isUnlocked: (p: ProgressState) => isAchievementUnlocked(p, 'title-between-light-life'),
   },
   {
@@ -476,7 +476,7 @@ export const AVATARS: AvatarDefinition[] = [
     name: 'The Four Beyond',
     glyph: '✦',
     imageUrl: '/assets/profile-pictures/forge-profile-four-beyond.png',
-    description: 'Own all four Transcendent cards simultaneously.',
+    description: 'Own all four Vol. 1 Transcendent cards simultaneously.',
     isUnlocked: (p: ProgressState) => isAchievementUnlocked(p, 'title-forge-pantheon-complete'),
   },
 ].map((avatar) => ({

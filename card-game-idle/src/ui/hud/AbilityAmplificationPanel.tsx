@@ -32,7 +32,7 @@ export default function AbilityAmplificationPanel() {
       ? { id: 'axiom-acceleration', text: `${turn.transcendentAxiomAcceleratedPlaysRemaining} plays: +1 charge to each face-down Soph` }
       : null,
     (turn.transcendentVaultHandLimitBonus ?? 0) > 0
-      ? { id: 'vault-hand-limit', text: `Hand limit +${turn.transcendentVaultHandLimitBonus} for this turn` }
+      ? { id: 'vault-hand-limit', text: `Hand limit +${turn.transcendentVaultHandLimitBonus}: ${Math.ceil(Math.max(0, (turn.transcendentVaultHandLimitUntil ?? 0) - Date.now()) / 1000)}s remaining` }
       : null,
     (turn.transcendentConfluenceAttackBonus ?? 0) > 0
       ? { id: 'confluence-attack', text: `Next attack: +${turn.transcendentConfluenceAttackBonus} multiplier` }

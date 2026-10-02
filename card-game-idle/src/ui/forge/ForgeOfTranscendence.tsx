@@ -62,7 +62,7 @@ export default function ForgeOfTranscendence({ onClose }: Props) {
         background: 'linear-gradient(90deg, rgba(255,255,255,0.98) 0%, rgba(245,238,255,0.9) 100%)',
       }}>
         <div>
-          <div style={{ fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(20,10,30,0.5)' }}>Beyond All Sets</div>
+          <div style={{ fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(20,10,30,0.5)' }}>Beyond All Sets · Vol. 1</div>
           <div style={{ fontFamily: uiTypography.display, fontSize: 26, letterSpacing: 2, textTransform: 'uppercase', ...RAINBOW_TEXT }}>Forge of Transcendence</div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
@@ -119,6 +119,9 @@ export default function ForgeOfTranscendence({ onClose }: Props) {
         <main style={{ flex: 1, display: 'flex', minHeight: 0 }}>
           {/* Left: chapter list */}
           <nav style={{ width: 220, flexShrink: 0, borderRight: '1px solid rgba(20,10,30,0.1)', padding: '18px 10px', overflowY: 'auto' }}>
+            <div style={{ padding: '0 6px 8px', fontFamily: uiTypography.display, fontSize: 9.5, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(20,10,30,0.45)' }}>
+              Vol. 1 Subset
+            </div>
             {FORGE_CARD_LORE.map(entry => {
               const isSelected = entry.definitionId === selectedId;
               return (
@@ -157,14 +160,17 @@ export default function ForgeOfTranscendence({ onClose }: Props) {
               }}
             />
             <div style={{ marginLeft: 24 }}>
-              <div style={{ fontFamily: uiTypography.display, fontSize: 30, letterSpacing: 1.5, color: '#15101c', textShadow: '0 2px 18px rgba(255,255,255,0.95), 0 1px 4px rgba(255,255,255,0.9)' }}>{selectedLore?.displayName}</div>
+              <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(20,10,30,0.6)', fontWeight: 600 }}>{selectedLore?.volume ?? 'Vol. 1'} · Transcendent</div>
+              <div style={{ fontFamily: uiTypography.display, fontSize: 30, letterSpacing: 1.5, color: '#15101c', textShadow: '0 2px 18px rgba(255,255,255,0.95), 0 1px 4px rgba(255,255,255,0.9)', marginTop: 2 }}>{selectedLore?.displayName}</div>
               <div style={{ marginTop: 4, fontSize: 13, color: 'rgba(20,10,30,0.8)', maxWidth: 420, textShadow: '0 1px 10px rgba(255,255,255,0.9)' }}>{selectedLore?.tagline}</div>
             </div>
           </div>
 
           {/* Right: lore + info sidebar */}
           <aside style={{ width: 340, flexShrink: 0, borderLeft: '1px solid rgba(20,10,30,0.1)', padding: 24, overflowY: 'auto' }}>
-            <div style={{ fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.6, textTransform: 'uppercase', ...RAINBOW_TEXT, marginBottom: 8 }}>Lore</div>
+            <div style={{ fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.6, textTransform: 'uppercase', ...RAINBOW_TEXT, marginBottom: 8 }}>
+              {selectedLore?.volume ? `${selectedLore.volume} Lore` : 'Lore'}
+            </div>
             <div style={{ fontSize: 13, lineHeight: 1.6, color: 'rgba(20,10,30,0.82)' }}>{selectedLore?.lore}</div>
 
             <div style={{ marginTop: 22, fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.6, textTransform: 'uppercase', color: 'rgba(20,10,30,0.5)' }}>Card Rules and Stats</div>

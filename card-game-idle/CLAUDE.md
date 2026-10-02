@@ -55,7 +55,7 @@ This iteration focused on state consistency, usability, and math correctness aro
 - `Amplifier of the Void` is a persistent free Enigmatic Dark utility that draws 2, grants 3 Limitless Light Stacks, and grants 1,500 Divine Light when the post-activation pool reaches 5 stacks.
 - Causality enigma rewards were increased to 3 copies per reward entry.
 - Player-facing summary text must remain natural language; do not leak internal tokens like `cosmos_gte` or raw snake_case into the UI.
-- Front-facing card faces must always include the shared top name/type ribbon, artwork, and bottom rules panel. Face-down collection/back views are the exception. Keep Deck Builder library cards proportional and reserve virtualized row height for ownership/lock controls. Eternity's Wake and Garden health overlays must show live Limitless Light Stacks because the normal HUD rail may be hidden.
+- Front-facing card faces show full-bleed artwork beneath the shared screen-blended splotched-ink frame; do not add top name/type ribbons or bottom rules panels. Put names and rules in inspectors, tooltips, or detail views instead. Face-down cards keep their canonical backing and state badges. Keep Deck Builder library cards proportional and reserve virtualized row height for ownership/lock controls. Eternity's Wake and Garden health overlays must show live Limitless Light Stacks because the normal HUD rail may be hidden.
 - The current repo validation state is the latest focused pass: `npm run typecheck:tests` and `npm run build` pass; the Phantom Matrix selection regression passes. Two older AbilityRuntime assertions still encode the removed Divine Light ability-purchase economy and need migration before claiming the entire legacy suite is green.
 
 ## Core Loop
@@ -101,9 +101,9 @@ Do not add Seraphim, Cherubim, Ophanim, Angel, sequence, or old Patience-system 
 - Field card right-click: open force-remove confirmation.
 - Hover details belong in the right-rail Card Inspector, not floating over the board or hand.
 - Pack opening starts face-down and waits for individual card clicks, Reveal All/Reveal Best, or Instant. It must never auto-reveal on a timer.
-- Card art should use the shared card-face style: art background plus top ribbon and bottom rules panel. Respect `settings.cardArtDisplay` everywhere a card face is shown.
-- Card-browser menus must display complete, proportional card faces. If the available panel cannot fit them, shrink the cards or split the workflow into submenus; never crop or squash the card face, artwork, name ribbon, or rules panel to preserve a surrounding layout.
-- Face-down cards are the exception: show only the canonical card backing and state badges. Do not render front-face ribbons or rules panels on a back face.
+- Card art should use the shared card-face style, which composes full-bleed art with the screened splotched-ink frame. Respect `settings.cardArtDisplay` everywhere a card face is shown; do not overlay name or rules bars on the art.
+- Card-browser menus must display complete, proportional card artwork and frame. If the available panel cannot fit them, shrink the cards or split the workflow into submenus; never crop or squash the card art or frame to preserve a surrounding layout.
+- Face-down cards show only the canonical card backing and state badges. Card names and rules belong in adjacent inspectors, tooltips, or detail views, not over card art.
 
 ## Effects And Actions
 

@@ -7,7 +7,6 @@ import CollectionCardDetail from '@/ui/store/CollectionCardDetail';
 import {
   getLiveCardFaceBackgroundStyle,
   getLiveCardShimmerClassName,
-  getCardArtTopBottomBorderOverlayStyleForCard,
   getCardFaceMetrics,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
@@ -462,7 +461,6 @@ export default function AscensionHub({ onClose }: Props) {
                                       ...getLiveCardFaceBackgroundStyle(card, 'normal', 'front'),
                                     }}
                                   >
-                                    <div style={getCardArtTopBottomBorderOverlayStyleForCard(card)} />
                                     <div style={{
                                       position: 'absolute',
                                       inset: 0,

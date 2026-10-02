@@ -116,7 +116,7 @@ export default function BattlegroundMatch() {
         position: 'absolute',
         top: 54,
         left: 0,
-        right: 340,
+        right: 'var(--turn-side-rail-width, 278px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

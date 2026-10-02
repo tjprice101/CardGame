@@ -2,7 +2,7 @@
 import { useStore } from '@/state/store';
 import { getCardSetColor, getCardSetLabel } from '@/data/elements';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
-import { getLiveCardFaceBackgroundStyle, getLiveCardShimmerClassName, getCardBackBackgroundStyle, getCardArtTopBottomBorderOverlayStyleForCard } from '@/ui/cardBackgrounds';
+import { getLiveCardFaceBackgroundStyle, getLiveCardShimmerClassName, getCardBackBackgroundStyle } from '@/ui/cardBackgrounds';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { getCardFinishLabel, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import { warmTheme } from '@/ui/theme';
@@ -122,7 +122,6 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
               overflow: 'hidden',
             }}
           >
-            <div style={getCardArtTopBottomBorderOverlayStyleForCard(card)} />
           </div>
         </div>
 

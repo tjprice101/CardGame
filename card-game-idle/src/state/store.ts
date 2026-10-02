@@ -1241,13 +1241,17 @@ function completeBossFight(s: Store, victory: boolean): void {
       s.progress.bossCodex[boss.id] = entry;
 
       // Forge of Transcendence: the Key is claimed only after all event bosses are defeated.
+      let transcendentShardsDropped = 0;
       if (FORGE_EVENT_BOSS_IDS.includes(boss.id)) {
         if (!s.progress.forgeKeyAwarded) s.progress.forgeKeyAwarded = {};
         s.progress.forgeKeyAwarded[boss.id] = true;
         // Shard of Transcendence only ever drops after the Forge has been opened.
-        if (s.progress.forgeOfTranscendenceUnlocked && rollShardOfTranscendence(activeFightCount)) {
-          s.progress.shardsOfTranscendence = (s.progress.shardsOfTranscendence ?? 0) + 1;
-          pushRewardToast(s, 'A Shard of Transcendence fell from the Forge-touched boss.');
+        if (s.progress.forgeOfTranscendenceUnlocked) {
+          transcendentShardsDropped = rollShardOfTranscendence(activeFightCount);
+          if (transcendentShardsDropped > 0) {
+            s.progress.shardsOfTranscendence = (s.progress.shardsOfTranscendence ?? 0) + transcendentShardsDropped;
+            pushRewardToast(s, `+${transcendentShardsDropped} Shard${transcendentShardsDropped > 1 ? 's' : ''} of Transcendence fell from the Forge-touched boss.`);
+          }
         }
       }
       // Award card mastery for every card in the fight deck.
@@ -1265,6 +1269,7 @@ function completeBossFight(s: Store, victory: boolean): void {
         totalTierProgress: masteryAward.totalAppliedProgress,
         resonanceGained: masteryAward.resonanceGain,
         cardsTieredUp: masteryAward.cardsTieredUp,
+        transcendentShardsEarned: transcendentShardsDropped,
       };
 
     }
@@ -1734,6 +1739,9 @@ function shiftTurnAbsoluteTimers(s: Store, pauseStartedAt: number, resumedAt: nu
   }
   if (s.turn.divineFieldUntil && s.turn.divineFieldUntil > pauseStartedAt) s.turn.divineFieldUntil += pausedFor;
   if (s.turn.whiteoutDomainUntil && s.turn.whiteoutDomainUntil > pauseStartedAt) s.turn.whiteoutDomainUntil += pausedFor;
+  if (s.turn.transcendentVaultHandLimitUntil && s.turn.transcendentVaultHandLimitUntil > pauseStartedAt) {
+    s.turn.transcendentVaultHandLimitUntil += pausedFor;
+  }
 }
 
 /** Abyss cards rejoin the deck only when deck zones reset (new turn / new encounter). */
@@ -1884,6 +1892,8 @@ function endTurnInternal(s: Store): void {
     abilityCooldownUntil: s.turn.abilityCooldownUntil,
     divineFieldUntil: s.turn.divineFieldUntil,
     whiteoutDomainUntil: s.turn.whiteoutDomainUntil,
+    transcendentVaultHandLimitBonus: s.turn.transcendentVaultHandLimitBonus,
+    transcendentVaultHandLimitUntil: s.turn.transcendentVaultHandLimitUntil,
   };
   recompute(s);
 }
@@ -2357,6 +2367,8 @@ export const useStore = create<Store>()(
             abilityCooldownUntil: s.turn.abilityCooldownUntil,
             divineFieldUntil: s.turn.divineFieldUntil,
             whiteoutDomainUntil: s.turn.whiteoutDomainUntil,
+            transcendentVaultHandLimitBonus: s.turn.transcendentVaultHandLimitBonus,
+            transcendentVaultHandLimitUntil: s.turn.transcendentVaultHandLimitUntil,
           };
           return;
         }
@@ -2367,6 +2379,8 @@ export const useStore = create<Store>()(
           abilityCooldownUntil: s.turn.abilityCooldownUntil,
           divineFieldUntil: s.turn.divineFieldUntil,
           whiteoutDomainUntil: s.turn.whiteoutDomainUntil,
+          transcendentVaultHandLimitBonus: s.turn.transcendentVaultHandLimitBonus,
+          transcendentVaultHandLimitUntil: s.turn.transcendentVaultHandLimitUntil,
         };
         // Propagate equipped artifacts from the active saved deck into TurnState.
         const activeDeckForArtifacts = s.progress.savedDecks.find(d => d.id === s.progress.activeDeckId);
@@ -3199,8 +3213,11 @@ export const useStore = create<Store>()(
           s.deck.hand.push(...salvagedCards);
           if (pending.sourceCard === 'ability:transcendent-vault-unwritten-futures') {
             s.turn.transcendentVaultHandLimitBonus = 2;
+            const ability = ABILITY_REGISTRY.get('transcendent-reliquary-all-nothing');
+            const activatedAt = Date.now();
+            s.turn.transcendentVaultHandLimitUntil = activatedAt + (ability?.durationSeconds ?? 40) * 1000;
             if (!s.turn.abilityCooldownUntil) s.turn.abilityCooldownUntil = {};
-            s.turn.abilityCooldownUntil['transcendent-reliquary-all-nothing'] = Date.now() + 120_000;
+            s.turn.abilityCooldownUntil['transcendent-reliquary-all-nothing'] = activatedAt + (ability?.cooldownSeconds ?? 120) * 1000;
           }
         } else if (pending.type === 'embrace_infinite') {
           const keptIds = new Set(selected.slice(0, pending.keep));
@@ -3269,6 +3286,9 @@ export const useStore = create<Store>()(
     endAndBeginAgain: () => {
       set(s => {
         if (s.turn.phase !== 'playing' || s.turn.shatterInfiniteLight) return;
+        const vaultHandLimitBonus = s.turn.transcendentVaultHandLimitBonus;
+        const vaultHandLimitUntil = s.turn.transcendentVaultHandLimitUntil;
+        const vaultCooldownUntil = s.turn.abilityCooldownUntil?.['transcendent-reliquary-all-nothing'];
         // Match End Turn behavior during boss encounters.
         if (s.bossFight.mode === 'active') {
           if (s.bossFight.kind === 'normal' && s.bossFight.coopSessionId) {
@@ -3319,7 +3339,15 @@ export const useStore = create<Store>()(
         const { drawn, remaining } = DeckSystem.draw(s.deck.drawPile, 5);
         s.deck.drawPile = remaining;
         for (const card of drawn) s.deck.hand.push(card);
-        s.turn = { ...defaultTurn, phase: 'mulligan' };
+        s.turn = {
+          ...defaultTurn,
+          phase: 'mulligan',
+          abilityCooldownUntil: vaultCooldownUntil === undefined
+            ? undefined
+            : { 'transcendent-reliquary-all-nothing': vaultCooldownUntil },
+          transcendentVaultHandLimitBonus: vaultHandLimitBonus,
+          transcendentVaultHandLimitUntil: vaultHandLimitUntil,
+        };
         
         // Propagate equipped artifacts from the active saved deck into TurnState.
         const activeDeckForArtifacts = s.progress.savedDecks.find(d => d.id === s.progress.activeDeckId);
@@ -3811,9 +3839,12 @@ export const useStore = create<Store>()(
             }
           }
           // Forge of Transcendence: a handful of calendar days can drop a bonus Shard once the Forge is open.
-          if (s.progress.forgeOfTranscendenceUnlocked && FORGE_CALENDAR_BONUS_DAYS.includes(day) && rollShardOfTranscendence()) {
-            s.progress.shardsOfTranscendence = (s.progress.shardsOfTranscendence ?? 0) + 1;
-            pushRewardToast(s, 'A Shard of Transcendence was tucked into today\'s reward.');
+          if (s.progress.forgeOfTranscendenceUnlocked && FORGE_CALENDAR_BONUS_DAYS.includes(day)) {
+            const dropped = rollShardOfTranscendence();
+            if (dropped > 0) {
+              s.progress.shardsOfTranscendence = (s.progress.shardsOfTranscendence ?? 0) + dropped;
+              pushRewardToast(s, `+${dropped} Shard${dropped > 1 ? 's' : ''} of Transcendence ${dropped > 1 ? 'were' : 'was'} tucked into today's reward.`);
+            }
           }
         }
       });
@@ -3910,17 +3941,20 @@ export const useStore = create<Store>()(
       if (mainReward) rewards[mainReward] = nextReward ? 3 : 4;
       if (nextReward) rewards[nextReward] = (rewards[nextReward] ?? 0) + 1;
       set(s => {
+        // Forge of Transcendence: final-encounter clears can drop a Shard once the Forge is opened.
+        if (isFinalEncounter && s.progress.forgeOfTranscendenceUnlocked) {
+          const dropped = rollShardOfTranscendence();
+          if (dropped > 0) {
+            rewards['shardsOfTranscendence'] = dropped;
+            pushRewardToast(s, `+${dropped} Shard${dropped > 1 ? 's' : ''} of Transcendence surfaced from the expedition.`);
+          }
+        }
         for (const [currency, amount] of Object.entries(rewards) as Array<[GardenRewardCurrency, number]>) {
-          s.progress[currency] += amount;
+          s.progress[currency] = (s.progress[currency] ?? 0) + amount;
         }
         s.gardenDungeon.phase = 'victory';
         s.gardenDungeon.lastReward = mainReward;
         s.gardenDungeon.lastRewards = rewards;
-        // Forge of Transcendence: final-encounter clears can drop a Shard once the Forge is opened.
-        if (isFinalEncounter && s.progress.forgeOfTranscendenceUnlocked && rollShardOfTranscendence()) {
-          s.progress.shardsOfTranscendence = (s.progress.shardsOfTranscendence ?? 0) + 1;
-          pushRewardToast(s, 'A Shard of Transcendence surfaced from the expedition.');
-        }
       });
       return true;
     },
@@ -3934,6 +3968,7 @@ export const useStore = create<Store>()(
       const nextEncounter = dungeon.encounters[nextIndex];
       set(s => {
         if (nextEncounter) {
+          const vaultCooldownUntil = s.turn.abilityCooldownUntil?.['transcendent-reliquary-all-nothing'];
           s.gardenDungeon = {
             ...s.gardenDungeon,
             phase: 'active',
@@ -3950,7 +3985,15 @@ export const useStore = create<Store>()(
           const { drawn, remaining } = DeckSystem.draw(s.deck.drawPile, 5);
           s.deck.drawPile = remaining;
           s.deck.hand = drawn;
-          s.turn = { ...defaultTurn, phase: 'playing' };
+          s.turn = {
+            ...defaultTurn,
+            phase: 'playing',
+            abilityCooldownUntil: vaultCooldownUntil === undefined
+              ? undefined
+              : { 'transcendent-reliquary-all-nothing': vaultCooldownUntil },
+            transcendentVaultHandLimitBonus: s.turn.transcendentVaultHandLimitBonus,
+            transcendentVaultHandLimitUntil: s.turn.transcendentVaultHandLimitUntil,
+          };
           recompute(s);
         } else {
           s.gardenDungeon = {
@@ -4217,6 +4260,14 @@ export const useStore = create<Store>()(
         if (s.turn.shatterInfiniteLight || s.turn.attackSequence) return;
         if (s.turn.divineFieldUntil && s.turn.divineFieldUntil <= now) delete s.turn.divineFieldUntil;
         if (s.turn.whiteoutDomainUntil && s.turn.whiteoutDomainUntil <= now) delete s.turn.whiteoutDomainUntil;
+        if (
+          (s.turn.transcendentVaultHandLimitBonus ?? 0) > 0
+          && (!s.turn.transcendentVaultHandLimitUntil || s.turn.transcendentVaultHandLimitUntil <= now)
+        ) {
+          s.turn.transcendentVaultHandLimitBonus = 0;
+          delete s.turn.transcendentVaultHandLimitUntil;
+          enforceHandCap(s);
+        }
       });
     },
 
@@ -5144,6 +5195,21 @@ export const useStore = create<Store>()(
           if (typeof dl['lastClaimedDayIndex'] !== 'number') dl['lastClaimedDayIndex'] = -1;
           if (typeof dl['streak'] !== 'number') dl['streak'] = 0;
           if (typeof dl['totalClaims'] !== 'number') dl['totalClaims'] = 0;
+          // Heal legacy monthlyClaimedDays where future dates were claimed ahead of today
+          const nowMs = Date.now();
+          const todayUtc = Math.floor(nowMs / (24 * 60 * 60 * 1000));
+          const currentTrackKey = getMonthlyTrackKey(nowMs);
+          const currentDayOfMonth = new Date(nowMs).getUTCDate();
+          if (
+            dl['lastClaimedDayIndex'] === todayUtc &&
+            dl['monthlyTrackKey'] === currentTrackKey &&
+            Array.isArray(dl['monthlyClaimedDays'])
+          ) {
+            const days = dl['monthlyClaimedDays'] as number[];
+            if (!days.includes(currentDayOfMonth) && days.some(d => d > currentDayOfMonth)) {
+              dl['monthlyClaimedDays'] = Array.from(new Set(days.map(d => (d > currentDayOfMonth ? currentDayOfMonth : d))));
+            }
+          }
         }
         if (!op['ownedAbilities'] || typeof op['ownedAbilities'] !== 'object') op['ownedAbilities'] = {};
         for (const currency of ['nullifiedLattice', 'nullSearedLight', 'nullifiedOblivionMatter', 'seedOfCausality', 'causalBloom', 'shatteredCausalTranscript', 'heartOfCausality'] as const) {

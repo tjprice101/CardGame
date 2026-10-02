@@ -87,4 +87,4 @@ The White Null requires any one back-row card. It does not require a specific ca
 - Eligible summon materials glow white; selected materials glow green.
 - Field card right-click opens force removal.
 - Hover details appear in the right-rail Card Inspector.
-- Card faces use shared art, top ribbon, and bottom rules panel unless `cardArtDisplay` changes that.
+- Card faces use full-bleed shared art beneath the screen-blended splotched-ink frame, without a top ribbon or bottom rules panel. Names and rules appear in inspectors and detail views.

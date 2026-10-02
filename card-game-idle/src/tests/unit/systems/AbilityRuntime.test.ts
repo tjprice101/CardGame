@@ -124,15 +124,23 @@ describe('materialized ability runtime', () => {
     expect(useStore.getState().turn.abilityCooldownUntil?.[ability]).toBeGreaterThan(Date.now());
   });
 
-  it('makes Vault of Unwritten Futures salvage two cards and raise the hand limit for the turn', () => {
+  it.each([
+    { hasTranscendent: false, baseHandLimit: 8 },
+    { hasTranscendent: true, baseHandLimit: 10 },
+  ])('expires Vault after 40 seconds and prompts down to the $baseHandLimit hand limit', ({ hasTranscendent, baseHandLimit }) => {
     resetStore();
     const ability = 'transcendent-reliquary-all-nothing';
+    expect(ABILITY_REGISTRY.get(ability)?.durationSeconds).toBe(40);
+    expect(ABILITY_REGISTRY.get(ability)?.cooldownSeconds).toBe(120);
     prepareTranscendentAbility(ability, 10);
     useStore.setState(state => ({
       ...state,
       deck: {
         ...state.deck,
-        hand: Array.from({ length: 8 }, (_, index) => ({ instanceId: `hand-${index}`, definitionId: 'light-neutrality-1', finish: 'normal' })),
+        extraDeck: hasTranscendent
+          ? [...state.deck.extraDeck, { definitionId: 'tx-angel-starbound-null-archangel', finish: 'normal' }]
+          : state.deck.extraDeck,
+        hand: Array.from({ length: baseHandLimit }, (_, index) => ({ instanceId: `hand-${index}`, definitionId: 'light-neutrality-1', finish: 'normal' })),
         discardPile: [
           { instanceId: 'discard-a', definitionId: 'light-neutrality-1', finish: 'normal' },
           { instanceId: 'discard-b', definitionId: 'dark-neutrality-1', finish: 'normal' },
@@ -143,10 +151,86 @@ describe('materialized ability runtime', () => {
     expect(useStore.getState().turn.pendingEffect?.type).toBe('salvage');
     expect(useStore.getState().turn.limitlessLightStacks).toBe(0);
     useStore.getState().resolvePending(['discard-a', 'discard-b']);
+
+    const activeTurn = useStore.getState().turn;
+    const expiresAt = activeTurn.transcendentVaultHandLimitUntil!;
     expect(useStore.getState().turn.pendingEffect).toBeNull();
-    expect(useStore.getState().deck.hand).toHaveLength(10);
+    expect(useStore.getState().deck.hand).toHaveLength(baseHandLimit + 2);
+    expect(activeTurn.transcendentVaultHandLimitBonus).toBe(2);
+    expect(activeTurn.abilityCooldownUntil?.[ability]).toBe(expiresAt + 80_000);
+
+    useStore.getState().tickAbilityTimers(expiresAt - 1);
     expect(useStore.getState().turn.transcendentVaultHandLimitBonus).toBe(2);
-    expect(useStore.getState().turn.abilityCooldownUntil?.[ability]).toBeGreaterThan(Date.now());
+    expect(useStore.getState().turn.pendingEffect).toBeNull();
+    useStore.getState().tickAbilityTimers(expiresAt);
+    expect(useStore.getState().turn.transcendentVaultHandLimitBonus).toBe(0);
+    expect(useStore.getState().turn.pendingEffect).toMatchObject({
+      type: 'discard_choice',
+      count: 2,
+      sourceCard: 'hand_overflow',
+    });
+
+    const overflowIds = useStore.getState().deck.hand.slice(0, 2).map(card => card.instanceId);
+    useStore.getState().resolvePending(overflowIds);
+    expect(useStore.getState().deck.hand).toHaveLength(baseHandLimit);
+    expect(useStore.getState().turn.pendingEffect).toBeNull();
+  });
+
+  it('keeps the Vault timer active through an ordinary turn transition', () => {
+    resetStore();
+    const ability = 'transcendent-reliquary-all-nothing';
+    prepareTranscendentAbility(ability, 10);
+    useStore.setState(state => ({
+      ...state,
+      deck: {
+        ...state.deck,
+        hand: Array.from({ length: 8 }, (_, index) => ({ instanceId: `turn-hand-${index}`, definitionId: 'light-neutrality-1', finish: 'normal' })),
+        discardPile: [
+          { instanceId: 'turn-discard-a', definitionId: 'light-neutrality-1', finish: 'normal' },
+          { instanceId: 'turn-discard-b', definitionId: 'dark-neutrality-1', finish: 'normal' },
+        ],
+      },
+    }));
+    useStore.getState().activateAbility(1);
+    useStore.getState().resolvePending(['turn-discard-a', 'turn-discard-b']);
+    const expiresAt = useStore.getState().turn.transcendentVaultHandLimitUntil;
+
+    useStore.getState().endTurn();
+    expect(useStore.getState().turn.transcendentVaultHandLimitUntil).toBe(expiresAt);
+    useStore.getState().beginTurn();
+    expect(useStore.getState().turn.transcendentVaultHandLimitBonus).toBe(2);
+    expect(useStore.getState().turn.transcendentVaultHandLimitUntil).toBe(expiresAt);
+  });
+
+  it('keeps the Vault timer active between Garden encounters', () => {
+    resetStore();
+    const ability = 'transcendent-reliquary-all-nothing';
+    expect(useStore.getState().startGardenDungeon('valley-of-null')).toBe(true);
+    prepareTranscendentAbility(ability, 10);
+    useStore.setState(state => ({
+      ...state,
+      deck: {
+        ...state.deck,
+        hand: Array.from({ length: 8 }, (_, index) => ({ instanceId: `garden-hand-${index}`, definitionId: 'light-neutrality-1', finish: 'normal' })),
+        discardPile: [
+          { instanceId: 'garden-discard-a', definitionId: 'light-neutrality-1', finish: 'normal' },
+          { instanceId: 'garden-discard-b', definitionId: 'dark-neutrality-1', finish: 'normal' },
+        ],
+      },
+    }));
+    useStore.getState().activateAbility(1);
+    useStore.getState().resolvePending(['garden-discard-a', 'garden-discard-b']);
+    const expiresAt = useStore.getState().turn.transcendentVaultHandLimitUntil;
+    const cooldownUntil = useStore.getState().turn.abilityCooldownUntil?.[ability];
+    useStore.setState(state => ({
+      ...state,
+      gardenDungeon: { ...state.gardenDungeon, phase: 'victory' },
+    }));
+
+    expect(useStore.getState().continueGardenDungeon()).toBe(true);
+    expect(useStore.getState().turn.transcendentVaultHandLimitBonus).toBe(2);
+    expect(useStore.getState().turn.transcendentVaultHandLimitUntil).toBe(expiresAt);
+    expect(useStore.getState().turn.abilityCooldownUntil?.[ability]).toBe(cooldownUntil);
   });
 
   it('makes Confluence of All Origins add +2 to the next attack multiplier', () => {

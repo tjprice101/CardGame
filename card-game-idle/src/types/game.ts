@@ -114,6 +114,7 @@ export interface TurnState {
   transcendentDawnFavorPlaysRemaining?: number;
   transcendentAxiomAcceleratedPlaysRemaining?: number;
   transcendentVaultHandLimitBonus?: number;
+  transcendentVaultHandLimitUntil?: number;
   transcendentConfluenceAttackBonus?: number;
   limitlessCosmosStacks?: number;
   causalityCardsPlayedThisTurn?: number;

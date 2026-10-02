@@ -3,9 +3,7 @@ import { useStore, selectDivineLight } from '@/state/store';
 import { formatNumber } from '@/utils/bignum';
 const styles: Record<string, React.CSSProperties> = {
   container: {
-    position: 'absolute',
-    top: 58,
-    right: 'var(--angel-drawer-hand-offset, 278px)',
+    position: 'relative',
     textAlign: 'right',
     fontFamily: '"Georgia", serif',
     color: 'rgba(244,244,248,0.95)',

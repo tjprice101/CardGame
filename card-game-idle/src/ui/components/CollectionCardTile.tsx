@@ -2,7 +2,6 @@ import type { CSSProperties, ReactNode } from 'react';
 import type { CardDefinition } from '@/types/cards';
 import {
   cardFacePalette,
-  getCardArtTopBottomBorderOverlayStyleForCard,
   getCardFaceMetrics,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
@@ -62,7 +61,6 @@ export default function CollectionCardTile({
       }}
     >
       {topOverlay}
-      <div style={getCardArtTopBottomBorderOverlayStyleForCard(card)} />
       <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column' }}>
         <div style={getCardNameRibbonStyle('grid')}>
           <div style={{ fontSize: metrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.4, textTransform: 'uppercase', textAlign: 'center', marginBottom: 4 }}>

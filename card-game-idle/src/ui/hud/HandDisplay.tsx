@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useStore, selectDeck, selectTurn, selectBoard, selectProgress, selectSettings, selectBattleground, selectBossFight } from '@/state/store';
+import { useStore, selectDeck, selectTurn, selectBoard, selectProgress, selectSettings, selectBossFight } from '@/state/store';
 import { useThemeVersion } from '@/ui/useThemeVersion';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
@@ -32,20 +32,23 @@ interface IdleShowcaseCard {
 
 const styles: Record<string, React.CSSProperties> = {
   overlay: {
-    position: 'absolute',
-    inset: 0,
+    position: 'relative',
+    width: '100%',
+    height: '100%',
+    minWidth: 0,
+    minHeight: 0,
     pointerEvents: 'none',
   },
   handWrapper: {
-    position: 'absolute',
-    bottom: 4,
-    left: 0,
-    right: 'var(--angel-drawer-hand-offset, 278px)',
+    position: 'relative',
+    width: '100%',
+    height: '100%',
     zIndex: 70,
 
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    justifyContent: 'flex-end',
     gap: 2,
     pointerEvents: 'none',
     paddingLeft: 8,
@@ -88,6 +91,8 @@ const styles: Record<string, React.CSSProperties> = {
   hand: {
     display: 'flex',
     gap: 8,
+    width: '100%',
+    justifyContent: 'center',
     pointerEvents: 'auto',
     position: 'relative',
     overflowX: 'auto',
@@ -108,7 +113,7 @@ const styles: Record<string, React.CSSProperties> = {
     flexDirection: 'column',
     alignItems: 'stretch',
     cursor: 'pointer',
-    transition: 'transform 0.15s, box-shadow 0.15s, border-color 0.15s',
+    transition: 'box-shadow 0.15s, border-color 0.15s',
     fontFamily: 'Georgia, serif',
     position: 'relative',
     userSelect: 'none',
@@ -153,7 +158,6 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
   const board = useStore(selectBoard);
   const progress = useStore(selectProgress);
   const settings = useStore(selectSettings);
-  const battleground = useStore(selectBattleground);
   const bossFight = useStore(selectBossFight);
   const cardArtDisplay = settings.cardArtDisplay ?? 'both';
   const showTopPanel = cardArtDisplay === 'both' || cardArtDisplay === 'top-only';
@@ -357,32 +361,12 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
           .map(c => ({ instanceId: c.instanceId, definitionId: c.definitionId, finish: c.finish, faceState: c.faceState }));
   const hasActiveHandCards = viewCards.length > 0;
 
-  const handRightInset = 'var(--angel-drawer-hand-offset, 278px)';
-
   const idleCards = idleShowcaseCards
     .map(card => ({ card, def: CardRegistry.get(card.definitionId) }))
     .filter(entry => entry.def !== undefined);
 
   return (
     <div style={{ ...styles.overlay, background: isMulligan ? 'rgba(92,63,31,0.14)' : 'transparent' }}>
-      {isMulligan && (
-        <div style={{
-          position: 'absolute', top: battleground.mode === 'active' ? 72 : 16, left: '50%', transform: 'translateX(-50%)',
-          color: 'rgba(244,244,248,0.95)', fontFamily: 'Georgia, serif', fontSize: 13, letterSpacing: 3,
-          background: 'linear-gradient(90deg, rgba(5,5,7,0.12), rgba(160,120,255,0.55), rgba(80,200,255,0.35), rgba(255,100,200,0.25), rgba(5,5,7,0.12))',
-          backgroundSize: '200% 100%',
-          animation: 'mulliganShimmer 3s linear infinite',
-          border: '1px solid rgba(200,160,255,0.7)',
-          borderRadius: 999,
-          padding: '8px 20px',
-          boxShadow: '0 0 28px rgba(160,120,255,0.35), 0 0 60px rgba(80,200,255,0.18)',
-          whiteSpace: 'nowrap',
-          textShadow: '0 0 12px rgba(200,160,255,0.8)',
-        }}>
-          MULLIGAN ? Click cards to swap them out
-        </div>
-      )}
-
       <div
         style={{
           ...styles.idleShowcaseWrapper,
@@ -460,7 +444,7 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
         style={{
           ...styles.handWrapper,
           ['--hand-strip-height' as string]: '190px',
-          right: handRightInset,
+          right: 'auto',
           opacity: showActiveHand ? 1 : 0,
           pointerEvents: showActiveHand ? 'none' : 'none',
         }}
@@ -490,10 +474,14 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
             marginBottom: 2,
           }}>
             <span style={{ fontWeight: 700 }}>
-              {isExtraDeckView ? `Extra Deck (${viewCards.length})` : `Hand (${viewCards.length})`}
+              {isMulligan ? `Mulligan · Hand (${viewCards.length})` : isExtraDeckView ? `Extra Deck (${viewCards.length})` : `Hand (${viewCards.length})`}
             </span>
             <span style={{ opacity: 0.55, fontSize: 8.5, letterSpacing: 1 }}>
-              {isExtraDeckView ? 'Click to summon · [E] Hand' : 'L-Click: Soph · R-Click: Ain · [E] Extra Deck'}
+              {isMulligan
+                ? 'Click cards to swap · [E] Extra Deck'
+                : isExtraDeckView
+                  ? 'Click to summon · [E] Hand'
+                  : 'L-Click: Soph · R-Click: Ain · [E] Extra Deck'}
             </span>
           </div>
         )}
@@ -531,9 +519,6 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
           const nameLength = (def?.name ?? '').length;
           const adaptiveNameSize = nameLength > 24 ? faceMetrics.nameSize - 2.2 : nameLength > 16 ? faceMetrics.nameSize - 1.0 : faceMetrics.nameSize;
 
-          // All Neutrality cards get a silver shimmer
-          const shimmerColor = 'linear-gradient(90deg, transparent, rgba(200,210,255,0.09), transparent)';
-
           const isDraggable = !isExtraDeckView && isPlaying && isPlayable && (def?.type === 'Light' || def?.type === 'Dark');
           const isDragging = !isExtraDeckView && draggingId === deckCard.instanceId;
           const isGuideHighlighted = isPlaying && !isExtraDeckView && guideHighlightDefId === deckCard.definitionId;
@@ -544,6 +529,7 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
               className={[
                 getLiveCardShimmerClassName(def, deckCard.finish, 'front'),
                 isGuideHighlighted ? 'trial-guide-pulse' : undefined,
+                isHovered && !selected && !isDragging ? 'hand-card-hover-glow' : undefined,
               ].filter(Boolean).join(' ') || undefined}
               draggable={isDraggable}
               style={{
@@ -556,13 +542,6 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
                 ...(isExtraDeckView && isPlayable ? {
                   borderColor: 'rgba(255,255,255,0.96)',
                   boxShadow: '0 0 0 2px rgba(255,255,255,0.9), 0 0 24px rgba(255,255,255,0.72), 0 8px 24px rgba(0,0,0,0.55)',
-                } : {}),
-                ...(isHovered && !attackPanelOpen && !selected && isPlayable && !isDragging ? {
-                  transform: 'translateY(-16px) scale(1.025)',
-                  boxShadow: artOnlyMode
-                    ? '0 0 0 2px rgba(255,255,255,0.9), 0 12px 32px rgba(0,0,0,0.65)'
-                    : `0 0 0 1px rgba(180,220,255,0.55), 0 14px 36px rgba(120,200,255,0.22), 0 4px 14px rgba(0,0,0,0.6)`,
-                  borderColor: artOnlyMode ? 'rgba(255,255,255,0.8)' : 'rgba(180,220,255,0.7)',
                 } : {}),
               }}
               onClick={() => handleClick(deckCard.instanceId, 'soph')}
@@ -644,17 +623,8 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
               )}
 
               {/* Shimmer sweep on hover */}
-              {isHovered && !selected && isPlayable && (
-                <div style={{
-                  position: 'absolute', inset: 0, overflow: 'hidden',
-                  borderRadius: 10, pointerEvents: 'none',
-                }}>
-                  <div style={{
-                      position: 'absolute', left: 0, right: 0, height: '45%',
-                    background: shimmerColor,
-                    animation: 'shimmer 0.55s ease-in-out',
-                  }} />
-                </div>
+              {isHovered && !selected && !isDragging && (
+                <div className="hand-card-hover-shimmer" aria-hidden="true" />
               )}
             </div>
           );

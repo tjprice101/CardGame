@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { ABILITY_REGISTRY, getAbilityMaterialCost } from '@/data/abilities/abilityDefinitions';
 import { GARDEN_DUNGEONS } from '@/data/dungeons/gardenDungeonDefinitions';
 import { INFINITE_RECIPES } from '@/data/cards/infiniteCards';
@@ -90,6 +90,39 @@ describe('Garden of Cards dungeon runtime', () => {
 
     expect(useStore.getState().startGardenDungeon(dungeon.id)).toBe(true);
     expect(useStore.getState().gardenDungeon.runCount).toBe(2);
+  });
+
+  it('rolls Transcendence Shards only on final encounters across available expeditions', () => {
+    const random = vi.spyOn(Math, 'random').mockReturnValue(0);
+    try {
+      for (const dungeon of GARDEN_DUNGEONS.filter(entry => entry.available)) {
+        resetStore();
+        expect(useStore.getState().startGardenDungeon(dungeon.id)).toBe(true);
+        useStore.setState(state => ({
+          ...state,
+          progress: { ...state.progress, forgeOfTranscendenceUnlocked: true },
+          gardenDungeon: { ...state.gardenDungeon, encounterHp: 0 },
+        }));
+        expect(useStore.getState().resolveGardenEncounter()).toBe(true);
+        expect(useStore.getState().gardenDungeon.lastRewards?.shardsOfTranscendence).toBeUndefined();
+
+        resetStore();
+        expect(useStore.getState().startGardenDungeon(dungeon.id)).toBe(true);
+        useStore.setState(state => ({
+          ...state,
+          progress: { ...state.progress, forgeOfTranscendenceUnlocked: true },
+          gardenDungeon: {
+            ...state.gardenDungeon,
+            encounterIndex: dungeon.encounters.length - 1,
+            encounterHp: 0,
+          },
+        }));
+        expect(useStore.getState().resolveGardenEncounter()).toBe(true);
+        expect(useStore.getState().gardenDungeon.lastRewards?.shardsOfTranscendence).toBe(1);
+      }
+    } finally {
+      random.mockRestore();
+    }
   });
 
   it('purchases abilities atomically with Garden materials and no Divine Light', () => {

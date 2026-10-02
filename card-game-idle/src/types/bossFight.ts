@@ -38,6 +38,7 @@ export interface BossRewardSummary {
   totalTierProgress?: number;
   resonanceGained?: number;
   cardsTieredUp?: number;
+  transcendentShardsEarned?: number;
 }
 
 export interface BossFightState {

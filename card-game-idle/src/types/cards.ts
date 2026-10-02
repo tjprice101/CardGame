@@ -32,6 +32,7 @@ export interface LightCardDefinition {
   readonly type: 'Light';
   readonly rarity: CardRarity;
   readonly spectrumLevel: SpectrumLevel;
+  readonly subset?: string;
   readonly name: string;
   readonly description: string;
   readonly artKey: string;
@@ -47,6 +48,7 @@ export interface DarkCardDefinition {
   readonly type: 'Dark';
   readonly rarity: CardRarity;
   readonly spectrumLevel: SpectrumLevel;
+  readonly subset?: string;
   readonly name: string;
   readonly description: string;
   readonly artKey: string;
@@ -114,6 +116,7 @@ export interface AinSophAurDefinition {
   readonly type: 'AinSophAur';
   readonly rarity: CardRarity;
   readonly spectrumLevel: SpectrumLevel;
+  readonly subset?: string;
   readonly name: string;
   readonly description: string;
   readonly artKey: string;

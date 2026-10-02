@@ -4,18 +4,12 @@ import { useStore } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { SET_ACCENT } from '@/data/elements';
 import { PACK_DEFINITIONS, STORE_PACK_ORDER } from '@/data/packs/packDefinitions';
-import { getCardFinishKey, getCardFinishLabel, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
+import { getCardFinishKey, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import {
-  cardFacePalette,
   getLiveCardFaceBackgroundStyle,
   getLiveCardShimmerClassName,
   getCardBackBackgroundStyle,
-  getCardArtTopBottomBorderOverlayStyleForCard,
-  getCardFaceMetrics,
-  getCardNameRibbonStyle,
-  getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
-import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import { CARD_COLLECTION_TILE_HEIGHT, CARD_COLLECTION_TILE_STEP, CARD_COLLECTION_TILE_WIDTH } from '@/ui/cardTileMetrics';
 import { uiTypography, warmTheme } from '@/ui/theme';
@@ -71,7 +65,6 @@ interface CollectionVirtualRow {
 
 export default function CollectionViewer({ onClose }: Props) {
   const [selectedCard, setSelectedCard] = useState<SelectedCard | null>(null);
-  const faceMetrics = getCardFaceMetrics('grid');
   const progress = useStore(s => s.progress);
   const favoriteCollection = useStore(s => s.progress.favoriteCollection);
   const recentlyAcquired = useStore(s => s.progress.recentlyAcquired);
@@ -269,8 +262,6 @@ export default function CollectionViewer({ onClose }: Props) {
       && card.rarity !== 'Eternal'
       && card.rarity !== 'Transcendent'
       && card.rarity !== 'Enigmatic';
-    const previewText = owned > 0 ? getCardPreviewLines(card, 3).join(' ') : '???';
-    const finishLabel = isHoloOnlyCard(card) ? null : getCardFinishLabel(finish);
     const cardSurfaceStyle = owned > 0
       ? getLiveCardFaceBackgroundStyle(card, finish, 'front')
       : (isLockedStandardHolo
@@ -297,20 +288,24 @@ export default function CollectionViewer({ onClose }: Props) {
           flexDirection: 'column',
           alignItems: 'stretch',
           opacity: 1,
-          transition: 'all 0.15s',
+          transition: 'box-shadow 0.15s, outline-color 0.15s, filter 0.15s',
           overflow: 'hidden',
           cursor: 'pointer',
           userSelect: 'none',
         }}
         onMouseEnter={e => {
           (e.currentTarget as HTMLElement).style.boxShadow = `0 8px 24px rgba(${hexToRgb(rarityColor)}, 0.4), 0 0 12px rgba(${hexToRgb(rarityColor)}, 0.3)`;
-          (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)';
+          (e.currentTarget as HTMLElement).style.outline = `1px solid ${rarityColor}aa`;
+          (e.currentTarget as HTMLElement).style.outlineOffset = '2px';
+          (e.currentTarget as HTMLElement).style.filter = 'brightness(1.08)';
         }}
         onMouseLeave={e => {
           (e.currentTarget as HTMLElement).style.boxShadow = 'none';
-          (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
+          (e.currentTarget as HTMLElement).style.outline = '';
+          (e.currentTarget as HTMLElement).style.filter = '';
         }}
         title={owned > 0 ? getCardPreviewLines(card, 4).join('\n') : 'Card not discovered'}
+        aria-label={owned > 0 ? `${card.name}, ${card.rarity}` : 'Card not discovered'}
       >
         {isNew && (
           <div style={{
@@ -367,53 +362,7 @@ export default function CollectionViewer({ onClose }: Props) {
           </button>
         )}
 
-        {owned > 0 && <div style={getCardArtTopBottomBorderOverlayStyleForCard(card)} />}
 
-        {owned > 0 && <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <div style={getCardNameRibbonStyle('grid')}>
-            <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.4, textTransform: 'uppercase', textAlign: 'center', marginBottom: 4 }}>
-              {finishLabel ? `${getDisplayCardTypeLabel(card.type)} · ${finishLabel}` : getDisplayCardTypeLabel(card.type)}
-            </div>
-            <div style={{
-              fontSize: faceMetrics.nameSize,
-              fontWeight: 'bold',
-              color: cardFacePalette.text,
-              lineHeight: 1.25,
-              minHeight: 24,
-              textAlign: 'center',
-            }}>
-              {card.name}
-            </div>
-          </div>
-
-          <div style={getCardRulesPanelStyle('grid')}>
-            <div style={{
-              fontSize: faceMetrics.descSize,
-              color: cardFacePalette.textSoft,
-              lineHeight: faceMetrics.descLineHeight,
-              textAlign: 'center',
-              display: '-webkit-box',
-              WebkitBoxOrient: 'vertical',
-              WebkitLineClamp: 3,
-              overflow: 'hidden',
-            }}>
-              {previewText}
-            </div>
-            <div style={{
-              marginTop: 6,
-              fontSize: 10,
-              letterSpacing: 1,
-              color: owned > 0 ? cardFacePalette.textMuted : warmTheme.textFaint,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              gap: 8,
-            }}>
-              <span style={{ color: cardFacePalette.textMuted, textTransform: 'uppercase' }}>{card.rarity}</span>
-              <span>{owned > 0 ? `×${owned} discovered` : 'Not discovered'}</span>
-            </div>
-          </div>
-        </div>}
       </div>
     );
   };

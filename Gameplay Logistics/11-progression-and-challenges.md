@@ -54,7 +54,7 @@ The login reward surface is a persistent monthly calendar. A claim awards the re
 - Enigmatic cards come from Enigmas.
 - Eternal cards come from Eternity's Wake bosses.
 - Infinite cards are crafted in Infinitude from specific Eternal recipes.
-- Transcendent cards come from the Forge of Transcendence.
+- Transcendent cards come from the Forge of Transcendence. The first four form the Vol. 1 subset, with more volumes planned for future expansions.
 
 The four materialized Transcendent abilities are separate from the four Transcendent cards and are not owned through a card. They are set-independent and use shared turn, card-play, hand/discard, and attack systems. They do not generate or spend Cosmos, target Causality cards/cooldowns, or depend on another set's systems. Their purchase cost is paid once; their listed Limitless Light Stack cost is paid on activation.
 
@@ -63,7 +63,7 @@ The four materialized Transcendent abilities are separate from the four Transcen
 - Vault of Unwritten Futures: spend 10 stacks; select 2 cards from your discard pile and raise your hand limit by 2 for the rest of the turn (120s cooldown).
 - Confluence of All Origins: spend 12 stacks; your next Ain, Soph, or Bridge attack gains +2 multiplier (150s cooldown).
 
-Shard drop rolls are gated until all five Forge Causality bosses have been cleared and the Forge is open. Each qualifying boss clear has a 0.1% base chance, multiplied by the selected x2/x3 fight count. The final encounter of each available Garden expedition has a 0.1% roll. Monthly Login Calendar bonus rolls occur on days 10 and 22, also at 0.1%. Drop-rate labels remain hidden until both unlock conditions are satisfied.
+Shard drop rolls are gated until all five Forge Causality bosses have been cleared and the Forge is open. Each qualifying boss clear has a 1% base chance (dropping 1–3 Shards with equal 33.3% weighting), multiplied by the selected x2/x3 fight count. The final encounter of each available Garden expedition has a 1% roll (1–3 Shards). Monthly Login Calendar bonus rolls occur on days 10 and 22, also at 1% (1–3 Shards). Drop-rate labels remain hidden until both unlock conditions are satisfied.
 
 Achievements and unlock gates should distinguish those rarity sources instead of treating all premium cards as one bucket.
 

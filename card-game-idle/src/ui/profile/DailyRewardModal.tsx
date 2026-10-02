@@ -37,15 +37,20 @@ export default function DailyRewardModal({ onClose }: Props) {
   const now = Date.now();
   const trackKey = getMonthlyTrackKey(now);
   const daysInMonth = getMonthlyTrackDays(now);
-  const claimedDays = progress.dailyLogin.monthlyTrackKey === trackKey
-    ? (progress.dailyLogin.monthlyClaimedDays?.length
-      ? progress.dailyLogin.monthlyClaimedDays
-      : evalResult.monthlyDay === undefined && progress.dailyLogin.lastClaimedDayIndex === Math.floor(now / (24 * 60 * 60 * 1000))
-        ? [new Date(now).getUTCDate()]
-        : [])
-    : evalResult.monthlyDay === undefined && progress.dailyLogin.lastClaimedDayIndex === Math.floor(now / (24 * 60 * 60 * 1000))
-      ? [new Date(now).getUTCDate()]
-      : [];
+  const rawClaimedDays = progress.dailyLogin.monthlyTrackKey === trackKey
+    ? (progress.dailyLogin.monthlyClaimedDays ?? [])
+    : [];
+  const dayOfMonth = new Date(now).getUTCDate();
+  const isClaimedToday = progress.dailyLogin.lastClaimedDayIndex === Math.floor(now / (24 * 60 * 60 * 1000));
+  const claimedDays = useMemo(() => {
+    let list = rawClaimedDays;
+    if (isClaimedToday && progress.dailyLogin.monthlyTrackKey === trackKey && !rawClaimedDays.includes(dayOfMonth) && rawClaimedDays.some(d => d > dayOfMonth)) {
+      list = rawClaimedDays.map(d => (d > dayOfMonth ? dayOfMonth : d));
+    } else if (rawClaimedDays.length === 0 && isClaimedToday) {
+      list = [dayOfMonth];
+    }
+    return Array.from(new Set(list));
+  }, [rawClaimedDays, isClaimedToday, progress.dailyLogin.monthlyTrackKey, trackKey, dayOfMonth]);
   const track = useMemo(() => Array.from({ length: daysInMonth }, (_, i) => ({ day: i + 1, reward: monthlyRewardForDay(i + 1, now) })), [daysInMonth, now]);
 
   function handleClaim() {
@@ -152,7 +157,7 @@ export default function DailyRewardModal({ onClose }: Props) {
                 </div>
               </div>
               {showShardRates && FORGE_CALENDAR_BONUS_DAYS.includes(day) && (
-                <ShardDropRate label={`Bonus Shard · ${formatShardDropChance()}`} fontSize={8} style={{ marginTop: 5, padding: '2px 6px' }} />
+                <ShardDropRate label={`Bonus Shard · ${formatShardDropChance()} (1–3 Shards)`} fontSize={8} style={{ marginTop: 5, padding: '2px 6px' }} />
               )}
             </article>;
           })}

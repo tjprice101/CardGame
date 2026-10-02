@@ -226,6 +226,9 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
   }
 
   if (card.rarity === 'Transcendent') {
+    pushSummarySection(sections, 'Subset', [
+      `${card.subset ?? 'Vol. 1'} · Forge of Transcendence`,
+    ]);
     pushSummarySection(sections, 'Transcendent Ability', [
       'If this card is in your deck or Extra Deck, your maximum hand size is 10.',
     ]);

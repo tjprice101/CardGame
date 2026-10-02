@@ -23,15 +23,25 @@ describe('live card face rendering', () => {
   it('uses the same composed art and shimmer helpers in hand and on board', () => {
     const handSource = readFileSync(handPath, 'utf8');
     const boardSource = readFileSync(boardPath, 'utf8');
+    const animationSource = readFileSync(join(process.cwd(), 'src/styles/animations.css'), 'utf8');
 
     expect(handSource).toContain("getLiveCardFaceBackgroundStyle(def, deckCard.finish, 'front')");
     expect(boardSource).toContain('getLiveCardFaceBackgroundStyle(mainDef, mainCard.finish, mainCard.faceState)');
     expect(handSource).toContain("getLiveCardShimmerClassName(def, deckCard.finish, 'front')");
     expect(boardSource).toContain('getLiveCardShimmerClassName(mainDef, mainCard.finish, mainCard.faceState)');
     expect(handSource).not.toContain("getLiveCardFaceBackgroundStyle(def, deckCard.finish, 'front', true)");
+    expect(handSource).toContain("'hand-card-hover-glow'");
+    expect(handSource).toContain('hand-card-hover-shimmer');
+    expect(handSource).toContain('isHovered && !selected && !isDragging');
+    expect(handSource).toContain('Mulligan · Hand (${viewCards.length})');
+    expect(handSource).not.toContain('MULLIGAN ? Click cards to swap them out');
+    expect(handSource).not.toContain("transform: 'translateY(-16px) scale(1.025)'");
+    expect(animationSource).toContain('@keyframes handCardHoverGlow');
+    expect(animationSource).toContain('html.reduced-motion .hand-card-hover-glow');
+    expect(animationSource).toContain('@keyframes handCardHoverShimmer');
   });
 
-  it('renders face chrome only for face-up back-row cards', () => {
+  it('routes board name and rules markup through the shared hidden-band helpers', () => {
     const boardSource = readFileSync(boardPath, 'utf8');
 
     expect(boardSource).toContain('{isAin && (');
@@ -65,16 +75,78 @@ describe('live card face rendering', () => {
     }
   });
 
+  it('keeps the turn screen in a header, playfield, hand, and rail grid', () => {
+    const hudSource = readFileSync(join(process.cwd(), 'src/ui/hud/HUD.tsx'), 'utf8');
+    const styleSource = readFileSync(join(process.cwd(), 'src/styles/animations.css'), 'utf8');
+    const appSource = readFileSync(join(process.cwd(), 'src/app/App.tsx'), 'utf8');
+    const bossSource = readFileSync(join(process.cwd(), 'src/ui/eternitysWake/BossFightArena.tsx'), 'utf8');
+    const gardenSource = readFileSync(join(process.cwd(), 'src/ui/garden/GardenDungeonHUD.tsx'), 'utf8');
+    const battlegroundSource = readFileSync(join(process.cwd(), 'src/ui/battleground/BattlegroundMatch.tsx'), 'utf8');
+
+    expect(hudSource).toContain('className="turn-screen-layout"');
+    expect(hudSource).toContain('className={`turn-screen-playfield');
+    expect(hudSource).toContain('className="turn-screen-hand"');
+    expect(styleSource).toContain("'header header'");
+    expect(styleSource).toContain("'playfield rail'");
+    expect(styleSource).toContain("'hand rail'");
+    expect(appSource).toContain('className="game-scene-root"');
+    expect(bossSource).toContain("right: 'var(--turn-side-rail-width, 278px)'");
+    expect(gardenSource).toContain("right: 'var(--turn-side-rail-width, 278px)'");
+    expect(battlegroundSource).toContain("right: 'var(--turn-side-rail-width, 278px)'");
+  });
+
+  it('uses hover outlines and brightness instead of upward movement', () => {
+    const styleSource = readFileSync(join(process.cwd(), 'src/styles/animations.css'), 'utf8');
+    const hoverRules = Array.from(styleSource.matchAll(/[^{}]*:hover[^{}]*\{[^}]*\}/g), match => match[0]);
+    expect(hoverRules.filter(rule => /transform:\s*translateY\(\s*-/.test(rule))).toEqual([]);
+    expect(styleSource).not.toMatch(/:hover[^{}]*\{[^}]*\bscale\s*:/);
+    for (const relativePath of [
+      'src/ui/menu/MainMenuHub.tsx',
+      'src/ui/eternitysWake/BossResultModal.tsx',
+      'src/ui/profile/SignatureCardPickerModal.tsx',
+      'src/ui/store/CollectionViewer.tsx',
+    ]) {
+      const source = readFileSync(join(process.cwd(), relativePath), 'utf8');
+      expect(source, relativePath).not.toContain("style.transform = 'translateY(-");
+    }
+  });
+
   it('keeps the Collection virtual list inside a bounded wheelable flex viewport', () => {
     const collectionSource = readFileSync(collectionPath, 'utf8');
     expect(collectionSource).toContain("flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden'");
     expect(collectionSource).toContain("style={{ height: '100%', minHeight: 0, overscrollBehavior: 'contain', touchAction: 'pan-y' }}");
   });
 
-  it('hides Collection face chrome for undiscovered cards', () => {
+  it('uses unobstructed shared framed art for compact Collection cards', () => {
     const collectionSource = readFileSync(collectionPath, 'utf8');
-    expect(collectionSource).toContain("{owned > 0 && <div style={getCardArtTopBottomBorderOverlayStyleForCard(card)} />}");
-    expect(collectionSource).toContain("{owned > 0 && <div style={{ position: 'relative', zIndex: 1");
+    expect(collectionSource).toContain("getLiveCardFaceBackgroundStyle(card, finish, 'front')");
+    expect(collectionSource).not.toContain('getCardArtTopBottomBorderOverlayStyleForCard');
+    expect(collectionSource).not.toContain('getCardNameRibbonStyle');
+    expect(collectionSource).not.toContain('getCardRulesPanelStyle');
+  });
+
+  it('uses one shared frame layer and removes separate art-edge overlays', () => {
+    const backgroundSource = readFileSync(join(process.cwd(), 'src/ui/cardBackgrounds.ts'), 'utf8');
+    expect(backgroundSource).toContain('card-front-frame-splotched-ink.png');
+    expect(backgroundSource).toContain("...frontFrameLayers.map(() => 'screen')");
+    expect(backgroundSource).toContain("return { display: 'none' };");
+    expect(backgroundSource).not.toContain('getCardArtTopBottomBorderOverlayStyleForCard');
+  });
+
+  it('resolves title-screen showcase art through the card registry and shared frame', () => {
+    const titleSource = readFileSync(join(process.cwd(), 'src/ui/boot/TitleScreen.tsx'), 'utf8');
+    for (const definitionId of [
+      'light-neutrality-1',
+      'enig-neutral-lumen-genesis',
+      'ain-soph-aur-neutrality-1',
+      'tx-neutral-null-catalyst',
+      'tx-neutral-starbound-glimmer',
+      'tx-angel-starbound-null-archangel',
+    ]) {
+      expect(titleSource).toContain(`card('${definitionId}')`);
+    }
+    expect(titleSource).toContain('getCardBackgroundUrl(definition)');
+    expect(titleSource).toContain("backgroundBlendMode: 'screen, normal'");
   });
 
   it("keeps Eternity's Wake foil animation on the reward card only", () => {

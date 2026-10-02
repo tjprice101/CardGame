@@ -136,24 +136,27 @@ function OverviewBody() {
       <div style={cardStyle}>
         <div style={sectionHeadingStyle}>The Loop</div>
         <div style={bodyTextStyle}>
-          Play cards each turn to earn <Tag>Divine Light</Tag>. Spend Divine Light on <Tag>Card Packs</Tag> to expand
-          your collection, build stronger decks, and push deeper into <Tag>Eternity's Wake</Tag> boss fights
-          and the <Tag>Infinitude</Tag> crafting chamber. There is no idle tick &mdash; every gain comes from a
-          card you played.
+          Play cards to build your board and earn <Tag>Divine Light</Tag> through card effects and attacks. Other
+          rewards come from quests, encounters, bosses, and login rewards. Spend Divine Light on base packs and
+          eligible progression; Aberrated Shards pay for event packs. There is no passive idle income.
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 10 }}>
         <div style={cardAltStyle}>
           <div style={sectionHeadingStyle}>Currencies</div>
-          <ListItem label="Divine Light">Primary currency. Earned from card plays and attacks. Spent on card packs.</ListItem>
-          <ListItem label="Shards">Aberrated Shards. Earned from boss clears and daily logins. Spend them on progression and rewards.</ListItem>
+          <ListItem label="Divine Light">Main currency. Card effects and attacks can earn it; Collection Power scales those gains. Spend it on packs and eligible abilities.</ListItem>
+          <ListItem label="Aberrated Shards">Event currency earned from bosses, logins, achievements, and milestones. Spend it on event packs and other event rewards.</ListItem>
+          <ListItem label="Card-light Shards">Created by refining eligible duplicate cards. Spend them 1:1 to add Card-light to a chosen card.</ListItem>
+          <ListItem label="Shards of Transcendence">Used to acquire Forge cards and materialize Transcendent abilities. Calendar rewards can grant them directly; some bonus drops require the Forge to be open.</ListItem>
         </div>
         <div style={cardAltStyle}>
           <div style={sectionHeadingStyle}>Game Modes</div>
           <ListItem label="Main">The core deck loop &mdash; play turns, open packs, expand the collection.</ListItem>
-          <ListItem label="Wake">Eternity's Wake. A single-turn boss fight where all Divine Light deals damage. Rewards Eternal-rarity cards.</ListItem>
-          <ListItem label="Infinitude">Forge Infinite-rarity cards by consuming specific Eternals.</ListItem>
+          <ListItem label="Wake">Eternity's Wake is a timed boss encounter. Divine Light earned during the fight damages the boss; victories can award its signature Eternal card.</ListItem>
+          <ListItem label="Garden">Garden of Cards is a sequence of timed encounters. Each dungeon awards its own materials; finish the expedition to complete the run.</ListItem>
+          <ListItem label="Infinitude">Craft specific Infinite cards by consuming their listed Eternal cards and required materials.</ListItem>
+          <ListItem label="Forge">Open the Forge of Transcendence after clearing its event bosses and claiming/spending the Key. It contains Transcendent cards and abilities.</ListItem>
         </div>
       </div>
 
@@ -161,7 +164,7 @@ function OverviewBody() {
         <div style={sectionHeadingStyle}>Attack Orbit Sequences</div>
         <ListItem label="Ain / Soph">The attacking card appears in a central orbit field. Move the cursor in a complete, consistent circle around the center target to build revolution-only payout.</ListItem>
         <ListItem label="Bridge the Light">Bridge uses the same central orbit language while its Ain Soph Aur constellation remains part of the presentation. Complete revolutions are the scoring input.</ListItem>
-        <ListItem label="No star clicks">There are no clickable stars or ordered hit paths. Straight lines, jitter, direction reversals, and random movement do not score.</ListItem>
+        <ListItem label="Orbit scoring">Ain, Soph, and Bridge attacks do not use clickable stars. Straight lines, jitter, direction reversals, and random movement do not score; Shatter uses a separate star-click window.</ListItem>
         <ListItem label="Stable payout">Orbit score is uncapped and committed by the store when the sequence resolves. Attack cost, cooldown, and payout are applied atomically at resolution.</ListItem>
       </div>
 
@@ -183,29 +186,31 @@ function TurnFlowBody() {
       <div style={cardStyle}>
         <div style={sectionHeadingStyle}>A Single Turn</div>
         <NumberedStep n={1} title="Begin Turn">
-          From the main menu, press the large <Tag>Begin Turn</Tag> button. A fresh hand draws and
-          per-turn resources (Radiance, Heat, Strain, etc.) reset.
+          Press <Tag>Begin Turn</Tag> to draw a fresh hand and begin at Spectrum Level 0. Your board and turn-scoped
+          resources start fresh.
         </NumberedStep>
         <NumberedStep n={2} title="Mulligan">
           Click cards in hand to mark them for replacement, then confirm. Use it to dig for setup pieces or to
           remove dead draws.
         </NumberedStep>
         <NumberedStep n={3} title="Play Phase">
-          Play any combination of cards. Place Seraphim and Cherubim, fire Ophanim, summon Angels, and click
-          board units to use their attacks when off cooldown. Press <Tag>E</Tag> any time to peek your Extra
-          Deck without spending a play.
+          Place <Tag>Light</Tag> and <Tag>Dark</Tag> cards in the back row as face-down Soph or face-up Ain. Play
+          more cards to charge Soph cards, then flip or sacrifice them. Use Light attacks and Dark utilities,
+          summon <Tag>Ain Soph Aur</Tag> from your Extra Deck with the listed materials, and use their Bridge
+          attacks. Press <Tag>E</Tag> to preview your Extra Deck.
         </NumberedStep>
         <NumberedStep n={4} title="End Turn">
-          Click the <Tag>End Turn</Tag> button in the arena footer. The board resolves, front-row units go to
-          discard, and you return to the main menu for the next turn.
+          Click <Tag>End Turn</Tag> to clear the board and hand, reset turn resources, and cycle cards through
+          discard and draw. Ending your turn during a boss fight fails that fight; ending it during a Garden
+          expedition abandons the run.
         </NumberedStep>
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Timing Tips</div>
-        <ListItem label="Cheap First">Cycle low-cost Ophanim early to reduce attack cooldowns.</ListItem>
-        <ListItem label="Set Up">Drop Seraphim and Cherubim before your big payoff plays so passives are already online.</ListItem>
-        <ListItem label="Sequence">Cooldowns tick in cards played, not seconds. Fire each attack at peak resource windows.</ListItem>
+        <ListItem label="Charge Soph">Each card played adds charge to every face-down Soph card. At 2 charge, flip it to gain stacks or sacrifice it for stacks.</ListItem>
+        <ListItem label="Attack timing">Attack and persistent Dark-card cooldowns decrease as you play cards. Ability cooldowns use seconds instead.</ListItem>
+        <ListItem label="Raise Spectrum">Spend Limitless Light Stacks and sacrifice a hand card to unlock higher-level cards. Keep enough low-level cards to build your turn.</ListItem>
       </div>
     </>
   );
@@ -231,16 +236,17 @@ function BoardBody() {
  [ B0 ] [ B1 ] [ B2 ] [ B3 ]   <- Back: Light / Dark`}
         </pre>
         <div style={{ ...bodyTextStyle, marginTop: 8 }}>
-          Back-row cards begin on their <Tag>Soph</Tag> side. Front-row cards are <Tag>Ain Soph Aur</Tag>
-          summons. The board and hand reset at turn end; only persistent progression and Divine Light remain.
+          Back-row Light and Dark cards can be placed face-down as <Tag>Soph</Tag> or face-up as Ain. Front-row
+          cards are <Tag>Ain Soph Aur</Tag> summons. At turn end, the board and hand clear and turn-scoped resources reset. Main Deck cards cycle
+          through discard and draw; Ain Soph Aur cards return to the Extra Deck.
         </div>
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Card Types</div>
-        <ListItem label="Light">Creature cards with an Ain Attack and a stack-consuming Soph Attack.</ListItem>
-        <ListItem label="Dark">Utility cards that activate from their face-up Ain side on the board.</ListItem>
-        <ListItem label="Ain Soph Aur">Extra Deck summons. Sacrifice the listed back-row materials to place one in the front row. Ain Soph Aur cards cannot be searched from the Main Deck or salvaged from discard.</ListItem>
+        <ListItem label="Light">Main Deck cards with two attacks, Ain and Soph. Both are used while the card is face-up on its Ain side; its text defines costs and scaling.</ListItem>
+        <ListItem label="Dark">Main Deck utility cards. Place one as Ain to activate its effect; card text shows any cost, cooldown, or repeat-use rule.</ListItem>
+        <ListItem label="Ain Soph Aur">Extra Deck summons. Select back-row cards that satisfy the summon requirements, then place the summon in the front row. They cannot be searched from the Main Deck or salvaged from discard.</ListItem>
       </div>
 
       <div style={{ ...cardStyle, marginTop: 10 }}>
@@ -261,22 +267,23 @@ function AttacksBody() {
       <div style={cardStyle}>
         <div style={sectionHeadingStyle}>How Attacks Fire</div>
         <div style={bodyTextStyle}>
-          Every card shows its own base Divine Light, cooldown, and scaling values. Cooldowns are measured in cards
-          played, not seconds. Universal rules belong here; the card panel only shows what is unique to that card.
+          Each attack shows its base Divine Light, cooldown, and card-specific scaling. Ain, Soph, and Bridge attacks
+          launch an orbit sequence: move the cursor in sustained circles around the center to increase the payout.
+          Straight or erratic movement does not score. Attack cooldowns count cards played, not seconds.
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 10 }}>
         <div style={cardAltStyle}>
           <div style={sectionHeadingStyle}>Light Attacks</div>
-          <ListItem label="Ain Attack">Reads the current Limitless Light Stack pool and does not consume it.</ListItem>
-          <ListItem label="Soph Attack">Uses the card&apos;s own stack cost and scaling, then pays Divine Light.</ListItem>
+          <ListItem label="Ain Attack">Does not spend Limitless Light Stacks. Any stack or Collection Power scaling is defined by that card.</ListItem>
+          <ListItem label="Soph Attack">May spend stacks as shown on the card. Its scaling uses the stack pool from before payment.</ListItem>
         </div>
         <div style={cardAltStyle}>
           <div style={sectionHeadingStyle}>Ain Soph Aur</div>
           <ListItem label="Summon">On summon, every Ain Soph Aur grants +{AIN_SOPH_AUR_SUMMON_STACK_REWARD} Limitless Light Stack.</ListItem>
           <ListItem label="Bridge">Each summon has one Bridge the Light attack with its own base, scaling, cooldown, and optional stack cost.</ListItem>
-          <ListItem label="Collection Power">Attack scaling uses Collection Power directly. Limitless Light Stacks remain a separate core resource and are only spent when card text says so.</ListItem>
+          <ListItem label="Scaling and cost">Each card specifies its scaling inputs, which may include Collection Power, Light Stacks, or front-row count. Stack costs are paid separately from the values used for scaling.</ListItem>
         </div>
       </div>
 
@@ -291,11 +298,10 @@ function AttacksBody() {
       <div style={{ ...cardStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Shatter the Infinite Light</div>
         <div style={bodyTextStyle}>
-          Fully bridge the board with four front-row Ain Soph Aur and four back-row Light or Dark cards already
-          flipped to Ain to unlock this finisher. The screen first fades completely to black, then opens a
-          10-second event-horizon orbit field. Each full, consistent cursor revolution around the core creates one
-          <Tag>Limitless Infinity</Tag> stack worth 1,000 base Divine Light before Collection Power scaling.
-          Gameplay timers pause during the sequence.
+          Fill all four front-row slots with Ain Soph Aur and all four back-row slots with Light or Dark cards
+          flipped to Ain to unlock this finisher. After a fade to black, a 10-second window opens with glowing
+          stars to click. Each star clicked adds one <Tag>Limitless Infinity</Tag> stack, worth 1,000 base Divine
+          Light before Collection Power scaling. Board actions and gameplay timers pause until it resolves.
         </div>
         <ListItem label="Aftermath">Front-row Ain Soph Aur return to the Extra Deck. Back-row and discarded cards return to the draw pile, while your current hand is preserved. Light Stacks and board effects clear without advancing the turn.</ListItem>
         <ListItem label="Boss fights">Shattering immediately staggers the boss and restores the encounter clock to its full duration.</ListItem>
@@ -304,22 +310,33 @@ function AttacksBody() {
   );
 }
 
-function PatienceBody() {
+function LightStacksBody() {
   return (
     <>
       <div style={cardStyle}>
         <div style={sectionHeadingStyle}>Light Stack Runtime</div>
         <div style={bodyTextStyle}>
-          Limitless Light Stacks are created when charged Soph cards flip to Ain. They are a shared, per-turn resource.
+          Limitless Light Stacks are a shared, turn-scoped resource. Flipping a charged Soph card is a main source;
+          card effects and Ain Soph Aur summons can also change the total.
         </div>
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Accumulation Rules</div>
         <ListItem label="Charge">Each card played adds charge to every face-down Soph card on the back row.</ListItem>
-        <ListItem label="Flip">At {SOPH_FLIP_CHARGE_REQUIRED}+ charge, flip a Soph card to Ain and convert its charge into Light Stacks.</ListItem>
-        <ListItem label="Spend">Soph Attacks, Dark activations, and some Bridge attacks spend stacks according to their card text.</ListItem>
-        <ListItem label="Reset">The stack pool and board charges reset at the end of the turn.</ListItem>
+        <ListItem label="Flip">At {SOPH_FLIP_CHARGE_REQUIRED}+ charge, flip a Soph card to Ain and add its stored charge to your Light Stacks.</ListItem>
+        <ListItem label="Sacrifice">A charged Soph card can instead be sacrificed. This removes it from the board and converts a percentage of its charge into stacks.</ListItem>
+        <ListItem label="Spend">Soph Attacks, Dark activations, Bridge attacks, Spectrum level-ups, and abilities may spend stacks. Check each action&apos;s displayed cost.</ListItem>
+        <ListItem label="Reset">The stack pool and board charges reset at turn end. Summoning an Ain Soph Aur grants +{AIN_SOPH_AUR_SUMMON_STACK_REWARD} stack.</ListItem>
+      </div>
+
+      <div style={{ ...cardStyle, marginTop: 10 }}>
+        <div style={sectionHeadingStyle}>Limitless Cosmos</div>
+        <div style={bodyTextStyle}>
+          Causality cards use <Tag>Limitless Cosmos</Tag> as a separate turn-scoped resource. Causality effects
+          generate it, convert Limitless Light Stacks into it, or spend it for card effects. The card text shows
+          each cost and payoff; Cosmos and Light Stacks are not interchangeable.
+        </div>
       </div>
 
       <div style={{ ...cardStyle, marginTop: 10 }}>
@@ -330,7 +347,7 @@ function PatienceBody() {
           encounter, boss fight, and Battleground match starts at Lv 0.
         </div>
         <ListItem label="Raise">Press Raise Spectrum (default hotkey R) to spend 5 Limitless Light Stacks and sacrifice 1 hand card to reach Lv 1. Each further level costs 1 more stack (6, 7, 8, then 9 for Lv 5).</ListItem>
-        <ListItem label="Light-bound Abyss">Sacrificed cards enter the Light-bound Abyss and cannot be retrieved until your deck resets at the next turn or encounter.</ListItem>
+        <ListItem label="Light-bound Abyss">Sacrificed cards stay outside your deck until the next deck reset, such as a new turn, Garden encounter, boss fight, or Battleground match.</ListItem>
         <ListItem label="Rarity floors">Enigmatic cards are Lv 1+, Eternal Lv 2+, Infinite Lv 4+, and Transcendent cards are always Lv 5.</ListItem>
         <ListItem label="Phantom Matrix">Its free summon may reach one level above your current Spectrum Level.</ListItem>
         <ListItem label="Deckbuilding">Higher-level cards hit harder but take tempo to unlock, so keep enough Lv 0 cards to start every turn and mulligan high-level cards you cannot reach soon.</ListItem>
@@ -358,8 +375,10 @@ function SetsBody() {
       <div style={cardStyle}>
         <div style={sectionHeadingStyle}>Ability Amplification</div>
         <div style={bodyTextStyle}>
-          Materialized abilities are purchased with Divine Light, equipped three at a time in the Deck Builder,
-          and activated from the in-turn Ability Amplification panel. The shop has Neutrality and Causality filters; Causality abilities unlock from full base Causality ownership, Causality Eternal ownership, and Causality Infinite ownership.
+          Buy abilities in Ability Materialization with the listed set materials, then equip up to three owned
+          abilities in a saved deck. Activate them from the in-turn Ability Amplification panel. Neutrality and
+          Causality abilities have separate ownership gates; Transcendent abilities cost Divine Light and Shards
+          of Transcendence instead of Garden materials.
         </div>
       </div>
 
@@ -438,8 +457,8 @@ function ModesBody() {
         <ListItem label="Tier Progress">On completion, this mode awards +X <Tag>Card-light</Tag> for each card in your deck (and Extra Deck). Higher-tier bosses give more, up to 20 Card-light per card. The displayed amount is the base; each card also receives an extra +5% per Tier it has already reached.</ListItem>
       </div>
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Rift of Causality</div>
-        <div style={bodyTextStyle}>The Causality Garden filter opens a four-encounter endgame expedition. Its rewards are Seed of Causality, Causal Bloom, Shattered Causal Transcript, and Heart of Causality. These materials combine only with Causality Eternal cards to forge five Causality Infinite cards.</div>
+        <div style={sectionHeadingStyle}>Garden of Cards</div>
+        <div style={bodyTextStyle}>Choose a set filter to enter an expedition. Valley of Null has three Neutrality encounters; Rift of Causality has four Causality encounters. Each encounter awards its listed set materials. Complete the final encounter to finish the run.</div>
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
@@ -452,8 +471,8 @@ function ModesBody() {
         <div style={sectionHeadingStyle}>Card Packs</div>
         <div style={bodyTextStyle}>
           Open the Card Store to spend Divine Light on packs. Each pack has its own rarity weights and pity
-          counters; the store displays them up front. Use the Deck Builder to assemble up to 50 cards plus an
-          Extra Deck of Angels (up to 10 total, max 4 copies per definition).
+          counters; the store displays them up front. Use the Deck Builder to assemble up to 50 Main Deck cards
+          plus an Extra Deck of up to 10 Ain Soph Aur cards (max 4 copies per definition).
         </div>
       </div>
 
@@ -461,14 +480,14 @@ function ModesBody() {
         <div style={sectionHeadingStyle}>More Modes</div>
         <ListItem label="Challenges">Daily and weekly challenges provide rotating rewards. Claim every weekly reward to consume that rotation into two Super Weekly boss challenges.</ListItem>
         <ListItem label="Card-light Resonance">Refine eligible duplicate copies into Card-light Shards, then spend them 1:1 to add Card-light to any card.</ListItem>
-        <ListItem label="Monthly Login">Open Login Calendar from Main Menu → Progress at any time. The full month is shown with Aberrated Shards, Card-light Shards, and actual card artwork for each reward. Missed days remain queued, but only one daily reward can be claimed per UTC day.</ListItem>
+        <ListItem label="Monthly Login">Open Login Calendar from Main Menu → Progress. The calendar shows each date&apos;s reward; claim the current UTC day&apos;s reward, with at most one claim per day. Missed dates do not queue for later claims.</ListItem>
         <ListItem label="Enigma">After 10 packs, the Enigma menu lets you search for manuscripts. An opening riddle passively unlocks a manuscript without focusing it. Only an acquired manuscript can be locked on, and only the selected Enigma progresses. Cumulative goals show live trackers, while requirements that say “in one turn,” “at once,” or “at end of turn” only complete in that exact scope.</ListItem>
-        <ListItem label="Phantom Matrix">Phantom Matrix opens a free-summon picker. Every Ain Soph Aur stays bright and selectable; choose any ASA and confirm without selecting or spending materials. Normal ASA summons still use their authored materials.</ListItem>
+        <ListItem label="Phantom Matrix">This ability spends 10 Limitless Light Stacks to open a free-summon picker. Choose any Ain Soph Aur without selecting or spending summon materials; normal summons still require their listed materials.</ListItem>
         <ListItem label="Amplifier of the Void">This Enigmatic Dark reward draws 2 cards and grants 3 Limitless Light Stacks. If you hold at least 5 stacks after activation, it also grants 1,500 Divine Light.</ListItem>
         <ListItem label="Silent Exchange">This Neutrality Dark utility exchanges one Light or Dark card from hand for one opposite-type card from the deck, then shuffles the returned card into the deck.</ListItem>
         <ListItem label="Eternity's Wake">Eternity's Wake unlocks after you acquire 3 unique Enigmatic cards.</ListItem>
         <ListItem label="Infinitude">Infinitude unlocks after you acquire 5 Eternal-rarity cards.</ListItem>
-        <ListItem label="Ascension">Ascension unlocks after you acquire 5 Infinite-rarity cards.</ListItem>
+        <ListItem label="Forge">The Forge opens after you clear every current event boss, claim the Key of Transcendence from the event screen, then spend it to unlock the Forge permanently.</ListItem>
       </div>
     </>
   );
@@ -521,12 +540,12 @@ function ProgressionBody() {
       <div style={{ ...cardStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Holofoil Cards</div>
         <ListItem label="Acquisition">Every card rolled in a single Pack has a 2% chance to drop as a holofoil. Boxes and Cases guarantee at least one holofoil.</ListItem>
-        <ListItem label="Visual Finish">Every front-facing card includes its complete top type/name ribbon, artwork, and bottom rules panel. Holofoils use source-specific full-card metallic treatments: base pack foils use black/red/white, Enigma uses black/white/gold, Eternal uses purple-red, and Infinite uses chromatic black/white. Face-down collection/back views intentionally show only the back.</ListItem>
+        <ListItem label="Visual Finish">Front-facing cards show full-bleed artwork under the screened splotched-ink frame; names and rules appear in inspectors or detail views rather than over the art. Holofoils use source-specific full-card metallic treatments: base pack foils use black/red/white, Enigma uses black/white/gold, Eternal uses purple-red, and Infinite uses chromatic black/white. Face-down views show only the card back.</ListItem>
         <ListItem label="Collection">Holofoils are purely cosmetic and are tracked separately in your collection and deck-building. They cannot be created with Aberrated Shards.</ListItem>
       </div>
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Monthly Login Calendar</div>
-        <div style={bodyTextStyle}>Login rewards follow a persistent full-screen monthly track available from Main Menu → Progress → Login Calendar. Every day is displayed at once with its actual reward icon or card artwork. Missing a day does not reset anything: unclaimed days stay queued, but the account can claim only one daily reward per UTC day.</div>
+        <div style={bodyTextStyle}>Login rewards follow a persistent full-screen monthly track available from Main Menu → Progress → Login Calendar. Every date is displayed with its reward icon or card artwork. Claim the current UTC date&apos;s reward; missed dates do not queue, and only one daily reward can be claimed per UTC day.</div>
       </div>
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Card-born Tier</div>
@@ -550,41 +569,47 @@ function ForgeBody() {
       <div style={cardStyle}>
         <div style={sectionHeadingStyle}>Unlocking the Forge</div>
         <div style={bodyTextStyle}>
-          The Forge of Transcendence is a permanent, one-time-ever gallery that belongs to no set and no
-          master. It opens once every boss belonging to the current live event (currently <Tag>Causality</Tag>,
-          its five Eternity's Wake bosses) has been beaten at least once, and you have spent 1{' '}
-          <Tag>Key of Transcendence</Tag> to open it. Once opened, it stays open forever on that save.
+          The Forge of Transcendence is a permanent gallery that belongs to no set. Beat every boss in the
+          current event roster (currently the five <Tag>Causality</Tag> Eternity&apos;s Wake bosses), claim the
+          one-time <Tag>Key of Transcendence</Tag> reward from the event screen, then spend the Key to open the
+          Forge permanently on that save.
         </div>
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Key of Transcendence</div>
         <div style={bodyTextStyle}>
-          Clearing every event boss for the first time claims a single Key of Transcendence automatically.
-          Only one Key is ever awarded this way &mdash; it is what you spend to open the Forge.
+          After clearing every current event boss at least once, claim the one-time Key of Transcendence reward
+          from the event screen. Then spend that Key to open the Forge permanently.
         </div>
       </div>
 
       <div style={{ ...cardStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Shards of Transcendence</div>
         <div style={bodyTextStyle}>
-          Shards only ever drop after the Forge has been opened. Once unlocked, they can fall from:
+          The Monthly Login Calendar directly grants 1 Shard on day 10 and 2 on day 25. Separate 1% bonus rolls
+          for 1–3 Shards are available only after the Forge is open:
         </div>
-        <ListItem label="Boss clears">Any Eternity's Wake boss victory has a small chance to drop a Shard.</ListItem>
-        <ListItem label="Login Calendar">Certain bonus days on the Monthly Login Calendar can also drop a Shard.</ListItem>
-        <ListItem label="Rift of Causality">The final encounter of the Rift of Causality expedition can drop a Shard.</ListItem>
+        <ListItem label="Boss clears">Any Eternity's Wake boss victory has a 1% chance (multiplied by x2/x3 fight choice) to drop 1–3 Shards.</ListItem>
+        <ListItem label="Login bonus">The Forge-open bonus roll is available on calendar days 10 and 22. Day 10 also has its direct 1-Shard reward; day 25 directly grants 2 Shards.</ListItem>
+        <ListItem label="Garden expeditions">The final encounter of any available Garden expedition has a 1% chance to drop 1–3 Shards. Earlier encounters do not roll.</ListItem>
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>The 4 Transcendent Cards</div>
+        <div style={sectionHeadingStyle}>Transcendent Cards (Vol. 1)</div>
         <div style={bodyTextStyle}>
-          Every Transcendent card carries the same innate <Tag>Transcendent Ability</Tag>: if it is anywhere in
-          your deck or Extra Deck, your maximum hand size becomes 10 instead of 8. Each card also has its own
-          Spectrum Level 5 rules and attacks. Separately, the Forge offers four materialized abilities: First Dawn
-          Accord, Axiom of Acceleration, Vault of Unwritten Futures, and Confluence of All Origins. Each costs
-          8,000,000 Divine Light and 30 Shards of Transcendence to purchase. Activations spend only Limitless Light
-          Stacks to grant distinct turn effects: play-triggered Divine Light, bonus Soph charge, expanded hand capacity,
-          or a stronger next attack. They do not use Cosmos or set-specific mechanics.
+          Every Transcendent card carries the same innate <Tag>Transcendent Ability</Tag>: if it is in your Main
+          Deck or Extra Deck, your maximum hand size becomes 10 instead of 8. The initial Vol. 1 subset contains
+          four cards, with additional Transcendent volumes planned for future expansions. Each card also has its own
+          Spectrum Level 5 rules and attacks. Each Forge gallery card costs 25 Shards of Transcendence. Separately,
+          Ability Materialization offers four abilities, each costing 8,000,000 Divine Light and 30 Shards: First
+          Dawn Accord makes your next 3 cards each grant 1,500 base Divine Light; Axiom of Acceleration makes your
+          next 3 card plays add 1 extra charge to every face-down Soph; Vault of Unwritten Futures lets you choose
+          2 cards from your discard pile and raises your hand limit by 2 for 40 seconds, with a 2-minute cooldown.
+          At expiry, discard down to your normal 8-card limit (10 if your Main or Extra Deck contains a Transcendent
+          card). Confluence of All Origins gives your next Ain, Soph, or Bridge attack +2 multiplier. They spend
+          Limitless Light Stacks to activate
+          and do not use Cosmos or another set&apos;s mechanics.
         </div>
       </div>
     </>
@@ -597,7 +622,7 @@ function buildSections(): Section[] {
     'turn-flow':      <TurnFlowBody />,
     'board':          <BoardBody />,
     'attacks':        <AttacksBody />,
-    'patience':       <PatienceBody />,
+    'patience':       <LightStacksBody />,
     'sets':           <SetsBody />,
     'rarities':       <RaritiesBody />,
     'modes':          <ModesBody />,

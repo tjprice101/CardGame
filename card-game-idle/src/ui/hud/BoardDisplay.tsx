@@ -30,12 +30,10 @@ import type {
   MainDeckBoardInstance,
 } from '@/types/cards';
 
-const SLOT_W = 138;
-const SLOT_H = 194;
-const CHERUBIM_W = 122;
-const CHERUBIM_H = 172;
-const FRONT_ROW_GAP = 'clamp(8px, 1.1vw, 14px)';
-const BACK_ROW_GAP = `calc(${FRONT_ROW_GAP} + ${SLOT_W - CHERUBIM_W}px)`;
+const SLOT_W = 'clamp(138px, 11vw, 190px)';
+const CHERUBIM_W = 'clamp(122px, 9.4vw, 162px)';
+const FRONT_ROW_GAP = 'clamp(8px, 1vw, 18px)';
+const BACK_ROW_GAP = 'calc(clamp(8px, 1vw, 18px) + clamp(16px, 1.6vw, 28px))';
 const ROW_SEPARATION = 'clamp(6px, 0.9vh, 12px)';
 const FRONT_FACE_METRICS = getCardFaceMetrics('board');
 const CHERUBIM_FACE_METRICS = getCardFaceMetrics('boardMini');
@@ -286,16 +284,11 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
     window.dispatchEvent(new CustomEvent('hr-attack-panel-open', { detail: isAttackPanelOpen }));
   }, [isAttackPanelOpen]);
 
-  const playfieldRightInset = 'var(--angel-drawer-hand-offset, 278px)';
   const isSpecialBossMode = bossFight.mode === 'active' || gardenDungeon.phase === 'active';
 
   return (
     <div style={{
-      position: 'absolute',
-      left: 0,
-      right: playfieldRightInset,
-      top: isSpecialBossMode ? 'clamp(116px, 13vh, 136px)' : 'clamp(84px, 10vh, 110px)',
-      bottom: 'clamp(172px, 21vh, 200px)',
+      position: 'relative',
       marginInline: 'auto',
       pointerEvents: 'none',
       zIndex: 60,
@@ -306,6 +299,10 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
       overflowY: 'visible',
       overflowX: 'visible',
       width: 'max-content',
+      height: '100%',
+      minHeight: 0,
+      paddingTop: isSpecialBossMode ? 72 : 12,
+      boxSizing: 'border-box',
     }}>
       {canEmbraceInfinite && (
         <div style={{ marginBottom: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, pointerEvents: 'auto' }}>
@@ -427,7 +424,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
                 title={`${asaDef?.name ?? 'Ain Soph Aur'} · Left-click for actions · Right-click to force remove`}
                 style={{
                   width: SLOT_W,
-                  height: SLOT_H,
+                  aspectRatio: '148 / 204',
                   ...getLiveCardFaceBackgroundStyle(asaDef, slot.finish, slot.faceState),
                   border: `2px solid ${isFocused ? focusPalette.rim : warmTheme.borderStrong}`,
                   borderRadius: 14,
@@ -538,7 +535,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
             <div
               key={slotIndex}
               style={{
-                width: SLOT_W, height: SLOT_H,
+                width: SLOT_W, aspectRatio: '148 / 204',
                 border: isDragTarget ? '2px solid rgba(244,244,248,0.9)' : pendingAngelSummon ? '1px solid rgba(190, 138, 255, 0.8)' : `1px solid rgba(244,244,248,${hasSeraphimInHand ? '0.4' : '0.22'})`,
                 borderRadius: 12,
                 background: isDragTarget
@@ -708,7 +705,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
                 key={backSlot}
                 className={getLiveCardShimmerClassName(mainDef, mainCard.finish, mainCard.faceState)}
                 style={{
-                  width: CHERUBIM_W, height: CHERUBIM_H,
+                  width: CHERUBIM_W, aspectRatio: '148 / 204',
                   ...getLiveCardFaceBackgroundStyle(mainDef, mainCard.finish, mainCard.faceState),
                   border: `1px solid ${isMaterialSelected ? 'rgba(120,220,140,0.95)' : isMaterialMode && canSelectAsMaterial ? 'rgba(255,255,255,0.95)' : isReadyToFlip ? 'rgba(255,224,140,0.9)' : 'rgba(160,160,200,0.4)'}`,
                   borderRadius: 12,
@@ -888,7 +885,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
             <div
               key={backSlot}
               style={{
-                width: CHERUBIM_W, height: CHERUBIM_H,
+                width: CHERUBIM_W, aspectRatio: '148 / 204',
                 border: isDragTarget ? '2px solid rgba(200,160,255,0.9)' : `1px solid rgba(200,160,255,${hasCherubimInHand ? '0.48' : '0.28'})`,
                 borderRadius: 12,
                 background: isDragTarget

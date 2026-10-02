@@ -214,16 +214,17 @@ function TileButton(props: {
         if (!props.disabled) {
           const btn = e.currentTarget;
           btn.style.filter = 'brightness(1.15) saturate(1.2)';
-          btn.style.transform = 'translateY(-2px)';
           btn.style.borderColor = theme.accentSoft;
+          btn.style.outline = `1px solid ${theme.accentSoft}`;
+          btn.style.outlineOffset = '2px';
           btn.style.boxShadow = `0 12px 30px rgba(0,0,0,0.6), 0 0 16px ${theme.glow}, inset 0 1px 0 rgba(255,255,255,0.4)`;
         }
       }}
       onMouseLeave={(e) => {
         const btn = e.currentTarget;
         btn.style.filter = '';
-        btn.style.transform = '';
         btn.style.borderColor = props.selected ? theme.accentSoft : palette.border;
+          btn.style.outline = '';
         btn.style.boxShadow = props.selected ? `0 0 0 1px ${theme.glow}, 0 10px 28px rgba(0,0,0,0.52)` : palette.boxShadow;
       }}
     >
