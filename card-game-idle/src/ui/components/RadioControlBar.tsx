@@ -43,7 +43,7 @@ interface Props {
   onPause: () => void;
   onResume: () => void;
   onSkip: () => void;
-  placement?: 'menu' | 'arena';
+  placement?: 'menu' | 'arena' | 'rail';
 }
 
 const BAR: React.CSSProperties = {
@@ -158,10 +158,30 @@ export default function RadioControlBar({ radioActive, visible = true, paused, c
           bottom: 18,
         }
       : null),
+    ...(placement === 'rail'
+      ? {
+          position: 'relative',
+          top: 'auto',
+          right: 'auto',
+          bottom: 'auto',
+          left: 'auto',
+          width: 'auto',
+          maxWidth: 'calc(100% - 24px)',
+          minWidth: 0,
+          boxSizing: 'border-box',
+          margin: '8px 12px 4px',
+          padding: '6px 8px',
+          gap: 6,
+          borderRadius: 8,
+          zIndex: 1,
+          transform: 'none',
+          display: radioActive && visible ? 'flex' : 'none',
+        }
+      : null),
   };
 
   return (
-    <div className={radioActive && visible ? 'radio-toast-enter' : 'radio-toast-exit'} style={barStyle} aria-hidden={!radioActive || !visible}>
+    <div className={placement === 'rail' ? undefined : radioActive && visible ? 'radio-toast-enter' : 'radio-toast-exit'} style={barStyle} aria-hidden={!radioActive || !visible}>
       <div style={{
         position: 'absolute',
         left: 10,
@@ -178,7 +198,7 @@ export default function RadioControlBar({ radioActive, visible = true, paused, c
       </span>
 
       {/* Track title */}
-      <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, maxWidth: 200, gap: 1 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, maxWidth: placement === 'rail' ? 118 : 200, gap: 1 }}>
         <span style={{
           fontFamily:   G.display,
           fontSize:     11,
@@ -225,7 +245,6 @@ export default function RadioControlBar({ radioActive, visible = true, paused, c
       >
         <IconSkip />
       </button>
-
     </div>
   );
 }

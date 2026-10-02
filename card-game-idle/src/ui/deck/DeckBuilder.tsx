@@ -37,10 +37,9 @@ const EXTRA_DECK_SIZE = 10;
 const CARD_LIBRARY_CARD_WIDTH = CARD_COLLECTION_TILE_WIDTH;
 const CARD_LIBRARY_CARD_HEIGHT = CARD_COLLECTION_TILE_HEIGHT;
 
-function getCardSet(definitionId: string): 'Neutrality' | 'Causality' | null {
+function getCardSet(definitionId: string): 'Neutrality' | 'Causality' {
   if (definitionId.includes('causality')) return 'Causality';
-  if (definitionId.includes('neutral')) return 'Neutrality';
-  return null;
+  return 'Neutrality';
 }
 
 const RARITY_ORDER = { Common: 0, Rare: 1, Epic: 2, Legendary: 3 };
@@ -595,6 +594,18 @@ export default function DeckBuilder({ onClose }: Props) {
     [extraDeckCountMap],
   );
   const totalCards = deckList.reduce((sum, e) => sum + e.copies, 0);
+  const deckSetName = useMemo(() => {
+    const setCounts = { Neutrality: 0, Causality: 0 };
+    for (const entry of deckList) {
+      const setId = getCardSet(entry.definitionId);
+      setCounts[setId] += entry.copies;
+    }
+    for (const entry of extraDeckList) {
+      const setId = getCardSet(entry.definitionId);
+      setCounts[setId] += 1;
+    }
+    return setCounts.Causality > setCounts.Neutrality ? 'Causality' : 'Neutrality';
+  }, [deckList, extraDeckList]);
   const validation = DeckSystem.validate(deckList);
   // Aggregate deck stats: element distribution + rarity breakdown.
   const deckStats = useMemo(() => {
@@ -614,6 +625,7 @@ export default function DeckBuilder({ onClose }: Props) {
     }
     return { elementCounts, rarityCounts, levelCounts, typeLight, typeDark };
   }, [deckList]);
+  const spectrumPeak = Math.max(1, ...deckStats.levelCounts);
 
   function addCard(defId: string, finish: CardFinish) {
     const def = CardRegistry.get(defId);
@@ -823,35 +835,54 @@ export default function DeckBuilder({ onClose }: Props) {
       {/* Header banner */}
       <div className="ui-shimmer-band" style={styles.header}>
         <div>
-          <div style={{ color: '#f4cf6b', fontFamily: 'Georgia, serif', fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 5 }}>THE DECK MANUSCRIPT</div>
-          <div className="ui-title-glow" style={styles.title}>Deck Builder</div>
-          {activeDeck && (
-            <div style={styles.deckNameChip}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: SET_ACCENT, flexShrink: 0 }} />
-              {activeDeck.isStarter ? '🔒 ' : ''}{activeDeck.name} · {deckList[0] ? getCardSetLabel(deckList[0].definitionId) : SET_LABEL}
-            </div>
-          )}
+          <div style={{ color: '#f4cf6b', fontFamily: 'Georgia, serif', fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 5 }}>DECK BUILDER</div>
+          <div className="ui-title-glow" style={styles.title}>The Deck Manuscript</div>
+          <div style={styles.deckNameChip}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: deckSetName === 'Causality' ? '#d66a52' : SET_ACCENT, flexShrink: 0 }} />
+            {activeDeck?.isStarter ? '🔒 ' : ''}{activeDeck?.name ?? 'Current deck'} · {deckSetName} deck
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          {totalCards > 0 && (
-            <div style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
-              padding: '4px 12px', borderRadius: 8, background: 'rgba(5,14,24,0.65)', border: '1px solid rgba(78,160,220,0.25)',
-            }}>
-              <div style={{ fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', color: 'rgba(200,223,242,0.6)' }}>
-                Est. 3-Min DMG
-              </div>
-              <div style={{ fontFamily: 'Georgia, serif', fontSize: 13, color: '#f7c04a', fontWeight: 700 }}>
-                {liveDpsProjection.threeMinuteDamage.toLocaleString()} <span style={{ fontSize: 10, color: '#7dd4f8', fontWeight: 400 }}>({liveDpsProjection.dps.toLocaleString()} DL/s)</span>
-              </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 14, flexWrap: 'wrap', minWidth: 0 }}>
+          <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
+            padding: '5px 12px', borderRadius: 8, background: 'rgba(5,14,24,0.65)', border: '1px solid rgba(78,160,220,0.25)',
+          }}>
+            <div style={{ fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', color: 'rgba(200,223,242,0.6)' }}>
+              Est. 3-Min Damage
             </div>
-          )}
+            <div style={{ fontFamily: 'Georgia, serif', fontSize: 13, color: '#f7c04a', fontWeight: 700 }}>
+              {liveDpsProjection.threeMinuteDamage.toLocaleString()} <span style={{ fontSize: 10, color: '#7dd4f8', fontWeight: 400 }}>({liveDpsProjection.dps.toLocaleString()} DL/s)</span>
+            </div>
+          </div>
           <ProgressRing
             value={totalCards} max={MAIN_DECK_SIZE}
             color={totalCards === MAIN_DECK_SIZE ? '#80e860' : totalCards > MAIN_DECK_SIZE ? '#e06060' : '#58aada'}
             label="Main"
           />
           <ProgressRing value={extraDeckList.length} max={EXTRA_DECK_SIZE} color="#70c890" size={38} label="Extra" />
+          <div aria-label="Spectrum curve, Main deck cards by level" style={{
+            width: 176, padding: '5px 8px 4px', borderRadius: 8,
+            background: 'rgba(5,8,16,0.62)', border: '1px solid rgba(160,130,240,0.25)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 6, marginBottom: 2 }}>
+              <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1.2, color: '#d6c4ff', textTransform: 'uppercase' }}>Spectrum</span>
+              <span style={{ fontSize: 8, color: 'rgba(200,190,230,0.58)' }}>Main deck by level</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'stretch', gap: 3, height: 38 }}>
+              {deckStats.levelCounts.map((count, level) => (
+                <div key={level} title={`Spectrum Lv ${level}: ${count} card${count === 1 ? '' : 's'}`} style={{
+                  minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', gap: 1,
+                }}>
+                  <span style={{ height: 9, fontSize: 7, lineHeight: '9px', color: 'rgba(236,228,255,0.76)' }}>{count || ''}</span>
+                  <div style={{
+                    width: '100%', height: count > 0 ? `${Math.max(3, (count / spectrumPeak) * 18)}px` : 2,
+                    borderRadius: 2, background: count > 0 ? (level === 0 ? '#80e860' : `rgba(${150 + level * 15}, ${130 - level * 10}, 240, 0.85)`) : 'rgba(214,196,255,0.14)',
+                  }} />
+                  <span style={{ fontSize: 7, lineHeight: '8px', color: 'rgba(214,196,255,0.64)' }}>{level}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 

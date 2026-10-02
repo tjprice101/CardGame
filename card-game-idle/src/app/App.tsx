@@ -204,8 +204,6 @@ export default function App() {
   // Radio state — main turn
   const turnRadioActiveRef = useRef(false);
   const eternityRadioActiveRef = useRef(false);
-  const turnNowPlayingEpochRef = useRef(0);
-  const [turnNowPlayingEvent, setTurnNowPlayingEvent] = useState<NowPlayingEvent | null>(null);
   const [turnRadioPaused, setTurnRadioPaused] = useState(false);
   const [turnRadioActive, setTurnRadioActive] = useState(false);
   const [turnRadioCurrentTrack, setTurnRadioCurrentTrack] = useState<import('@/audio/MainTurnRadio').RadioTrackInfo | null>(null);
@@ -554,8 +552,6 @@ export default function App() {
         turnRadioActiveRef.current = true;
         setTurnRadioActive(true);
         MainTurnRadio.setOnTrackChange((info) => {
-          turnNowPlayingEpochRef.current++;
-          setTurnNowPlayingEvent({ epoch: turnNowPlayingEpochRef.current, track: info });
           setTurnRadioCurrentTrack(info);
         });
         MainTurnRadio.setOnPausedChange((p) => setTurnRadioPaused(p));
@@ -952,7 +948,19 @@ export default function App() {
       {/* HUD overlay — only mounted in the arena scene. */}
       {!isMenuOpen && scene === 'arena' && (
         <HudShakeWrapper>
-          <HUD onRequestBeginTurn={requestBeginTurn} />
+          <HUD
+            onRequestBeginTurn={requestBeginTurn}
+            radio={{
+              active: turnRadioActive,
+              visible: radioUiVisible,
+              paused: turnRadioPaused,
+              currentTrack: turnRadioCurrentTrack,
+              onPausedChange: setTurnRadioPaused,
+              onPause: () => MainTurnRadio.pause(),
+              onResume: () => MainTurnRadio.resume(),
+              onSkip: () => MainTurnRadio.skip(),
+            }}
+          />
         </HudShakeWrapper>
       )}
       {!isMenuOpen && scene === 'arena' && gardenDungeon.phase === 'active' && (
@@ -1248,26 +1256,6 @@ export default function App() {
           </Suspense>
         </>
       )}
-      {/* Main turn radio — now-playing toast and control bar (arena, non-boss fights only) */}
-      {scene === 'arena' && !inBossFight && !isMenuOpen && !hideRadioUi && (
-        <>
-          <Suspense fallback={null}><RadioNowPlaying nowPlaying={turnNowPlayingEvent} visible={radioUiVisible} /></Suspense>
-          <Suspense fallback={null}>
-            <RadioControlBar
-              placement="arena"
-              radioActive={turnRadioActive}
-              visible={radioUiVisible}
-              paused={turnRadioPaused}
-              currentTrack={turnRadioCurrentTrack}
-              onPausedChange={setTurnRadioPaused}
-              onPause={() => MainTurnRadio.pause()}
-              onResume={() => MainTurnRadio.resume()}
-              onSkip={() => MainTurnRadio.skip()}
-            />
-          </Suspense>
-        </>
-      )}
-
       {/* Battleground PvP incoming invite — global, shown regardless of scene */}
       <Suspense fallback={null}><BattlegroundInviteModal /></Suspense>
 

@@ -64,8 +64,7 @@ export default function CardInspectorPanel({ definitionId }: CardInspectorPanelP
       style={{
         margin: '10px 14px 0',
         minHeight: 126,
-        maxHeight: 'clamp(126px, 22vh, 198px)',
-        overflowY: 'auto',
+        overflow: 'visible',
         flexShrink: 0,
         border: '1px solid rgba(244,244,248,0.16)',
         borderRadius: 8,

@@ -40,8 +40,9 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 type PileType = 'deck' | 'discard' | 'abyss' | 'hand' | 'extra';
+type Layout = 'rail' | 'zones';
 
-export default function DeckStatus() {
+export default function DeckStatus({ layout = 'rail' }: { layout?: Layout }) {
   useThemeVersion();
   const deck = useStore(selectDeck);
   const turn = useStore(selectTurn);
@@ -87,10 +88,23 @@ export default function DeckStatus() {
   }, [openPile, deck.drawPile, deck.discardPile, deck.lightBoundAbyss, deck.hand, deck.extraDeck]);
 
   return (
-    <div style={styles.container}>
+    <div style={{
+      ...styles.container,
+      ...(layout === 'zones' ? {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+        gridTemplateAreas: '"deck extra" "discard abyss"',
+        alignItems: 'stretch',
+        justifyItems: 'stretch',
+        gap: 8,
+      } : {}),
+    }}>
       <button
+          aria-label={`Deck ${deck.drawPile.length}${canInspectDeck ? ', view cards' : ', hidden during turn'}`}
+        data-zone="deck"
         style={{
           ...styles.pill,
+          ...(layout === 'zones' ? { gridArea: 'deck', minHeight: 62, flexDirection: 'column', justifyContent: 'center', gap: 2, borderRadius: 8 } : {}),
           cursor: canInspectDeck ? 'pointer' : 'not-allowed',
           opacity: canInspectDeck ? 1 : 0.82,
         }}
@@ -101,15 +115,16 @@ export default function DeckStatus() {
         <span style={styles.label}>Deck</span>
         <span style={styles.hint}>{canInspectDeck ? 'click' : 'hidden in-run'}</span>
       </button>
-      <button style={{ ...styles.pill, cursor: 'pointer' }} onClick={() => setOpenPile('discard')}>
-        <span style={styles.icon}>♻</span>
+      <button data-zone="discard" style={{ ...styles.pill, ...(layout === 'zones' ? { gridArea: 'discard', minHeight: 62, flexDirection: 'column', justifyContent: 'center', gap: 2, borderRadius: 8 } : {}), cursor: 'pointer' }} onClick={() => setOpenPile('discard')}>
+          <span style={styles.icon}>♻</span>
         <span style={styles.count}>{deck.discardPile.length}</span>
         <span style={styles.label}>Discard</span>
         <span style={styles.hint}>click</span>
       </button>
       {turn.phase !== 'idle' && (
         <button
-          style={{ ...styles.pill, cursor: 'pointer', border: '1px solid rgba(214,196,255,0.4)' }}
+          data-zone="abyss"
+          style={{ ...styles.pill, ...(layout === 'zones' ? { gridArea: 'abyss', minHeight: 62, flexDirection: 'column', justifyContent: 'center', gap: 2, borderRadius: 8 } : {}), cursor: 'pointer', border: '1px solid rgba(214,196,255,0.4)' }}
           onClick={() => setOpenPile('abyss')}
           title="Light-bound Abyss: cards sacrificed to raise Spectrum Level. They return only when your deck resets."
         >
@@ -121,14 +136,17 @@ export default function DeckStatus() {
       )}
       {turn.phase !== 'idle' && (
         <>
-          <button style={{ ...styles.pill, cursor: 'pointer' }} onClick={() => setOpenPile('hand')}>
-            <span style={styles.icon}>✋</span>
-            <span style={styles.count}>{deck.hand.length}</span>
-            <span style={styles.label}>Hand</span>
-            <span style={styles.hint}>click</span>
-          </button>
+          {layout !== 'zones' && (
+            <button style={{ ...styles.pill, cursor: 'pointer' }} onClick={() => setOpenPile('hand')}>
+              <span style={styles.icon}>✋</span>
+              <span style={styles.count}>{deck.hand.length}</span>
+              <span style={styles.label}>Hand</span>
+              <span style={styles.hint}>click</span>
+            </button>
+          )}
           <button
-            style={{ ...styles.pill, cursor: 'pointer', border: '1px solid rgba(180,160,255,0.35)' }}
+            data-zone="extra"
+            style={{ ...styles.pill, ...(layout === 'zones' ? { gridArea: 'extra', minHeight: 62, flexDirection: 'column', justifyContent: 'center', gap: 2, borderRadius: 8 } : {}), cursor: 'pointer', border: '1px solid rgba(180,160,255,0.35)' }}
             onClick={() => {
               window.dispatchEvent(new CustomEvent('hr-toggle-extra-deck'));
             }}

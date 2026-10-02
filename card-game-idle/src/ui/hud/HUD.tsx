@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { useStore, selectTurn, selectBossFight, selectGardenDungeon, selectBattleground } from '@/state/store';
-import { SET_ACCENT, SET_LABEL } from '@/data/elements';
+import { useStore, selectDeck, selectTurn, selectBossFight, selectGardenDungeon, selectBattleground } from '@/state/store';
+import { CARD_SET_COLORS, getCardSetId, SET_ACCENT, SET_LABEL } from '@/data/elements';
+import { GARDEN_DUNGEONS } from '@/data/dungeons/gardenDungeonDefinitions';
+import { getTurnSpectrumLevel, MAX_SPECTRUM_LEVEL } from '@/systems/cards/SpectrumLevel';
 import { uiTypography } from '@/ui/theme';
 import ScoreDisplay from './ScoreDisplay';
 import AngelStatPanel from './AngelStatPanel';
@@ -14,6 +16,26 @@ import FlashOverlay from './FlashOverlay';
 import DivineLightAcquisitionScreen from './DivineLightAcquisitionScreen';
 import CardInspectorPanel from './CardInspectorPanel';
 import CardBornStacksPanel from './CardBornStacksPanel';
+import RadioControlBar from '@/ui/components/RadioControlBar';
+
+interface ArenaRadioControls {
+  active: boolean;
+  visible: boolean;
+  paused: boolean;
+  currentTrack: import('@/audio/MainTurnRadio').RadioTrackInfo | null;
+  onPausedChange: (paused: boolean) => void;
+  onPause: () => void;
+  onResume: () => void;
+  onSkip: () => void;
+}
+
+type RailTab = 'card' | 'abilities' | 'sets' | 'spectrum';
+const RAIL_TABS: Array<{ id: RailTab; label: string }> = [
+  { id: 'card', label: 'Card' },
+  { id: 'abilities', label: 'Abilities' },
+  { id: 'sets', label: 'Sets' },
+  { id: 'spectrum', label: 'Spectrum' },
+];
 
 /**
  * Top status bar — slim full-width chrome strip at the top of the arena.
@@ -24,6 +46,7 @@ import CardBornStacksPanel from './CardBornStacksPanel';
  */
 function TopStatusBar({ onOpenDivineLightScreen }: { onOpenDivineLightScreen: () => void }) {
   const turn = useStore(selectTurn);
+  const deck = useStore(selectDeck);
   const bossFight = useStore(selectBossFight);
   const gardenDungeon = useStore(selectGardenDungeon);
   const battleground = useStore(selectBattleground);
@@ -32,9 +55,18 @@ function TopStatusBar({ onOpenDivineLightScreen }: { onOpenDivineLightScreen: ()
   const isGarden = gardenDungeon.phase === 'active';
   const showScore = !isBoss && !isGarden && battleground.mode !== 'active';
   const tint = SET_ACCENT;
-  const setName = isGarden ? 'Valley of Null' : SET_LABEL;
+  const activeGardenName = GARDEN_DUNGEONS.find(dungeon => dungeon.id === gardenDungeon.dungeonId)?.name;
+  const setName = isGarden
+    ? activeGardenName ?? 'Garden of Cards'
+    : isBoss
+      ? "Eternity's Wake"
+      : battleground.mode === 'active'
+        ? 'Battleground'
+        : SET_LABEL;
   const tintCss = isGarden ? '#ffffff' : isBoss ? '#ff6b6b' : tint;
   const phaseLabel = turn.phase === 'mulligan' ? 'Mulligan' : turn.phase === 'playing' ? (isGarden ? 'Expedition Turn' : 'Playing') : 'Idle';
+  const spectrumLevel = getTurnSpectrumLevel(turn);
+  const hasCausality = [...deck.deckList, ...deck.extraDeck].some(entry => getCardSetId(entry.definitionId) === 'Causality');
 
   return (
     <div style={{
@@ -95,57 +127,76 @@ function TopStatusBar({ onOpenDivineLightScreen }: { onOpenDivineLightScreen: ()
         {showScore && <ScoreDisplay />}
       </div>
 
-      {/* Right — Divine Light Acquisition button */}
-      <button
-        className="divine-light-acquisition-button"
-        onClick={onOpenDivineLightScreen}
-        title="Divine Light Acquisition — view all Divine Light sources"
-        style={{
-          justifySelf: 'end',
-          pointerEvents: 'auto',
-          display: 'flex', alignItems: 'center', gap: 6,
-          padding: '7px 16px',
-          borderRadius: 999,
-          border: '1px solid rgba(247,192,74,0.62)',
-          background: 'linear-gradient(135deg, rgba(247,192,74,0.24) 0%, rgba(247,192,74,0.1) 100%)',
-          color: '#f7c04a',
-          fontFamily: uiTypography.display,
-          fontSize: 12,
-          fontWeight: 700,
-          letterSpacing: 1.2,
-          cursor: 'pointer',
-          boxShadow: '0 0 18px rgba(247,192,74,0.28)',
-          animation: 'uiAuraPulse 2.4s ease-in-out infinite',
-          transition: 'all 0.18s ease',
-        }}
-        onMouseEnter={e => {
-          const b = e.currentTarget;
-          b.style.background = 'linear-gradient(135deg, rgba(247,192,74,0.28) 0%, rgba(247,192,74,0.14) 100%)';
-          b.style.boxShadow = '0 0 22px rgba(247,192,74,0.32)';
-          b.style.borderColor = 'rgba(247,192,74,0.60)';
-        }}
-        onMouseLeave={e => {
-          const b = e.currentTarget;
-          b.style.background = 'linear-gradient(135deg, rgba(247,192,74,0.24) 0%, rgba(247,192,74,0.1) 100%)';
-          b.style.boxShadow = '0 0 18px rgba(247,192,74,0.28)';
-          b.style.borderColor = 'rgba(247,192,74,0.62)';
-        }}
-      >
-        ◈ Divine Light
-      </button>
+      <div className="turn-header-resources">
+        <div className="turn-spectrum-compact" aria-label={`Spectrum ${spectrumLevel} of ${MAX_SPECTRUM_LEVEL}`}>
+          <div className="turn-spectrum-diamonds" aria-hidden="true">
+            {Array.from({ length: MAX_SPECTRUM_LEVEL }, (_, index) => (
+              <span key={index} className={index < spectrumLevel ? 'is-lit' : undefined}>◆</span>
+            ))}
+          </div>
+          <span>Spectrum {spectrumLevel}/{MAX_SPECTRUM_LEVEL}</span>
+        </div>
+        <div className="turn-stack-compact" title="Limitless Light Stacks">
+          <span aria-hidden="true">✦</span><strong>{turn.limitlessLightStacks.toLocaleString()}</strong><span>Stacks</span>
+        </div>
+        {hasCausality && (
+          <div className="turn-cosmos-compact" title="Limitless Cosmos">
+            <span aria-hidden="true">◈</span><strong>{(turn.limitlessCosmosStacks ?? 0).toLocaleString()}</strong><span>Cosmos</span>
+          </div>
+        )}
+        <button
+          className="divine-light-acquisition-button"
+          onClick={onOpenDivineLightScreen}
+          title="Divine Light Acquisition — view all Divine Light sources"
+          style={{
+            pointerEvents: 'auto',
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '7px 16px', borderRadius: 999,
+            border: '1px solid rgba(247,192,74,0.62)',
+            background: 'linear-gradient(135deg, rgba(247,192,74,0.24) 0%, rgba(247,192,74,0.1) 100%)',
+            color: '#f7c04a', fontFamily: uiTypography.display, fontSize: 12, fontWeight: 700,
+            letterSpacing: 1.2, cursor: 'pointer', boxShadow: '0 0 18px rgba(247,192,74,0.28)',
+            animation: 'uiAuraPulse 2.4s ease-in-out infinite', transition: 'all 0.18s ease',
+          }}
+        >◈ Divine Light</button>
+      </div>
 
     </div>
   );
 }
 
-/**
- * Right-side control rail — compact 270 px glass panel that hosts the three main
- * HUD controls: deck-status pills at the top (padded past the 52 px bar),
- * the scrollable set-engine reference in the middle, and the turn-control
- * button anchored at the bottom. Returned to the right edge per user
- * request; widened to 260 px for breathing room vs the old 220 px.
- */
-function RightRail({ inspectedCardId, onRequestBeginTurn }: { inspectedCardId: string | null; onRequestBeginTurn?: () => void }) {
+/** Right rail: one scrollable deck/inspector/ability stack plus an anchored control footer. */
+function DeckSetOverview() {
+  const deck = useStore(selectDeck);
+  const counts = { Neutrality: { main: 0, extra: 0 }, Causality: { main: 0, extra: 0 } };
+  for (const entry of deck.deckList) {
+    const setId = getCardSetId(entry.definitionId);
+    if (setId) counts[setId].main += entry.copies;
+  }
+  for (const entry of deck.extraDeck) {
+    const setId = getCardSetId(entry.definitionId);
+    if (setId) counts[setId].extra += 1;
+  }
+  const activeSets = (Object.keys(counts) as Array<keyof typeof counts>).filter(setId => counts[setId].main + counts[setId].extra > 0);
+
+  return (
+    <section className="turn-set-overview" aria-label="Active deck set composition">
+      <div className="turn-rail-section-title">Active Deck Sets</div>
+      {activeSets.length === 0 ? (
+        <div className="turn-set-empty">No registered set cards in this deck.</div>
+      ) : activeSets.map(setId => (
+        <div className="turn-set-row" key={setId}>
+          <span className="turn-set-marker" style={{ background: CARD_SET_COLORS[setId] }} />
+          <strong>{setId}</strong>
+          <span>{counts[setId].main} Main · {counts[setId].extra} Extra</span>
+        </div>
+      ))}
+      <div className="turn-set-total">{deck.deckList.reduce((sum, entry) => sum + entry.copies, 0)} Main cards · {deck.extraDeck.length} Extra cards</div>
+    </section>
+  );
+}
+
+function RightRail({ inspectedCardId, activeTab, onTabChange, onRequestBeginTurn, radio }: { inspectedCardId: string | null; activeTab: RailTab; onTabChange: (tab: RailTab) => void; onRequestBeginTurn?: () => void; radio?: ArenaRadioControls }) {
   return (
     <div
       className="turn-screen-rail"
@@ -174,45 +225,46 @@ function RightRail({ inspectedCardId, onRequestBeginTurn }: { inspectedCardId: s
       }} />
 
       {/* Deck pills — clear the compact boss/dungeon strip without pushing the board controls down. */}
-      <div style={{ padding: '10px 14px 0', flexShrink: 0 }}>
-        <DeckStatus />
+      <div className="turn-screen-rail-heading">
+        {RAIL_TABS.map(tab => (
+          <button key={tab.id} type="button" role="tab" aria-selected={activeTab === tab.id} className={activeTab === tab.id ? 'is-active' : undefined} onClick={() => onTabChange(tab.id)}>
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      <div className="turn-screen-rail-scroll">
+        <div className="turn-screen-rail-panel">
+          {activeTab === 'card' && <CardInspectorPanel definitionId={inspectedCardId} />}
+          {activeTab === 'abilities' && <AbilityAmplificationPanel />}
+          {activeTab === 'sets' && <DeckSetOverview />}
+          {activeTab === 'spectrum' && <CardBornStacksPanel />}
+        </div>
       </div>
 
-      {/* Divider */}
-      <div aria-hidden="true" style={{
-        height: 1, margin: '12px 18px 0', flexShrink: 0,
-        background: 'linear-gradient(90deg, transparent, rgba(244,244,248,0.13), transparent)',
-      }} />
-
-      <CardInspectorPanel definitionId={inspectedCardId} />
-
-      <div aria-hidden="true" style={{
-        height: 1, margin: '12px 20px 0', flexShrink: 0,
-        background: 'linear-gradient(90deg, transparent, rgba(244,244,248,0.13), transparent)',
-      }} />
-
-      {/* Ability Amplification — scrollable, expands to fill available space */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '10px 14px 4px', minHeight: 0 }}>
-        <AbilityAmplificationPanel />
-      </div>
-
-      {/* Divider */}
-      <div aria-hidden="true" style={{
-        height: 1, margin: '10px 18px', flexShrink: 0,
-        background: 'linear-gradient(90deg, transparent, rgba(244,244,248,0.13), transparent)',
-      }} />
-
-      {/* Turn controls — bottom-anchored */}
-      <div style={{ padding: '0 14px 16px', flexShrink: 0 }}>
+      <div className="turn-screen-rail-footer">
+        {radio && (
+          <RadioControlBar
+            placement="rail"
+            radioActive={radio.active}
+            visible={radio.visible}
+            paused={radio.paused}
+            currentTrack={radio.currentTrack}
+            onPausedChange={radio.onPausedChange}
+            onPause={radio.onPause}
+            onResume={radio.onResume}
+            onSkip={radio.onSkip}
+          />
+        )}
         <TurnControls onBeginTurn={onRequestBeginTurn} />
       </div>
     </div>
   );
 }
 
-export default function HUD({ onRequestBeginTurn }: { onRequestBeginTurn?: () => void }) {
+export default function HUD({ onRequestBeginTurn, radio }: { onRequestBeginTurn?: () => void; radio?: ArenaRadioControls }) {
   const [showDivineLightScreen, setShowDivineLightScreen] = useState(false);
   const [inspectedCardId, setInspectedCardId] = useState<string | null>(null);
+  const [activeRailTab, setActiveRailTab] = useState<RailTab>('card');
   const bossFight = useStore(selectBossFight);
   const battleground = useStore(selectBattleground);
   const gardenDungeon = useStore(selectGardenDungeon);
@@ -224,19 +276,19 @@ export default function HUD({ onRequestBeginTurn }: { onRequestBeginTurn?: () =>
 
       <main className={`turn-screen-playfield${specialMode ? ' turn-screen-playfield--special' : ''}`}>
         <aside className="turn-screen-resources">
-        <AngelStatPanel />
-        <CardBornStacksPanel />
+          <DeckStatus layout="zones" />
+          <AngelStatPanel />
         </aside>
         <section className="turn-screen-board" aria-label="Turn board">
-          <BoardDisplay onHoverCard={setInspectedCardId} />
+          <BoardDisplay onHoverCard={id => { setInspectedCardId(id); setActiveRailTab('card'); }} />
         </section>
       </main>
 
       <section className="turn-screen-hand" aria-label="Hand">
-        <HandDisplay onHoverCard={setInspectedCardId} />
+        <HandDisplay onHoverCard={id => { setInspectedCardId(id); setActiveRailTab('card'); }} />
       </section>
 
-      <RightRail inspectedCardId={inspectedCardId} onRequestBeginTurn={onRequestBeginTurn} />
+      <RightRail inspectedCardId={inspectedCardId} activeTab={activeRailTab} onTabChange={setActiveRailTab} onRequestBeginTurn={onRequestBeginTurn} radio={radio} />
 
       {/* Pending-effect modal — floats above everything */}
       <PendingEffectModal />

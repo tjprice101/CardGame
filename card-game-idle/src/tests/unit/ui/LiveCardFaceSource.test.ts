@@ -77,6 +77,7 @@ describe('live card face rendering', () => {
 
   it('keeps the turn screen in a header, playfield, hand, and rail grid', () => {
     const hudSource = readFileSync(join(process.cwd(), 'src/ui/hud/HUD.tsx'), 'utf8');
+    const handSource = readFileSync(join(process.cwd(), 'src/ui/hud/HandDisplay.tsx'), 'utf8');
     const styleSource = readFileSync(join(process.cwd(), 'src/styles/animations.css'), 'utf8');
     const appSource = readFileSync(join(process.cwd(), 'src/app/App.tsx'), 'utf8');
     const bossSource = readFileSync(join(process.cwd(), 'src/ui/eternitysWake/BossFightArena.tsx'), 'utf8');
@@ -86,13 +87,33 @@ describe('live card face rendering', () => {
     expect(hudSource).toContain('className="turn-screen-layout"');
     expect(hudSource).toContain('className={`turn-screen-playfield');
     expect(hudSource).toContain('className="turn-screen-hand"');
+    expect(handSource).toContain("gridTemplateRows: 'auto minmax(0, 1fr)'");
+    expect(handSource).toContain("idleShowcaseWrapper: {");
+    expect(handSource).toContain("position: 'absolute'");
+    expect(handSource).toContain("height: 'min(186px, 100%)'");
+    expect(handSource).toContain("aspectRatio: '148 / 204'");
+    expect(hudSource).toContain('<div className="turn-screen-rail-scroll">');
+    expect(hudSource).toContain('placement="rail"');
     expect(styleSource).toContain("'header header'");
     expect(styleSource).toContain("'playfield rail'");
     expect(styleSource).toContain("'hand rail'");
     expect(appSource).toContain('className="game-scene-root"');
+    expect(appSource).not.toContain('RadioNowPlaying nowPlaying={turnNowPlayingEvent}');
     expect(bossSource).toContain("right: 'var(--turn-side-rail-width, 278px)'");
     expect(gardenSource).toContain("right: 'var(--turn-side-rail-width, 278px)'");
     expect(battlegroundSource).toContain("right: 'var(--turn-side-rail-width, 278px)'");
+  });
+
+  it('surfaces current deck stats in the manuscript header', () => {
+    const deckBuilderSource = readFileSync(deckBuilderPath, 'utf8');
+
+    expect(deckBuilderSource).toContain('The Deck Manuscript');
+    expect(deckBuilderSource).toContain('Est. 3-Min Damage');
+    expect(deckBuilderSource).toContain('label="Main"');
+    expect(deckBuilderSource).toContain('label="Extra"');
+    expect(deckBuilderSource).toContain('Spectrum curve, Main deck cards by level');
+    expect(deckBuilderSource).toContain('deckStats.levelCounts.map');
+    expect(deckBuilderSource).toContain("return 'Neutrality'");
   });
 
   it('uses hover outlines and brightness instead of upward movement', () => {
