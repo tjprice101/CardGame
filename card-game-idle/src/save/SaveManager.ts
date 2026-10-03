@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 53;
+export const CURRENT_VERSION = 54;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -1079,6 +1079,27 @@ const migrations: Record<number, Migration> = {
       if (typeof progress['forgeKeyRewardClaimed'] !== 'boolean') progress['forgeKeyRewardClaimed'] = false;
       if (typeof progress['forgeOfTranscendenceUnlocked'] !== 'boolean') progress['forgeOfTranscendenceUnlocked'] = false;
     }
+    return data;
+  },
+  54: (data) => {
+    const progress = data.progress as unknown as Record<string, unknown> | undefined;
+    if (!progress) return data;
+
+    let dailyLogin = progress['dailyLogin'] as Record<string, unknown> | undefined;
+    if (!dailyLogin || typeof dailyLogin !== 'object') {
+      dailyLogin = { streak: 0, totalClaims: 0 };
+      progress['dailyLogin'] = dailyLogin;
+    }
+    if (dailyLogin['calendarNormalizationVersion'] === 1) return data;
+
+    const now = new Date();
+    const localDayIndex = Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / (24 * 60 * 60 * 1000));
+    dailyLogin['lastClaimedDayIndex'] = localDayIndex;
+    dailyLogin['monthlyTrackKey'] = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    dailyLogin['monthlyClaimedDays'] = [1, 2];
+    if (typeof dailyLogin['streak'] !== 'number') dailyLogin['streak'] = 0;
+    if (typeof dailyLogin['totalClaims'] !== 'number') dailyLogin['totalClaims'] = 0;
+    dailyLogin['calendarNormalizationVersion'] = 1;
     return data;
   },
 };

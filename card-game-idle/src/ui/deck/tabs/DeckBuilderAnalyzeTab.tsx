@@ -14,6 +14,8 @@ const RARITY_ORDER = ['Legendary', 'Transcendent', 'Eternal', 'Infinite', 'Enigm
 interface DeckStats {
   rarityCounts: Record<string, number>;
   levelCounts: number[];
+  lightLevelCounts: number[];
+  darkLevelCounts: number[];
   typeLight: number;
   typeDark: number;
 }
@@ -191,13 +193,21 @@ export default function DeckBuilderAnalyzeTab({ deckList, extraDeckList, totalCa
           <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#d6c4ff', fontWeight: 700, marginBottom: 8 }}>
             Spectrum Level Curve
           </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 7, fontSize: 9, color: 'rgba(200,190,230,0.72)' }}>
+            <span><i style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: '#f0bd78', marginRight: 5 }} />Light</span>
+            <span><i style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: '#9a84c9', marginRight: 5 }} />Dark</span>
+          </div>
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 70 }}>
-            {deckStats.levelCounts.map((count, level) => {
+            {deckStats.levelCounts.map((_, level) => {
+              const lightCount = deckStats.lightLevelCounts[level];
+              const darkCount = deckStats.darkLevelCounts[level];
               const peak = Math.max(1, ...deckStats.levelCounts);
               return (
-                <div key={level} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, height: '100%', justifyContent: 'flex-end' }}>
-                  <span style={{ fontSize: 9, color: '#ece4ff', fontWeight: 700 }}>{count}</span>
-                  <div style={{ width: '100%', height: `${(count / peak) * 46}px`, minHeight: count > 0 ? 3 : 0, borderRadius: 3, background: level === 0 ? '#80e860' : `rgba(${150 + level * 15}, ${130 - level * 10}, 240, 0.85)` }} />
+                <div key={level} title={`Spectrum Lv ${level}: ${lightCount} Light, ${darkCount} Dark`} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, height: '100%', justifyContent: 'flex-end' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 3, width: '100%', height: 48 }}>
+                    <div style={{ width: '42%', height: lightCount ? `${Math.max(3, (lightCount / peak) * 46)}px` : 2, borderRadius: '3px 3px 0 0', background: lightCount ? '#f0bd78' : 'rgba(240,189,120,0.15)' }} />
+                    <div style={{ width: '42%', height: darkCount ? `${Math.max(3, (darkCount / peak) * 46)}px` : 2, borderRadius: '3px 3px 0 0', background: darkCount ? '#9a84c9' : 'rgba(154,132,201,0.15)' }} />
+                  </div>
                   <span style={{ fontSize: 9, color: 'rgba(214,196,255,0.7)' }}>Lv {level}</span>
                 </div>
               );

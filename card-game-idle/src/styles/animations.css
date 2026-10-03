@@ -1826,6 +1826,140 @@ html.reduced-motion .arena-flash-active {
   animation: deckPlayBtnPulse 2.8s ease-in-out infinite;
 }
 
+.deck-builder-main {
+  display: grid;
+  grid-template-columns: 252px minmax(0, 1fr) 300px;
+  grid-template-areas: 'rail workspace inspector';
+  gap: 8px;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 8px 10px;
+  overflow: hidden;
+}
+.deck-builder-left-rail,
+.deck-builder-workspace,
+.deck-builder-inspector {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(168,132,83,0.34);
+  border-radius: 9px;
+  background: linear-gradient(180deg, rgba(23,17,34,0.94), rgba(12,10,20,0.96));
+}
+.deck-builder-left-rail {
+  grid-area: rail;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  overflow-y: auto;
+}
+.deck-builder-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.deck-builder-actions > * { min-width: 0; }
+.deck-builder-actions button { min-width: 0; }
+.deck-builder-workspace {
+  grid-area: workspace;
+  display: flex;
+  flex-direction: column;
+}
+.deck-builder-inspector {
+  grid-area: inspector;
+  display: flex;
+  flex-direction: column;
+}
+.deck-builder-inspector-art {
+  flex: 0 0 38%;
+  min-height: 150px;
+  max-height: 260px;
+  display: grid;
+  place-items: center;
+  border-bottom: 1px solid rgba(200,155,72,0.38);
+}
+.deck-builder-inspector-card {
+  height: min(100%, 340px);
+  max-width: 100%;
+  aspect-ratio: 148 / 204;
+  border: 1px solid rgba(255,255,255,0.72);
+  border-radius: 8px;
+  background-position: center;
+  background-size: cover;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.5);
+}
+.deck-builder-inspector-content {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 16px;
+}
+.deck-builder-workspace-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 4px;
+  border: 1px solid rgba(200,155,72,0.42);
+  border-radius: 999px;
+  background: rgba(8,7,13,0.76);
+}
+.deck-builder-spectrum-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 56px;
+}
+@media (max-width: 1120px) {
+  .deck-builder-main {
+    grid-template-columns: 220px minmax(0, 1fr) 264px;
+  }
+  .deck-builder-header {
+    grid-template-columns: minmax(180px, 1fr) auto !important;
+    grid-template-areas: 'identity metrics' 'tabs tabs';
+    row-gap: 10px;
+  }
+  .deck-builder-identity { grid-area: identity; }
+  .deck-builder-workspace-tabs { grid-area: tabs; justify-self: center; }
+  .deck-builder-metrics { grid-area: metrics; }
+}
+@media (max-width: 900px) {
+  .deck-builder-main {
+    grid-template-columns: 204px minmax(0, 1fr);
+    grid-template-rows: minmax(300px, 1fr) minmax(220px, 34%);
+    grid-template-areas: 'rail workspace' 'rail inspector';
+  }
+  .deck-builder-inspector {
+    display: grid;
+    grid-template-columns: minmax(130px, 34%) minmax(0, 1fr);
+  }
+  .deck-builder-inspector-art {
+    height: 100%;
+    max-height: none;
+    border-bottom: 0;
+    border-right: 1px solid rgba(200,155,72,0.38);
+  }
+}
+@media (max-width: 680px) {
+  .deck-builder-header {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-areas: 'identity' 'metrics' 'tabs';
+    justify-items: stretch;
+    gap: 8px;
+  }
+  .deck-builder-metrics { justify-content: flex-start !important; }
+  .deck-builder-workspace-tabs { overflow-x: auto; justify-content: flex-start; }
+  .deck-builder-main {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(180px, auto) minmax(360px, 1fr) minmax(320px, auto);
+    grid-template-areas: 'rail' 'workspace' 'inspector';
+    overflow-y: auto;
+  }
+  .deck-builder-left-rail { max-height: 32vh; }
+  .deck-builder-inspector { display: flex; }
+  .deck-builder-inspector-art { flex-basis: 190px; }
+}
+
 /* ── Trial Deck guided-mode card highlight pulse ── */
 @keyframes trialGuidePulse {
   0%, 100% { box-shadow: 0 0 0 2px rgba(100, 220, 130, 0.6), 0 0 16px rgba(100, 220, 130, 0.35); }

@@ -3,6 +3,7 @@ import LZString from 'lz-string';
 import { SaveManager, CURRENT_VERSION } from '@/save/SaveManager';
 import { signEnvelope, sha256Hex, verifyEnvelope } from '@/save/integrity';
 import { defaultGameState } from '@/state/store';
+import { getLocalDayIndex, getMonthlyTrackKey } from '@/systems/progression/dailyLogin';
 import type { SaveStorage } from '@/save/storage';
 import type { GameState } from '@/types/game';
 
@@ -101,6 +102,14 @@ describe('SaveManager integrity', () => {
   });
 
   describe('legacy envelope', () => {
+    it('starts new accounts at the standardized Day 2 calendar state', () => {
+      const dailyLogin = defaultGameState.progress.dailyLogin;
+      expect(dailyLogin.lastClaimedDayIndex).toBe(getLocalDayIndex(Date.now()));
+      expect(dailyLogin.monthlyTrackKey).toBe(getMonthlyTrackKey(Date.now()));
+      expect(dailyLogin.monthlyClaimedDays).toEqual([1, 2]);
+      expect(dailyLogin.calendarNormalizationVersion).toBe(1);
+    });
+
     it('loads an old unsigned { version, data } envelope and marks it legacy', () => {
       const storage = memStorage();
       const payload = JSON.stringify(makeState());
@@ -138,9 +147,37 @@ describe('SaveManager integrity', () => {
       expect(profile.avatarId).toBe('pic-classic-acolyte');
       expect(profile.titleId).toBeNull();
       const dl = prog.dailyLogin as { lastClaimedDayIndex: number; streak: number; totalClaims: number };
-      expect(dl.lastClaimedDayIndex).toBe(-1);
+      expect(dl.lastClaimedDayIndex).toBe(getLocalDayIndex(Date.now()));
       expect(dl.streak).toBe(0);
       expect(dl.totalClaims).toBe(0);
+      expect((prog.dailyLogin as { monthlyTrackKey: string }).monthlyTrackKey).toBe(getMonthlyTrackKey(Date.now()));
+      expect((prog.dailyLogin as { monthlyClaimedDays: number[] }).monthlyClaimedDays).toEqual([1, 2]);
+      expect((prog.dailyLogin as { calendarNormalizationVersion: number }).calendarNormalizationVersion).toBe(1);
+    });
+
+    it('normalizes a v53 account to Day 2 once, preserving its login streak', () => {
+      const storage = memStorage();
+      const legacyState = makeState();
+      legacyState.progress.dailyLogin = {
+        lastClaimedDayIndex: getLocalDayIndex(Date.now()),
+        streak: 8,
+        totalClaims: 25,
+        monthlyTrackKey: getMonthlyTrackKey(Date.now()),
+        monthlyClaimedDays: [1, 2, 3],
+      };
+      storage.write(JSON.stringify({ version: 53, data: LZString.compressToUTF16(JSON.stringify(legacyState)) }));
+
+      const migrated = new SaveManager(() => makeState(), storage).loadWithStatus()!;
+      expect(migrated.state.progress.dailyLogin.monthlyClaimedDays).toEqual([1, 2]);
+      expect(migrated.state.progress.dailyLogin.lastClaimedDayIndex).toBe(getLocalDayIndex(Date.now()));
+      expect(migrated.state.progress.dailyLogin.streak).toBe(8);
+      expect(migrated.state.progress.dailyLogin.totalClaims).toBe(25);
+
+      migrated.state.progress.dailyLogin.monthlyClaimedDays = [1, 2, 3];
+      const migratedManager = new SaveManager(() => migrated.state, storage);
+      migratedManager.save();
+      const reloaded = migratedManager.loadWithStatus()!;
+      expect(reloaded.state.progress.dailyLogin.monthlyClaimedDays).toEqual([1, 2, 3]);
     });
   });
 

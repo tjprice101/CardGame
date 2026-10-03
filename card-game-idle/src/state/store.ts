@@ -36,7 +36,7 @@ import { useSocialStore } from '@/state/socialStore';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
 import { getCardFinishKey, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import { STARTER_DECK_LIST, STARTER_EXTRA_DECK, STARTER_COLLECTION } from '@/systems/progression/StarterDeck';
-import { evaluateDailyLogin, getUtcDayIndex, getMonthlyTrackKey } from '@/systems/progression/dailyLogin';
+import { evaluateDailyLogin, getLocalDayIndex, getMonthlyTrackKey } from '@/systems/progression/dailyLogin';
 import {
   applyQuestProgress,
   refreshQuestRotation,
@@ -252,9 +252,12 @@ const defaultProgress: ProgressState = {
     unlockedUiThemeIds: [],
   },
   dailyLogin: {
-    lastClaimedDayIndex: -1,
+    lastClaimedDayIndex: getLocalDayIndex(Date.now()),
     streak: 0,
     totalClaims: 0,
+    monthlyTrackKey: getMonthlyTrackKey(Date.now()),
+    monthlyClaimedDays: [1, 2],
+    calendarNormalizationVersion: 1,
   },
   quests: { daily: [], weekly: [], lastDailyRollDay: -1, lastWeeklyRollWeek: -1 },
   enigmas: { activeEnigmaId: null, instances: {} },
@@ -3806,7 +3809,7 @@ export const useStore = create<Store>()(
       const evalResult = evaluateDailyLogin(get().progress);
       if (!evalResult.claimable) return null;
       set(s => {
-        const today = getUtcDayIndex(Date.now());
+        const today = getLocalDayIndex(Date.now());
         s.progress.dailyLogin.lastClaimedDayIndex = today;
         s.progress.dailyLogin.streak = evalResult.pendingStreak;
         s.progress.dailyLogin.totalClaims += 1;
@@ -5189,7 +5192,15 @@ export const useStore = create<Store>()(
           }
         }
         if (op['dailyLogin'] === undefined) {
-          op['dailyLogin'] = { lastClaimedDayIndex: -1, streak: 0, totalClaims: 0 };
+          const now = Date.now();
+          op['dailyLogin'] = {
+            lastClaimedDayIndex: getLocalDayIndex(now),
+            streak: 0,
+            totalClaims: 0,
+            monthlyTrackKey: getMonthlyTrackKey(now),
+            monthlyClaimedDays: [1, 2],
+            calendarNormalizationVersion: 1,
+          };
         } else {
           const dl = op['dailyLogin'] as Record<string, unknown>;
           if (typeof dl['lastClaimedDayIndex'] !== 'number') dl['lastClaimedDayIndex'] = -1;
@@ -5197,11 +5208,11 @@ export const useStore = create<Store>()(
           if (typeof dl['totalClaims'] !== 'number') dl['totalClaims'] = 0;
           // Heal legacy monthlyClaimedDays where future dates were claimed ahead of today
           const nowMs = Date.now();
-          const todayUtc = Math.floor(nowMs / (24 * 60 * 60 * 1000));
+          const todayLocal = getLocalDayIndex(nowMs);
           const currentTrackKey = getMonthlyTrackKey(nowMs);
-          const currentDayOfMonth = new Date(nowMs).getUTCDate();
+          const currentDayOfMonth = new Date(nowMs).getDate();
           if (
-            dl['lastClaimedDayIndex'] === todayUtc &&
+            dl['lastClaimedDayIndex'] === todayLocal &&
             dl['monthlyTrackKey'] === currentTrackKey &&
             Array.isArray(dl['monthlyClaimedDays'])
           ) {
@@ -5210,6 +5221,14 @@ export const useStore = create<Store>()(
               dl['monthlyClaimedDays'] = Array.from(new Set(days.map(d => (d > currentDayOfMonth ? currentDayOfMonth : d))));
             }
           }
+        }
+        const dailyLogin = op['dailyLogin'] as Record<string, unknown>;
+        if (dailyLogin['calendarNormalizationVersion'] !== 1) {
+          const now = Date.now();
+          dailyLogin['lastClaimedDayIndex'] = getLocalDayIndex(now);
+          dailyLogin['monthlyTrackKey'] = getMonthlyTrackKey(now);
+          dailyLogin['monthlyClaimedDays'] = [1, 2];
+          dailyLogin['calendarNormalizationVersion'] = 1;
         }
         if (!op['ownedAbilities'] || typeof op['ownedAbilities'] !== 'object') op['ownedAbilities'] = {};
         for (const currency of ['nullifiedLattice', 'nullSearedLight', 'nullifiedOblivionMatter', 'seedOfCausality', 'causalBloom', 'shatteredCausalTranscript', 'heartOfCausality'] as const) {

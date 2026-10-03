@@ -1,11 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import {
   getUtcDayIndex,
+  getLocalDayIndex,
   getMonthlyTrackKey,
+  getMonthlyTrackDays,
+  getNextLocalDayResetAt,
   dailyRewardForStreak,
   monthlyRewardForDay,
   evaluateDailyLogin,
 } from '@/systems/progression/dailyLogin';
+import { FORGE_CALENDAR_BONUS_DAYS } from '@/data/forge/forgeDefinitions';
 import type { ProgressState } from '@/types/game';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -53,6 +57,17 @@ describe('dailyLogin.getUtcDayIndex', () => {
   });
 });
 
+describe('dailyLogin local calendar', () => {
+  it('uses local dates for claims and monthly tracks', () => {
+    const late = new Date(2026, 9, 2, 23, 59, 59).getTime();
+    const tomorrow = new Date(2026, 9, 3, 0, 0, 0).getTime();
+    expect(getLocalDayIndex(tomorrow)).toBe(getLocalDayIndex(late) + 1);
+    expect(getMonthlyTrackKey(late)).toBe('2026-10');
+    expect(getMonthlyTrackDays(late)).toBe(31);
+    expect(getNextLocalDayResetAt(late)).toBe(tomorrow);
+  });
+});
+
 describe('dailyLogin.dailyRewardForStreak', () => {
   it('matches the documented reward table', () => {
     expect(dailyRewardForStreak(1).shards).toBe(25);
@@ -82,12 +97,13 @@ describe('dailyLogin.monthlyRewardForDay', () => {
 
     expect(transcendentShardRewards).toHaveLength(2);
     expect(transcendentShardRewards.map(reward => reward.amount)).toEqual([1, 2]);
+    expect(FORGE_CALENDAR_BONUS_DAYS).toEqual([10, 25]);
   });
 });
 
 describe('dailyLogin.evaluateDailyLogin', () => {
-  const today = 20_000;
-  const now = today * MS_PER_DAY + 5_000; // somewhere inside day 20000
+  const now = new Date(2026, 9, 2, 12).getTime();
+  const today = getLocalDayIndex(now);
 
   it('flags first-ever login as claimable with streak 1', () => {
     const result = evaluateDailyLogin(makeProgress({ lastClaimedDayIndex: -1 }), now);
@@ -149,19 +165,19 @@ describe('dailyLogin.evaluateDailyLogin', () => {
     expect(result.previousStreak).toBe(6);
   });
 
-  it('claims the actual UTC calendar date rather than advancing by the streak after a gap', () => {
+  it('claims the actual local calendar date rather than advancing by the streak after a gap', () => {
     const result = evaluateDailyLogin(
       makeProgress({ lastClaimedDayIndex: today - 4, streak: 2, monthlyTrackKey: getMonthlyTrackKey(now) }),
       now,
     );
     expect(result.claimable).toBe(true);
-    const currentCalendarDay = new Date(now).getUTCDate();
+    const currentCalendarDay = new Date(now).getDate();
     expect(result.monthlyDay).toBe(currentCalendarDay);
     expect(result.monthlyReward).toEqual(monthlyRewardForDay(currentCalendarDay, now));
   });
 
-  it("does not offer a calendar reward already claimed for today's UTC date", () => {
-    const currentCalendarDay = new Date(now).getUTCDate();
+  it("does not offer a calendar reward already claimed for today's local date", () => {
+    const currentCalendarDay = new Date(now).getDate();
     const result = evaluateDailyLogin(
       makeProgress({
         lastClaimedDayIndex: today - 1,
@@ -177,7 +193,7 @@ describe('dailyLogin.evaluateDailyLogin', () => {
   });
 
   it('heals an account that claimed a future calendar day (Day 2 on Day 1) prior to the fix', () => {
-    const currentCalendarDay = new Date(now).getUTCDate();
+    const currentCalendarDay = new Date(now).getDate();
     // Suppose today is Day 1, and the account previously claimed Day 2 because of streak=1 -> streak+1=2
     const result = evaluateDailyLogin(
       makeProgress({
@@ -191,5 +207,22 @@ describe('dailyLogin.evaluateDailyLogin', () => {
     // Already claimed today, so claimable should be false and monthlyDay undefined
     expect(result.claimable).toBe(false);
     expect(result.monthlyDay).toBeUndefined();
+  });
+
+  it('unlocks Day 3 on the local day after the standardized Day 2 reset', () => {
+    const resetDay = new Date(2026, 9, 2, 12).getTime();
+    const nextDay = new Date(2026, 9, 3, 12).getTime();
+    const progress = makeProgress({
+      lastClaimedDayIndex: getLocalDayIndex(resetDay),
+      streak: 4,
+      monthlyTrackKey: getMonthlyTrackKey(resetDay),
+      monthlyClaimedDays: [1, 2],
+    });
+
+    expect(evaluateDailyLogin(progress, resetDay).claimable).toBe(false);
+    const result = evaluateDailyLogin(progress, nextDay);
+    expect(result.claimable).toBe(true);
+    expect(result.monthlyDay).toBe(3);
+    expect(result.monthlyReward).toEqual(monthlyRewardForDay(3, nextDay));
   });
 });

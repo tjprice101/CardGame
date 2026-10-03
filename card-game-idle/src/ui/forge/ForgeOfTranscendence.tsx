@@ -62,7 +62,7 @@ export default function ForgeOfTranscendence({ onClose }: Props) {
         background: 'linear-gradient(90deg, rgba(255,255,255,0.98) 0%, rgba(245,238,255,0.9) 100%)',
       }}>
         <div>
-          <div style={{ fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(20,10,30,0.5)' }}>Beyond All Sets · Vol. 1</div>
+          <div style={{ fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(20,10,30,0.5)' }}>Before the First Shuffle · The Lore of the Card-born World</div>
           <div style={{ fontFamily: uiTypography.display, fontSize: 26, letterSpacing: 2, textTransform: 'uppercase', ...RAINBOW_TEXT }}>Forge of Transcendence</div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
@@ -120,7 +120,7 @@ export default function ForgeOfTranscendence({ onClose }: Props) {
           {/* Left: chapter list */}
           <nav style={{ width: 220, flexShrink: 0, borderRight: '1px solid rgba(20,10,30,0.1)', padding: '18px 10px', overflowY: 'auto' }}>
             <div style={{ padding: '0 6px 8px', fontFamily: uiTypography.display, fontSize: 9.5, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(20,10,30,0.45)' }}>
-              Vol. 1 Subset
+              Vol. 1: Before the First Shuffle
             </div>
             {FORGE_CARD_LORE.map(entry => {
               const isSelected = entry.definitionId === selectedId;

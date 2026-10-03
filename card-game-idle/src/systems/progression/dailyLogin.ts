@@ -11,12 +11,23 @@ export type MonthlyLoginReward =
 
 export function getMonthlyTrackKey(timestamp: number): string {
   const date = new Date(timestamp);
-  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 }
 
 export function getMonthlyTrackDays(timestamp: number): number {
   const date = new Date(timestamp);
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0)).getUTCDate();
+  return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+}
+
+export function getLocalDayIndex(timestamp: number): number {
+  const date = new Date(timestamp);
+  return Math.floor(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / MS_PER_DAY);
+}
+
+export function getNextLocalDayResetAt(timestamp: number): number {
+  const nextDay = new Date(timestamp);
+  nextDay.setHours(24, 0, 0, 0);
+  return nextDay.getTime();
 }
 
 const baseCardIds = () => CardRegistry.getAll()
@@ -35,7 +46,7 @@ export function monthlyRewardForDay(day: number, timestamp: number = Date.now())
     return { kind: 'mastery_all_owned', amount: 3, label: '+3 Card-light to every owned card' };
   }
   if (day === 1 || day === 15 || day === 28) {
-    const definitionId = cards[(day * 17 + new Date(timestamp).getUTCMonth()) % Math.max(1, cards.length)] ?? 'light-neutrality-1';
+    const definitionId = cards[(day * 17 + new Date(timestamp).getMonth()) % Math.max(1, cards.length)] ?? 'light-neutrality-1';
     return { kind: 'card', definitionId, amount: day === 28 ? 2 : 1, holo: day === 28, label: `${day === 28 ? 'Holofoil ' : ''}base card ×${day === 28 ? 2 : 1}` };
   }
   return { kind: 'shards', amount: 20 + day * 5, label: `+${20 + day * 5} Aberrated Shards` };
@@ -84,12 +95,12 @@ export interface DailyLoginEvaluation {
 }
 
 /**
- * Evaluates the player's current daily-login situation given the current time.
+ * Evaluates the player's current daily-login situation using local calendar days.
  * Pure function — does not mutate state. Caller applies the result via
  * `claimDailyReward()` on the store.
  *
  *  - If `lastClaimedDayIndex` < 0 (never claimed): claimable, streak = 1.
- *  - If today's day index === lastClaimedDayIndex: not claimable (already got today's).
+ *  - If today's local day index === lastClaimedDayIndex: not claimable (already got today's).
  *  - If today === lastClaimedDayIndex + 1: claimable, streak += 1.
  *  - Otherwise (skipped a day): claimable, streak resets to 1.
  */
@@ -98,11 +109,11 @@ export function evaluateDailyLogin(
   now: number = Date.now(),
 ): DailyLoginEvaluation {
   const dl = progress.dailyLogin;
-  const today = getUtcDayIndex(now);
+  const today = getLocalDayIndex(now);
   const lastDay = dl.lastClaimedDayIndex;
   const previousStreak = dl.streak;
   const trackKey = getMonthlyTrackKey(now);
-  const dayOfMonth = new Date(now).getUTCDate();
+  const dayOfMonth = new Date(now).getDate();
   const rawClaimedDays = dl.monthlyTrackKey === trackKey
     ? (dl.monthlyClaimedDays ?? [])
     : [];
@@ -137,8 +148,7 @@ export function evaluateDailyLogin(
   }
   if (lastDay === today) {
     return {
-      // This is a daily-login event: each successful login claims the next event step,
-      // not every missed day. Claiming is therefore blocked until the player logs in on a new UTC day.
+      // Claiming is blocked until the next local calendar day.
       claimable: false,
       pendingStreak: previousStreak,
       previousStreak,

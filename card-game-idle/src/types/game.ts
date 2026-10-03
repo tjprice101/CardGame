@@ -436,16 +436,18 @@ export interface PlayerProfileState {
 }
 
 export interface DailyLoginState {
-  /** UTC day index of the last claim. -1 means the player has never claimed. */
+  /** Local day index of the last claim. -1 means the player has never claimed. */
   lastClaimedDayIndex: number;
   /** Current consecutive-day streak. 0 until the first claim. */
   streak: number;
   /** Total number of daily rewards ever claimed. */
   totalClaims: number;
-  /** Current monthly login track key, formatted as YYYY-MM in UTC. */
+  /** Current monthly login track key, formatted as YYYY-MM in local time. */
   monthlyTrackKey?: string;
   /** Calendar days already claimed in the current monthly track. */
   monthlyClaimedDays?: number[];
+  /** One-time normalization marker for the Day 2 calendar reset. */
+  calendarNormalizationVersion?: number;
 }
 
 export interface SettingsState {

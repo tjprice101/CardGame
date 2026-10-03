@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { getMonitorUiScale } from '@/ui/preferences';
 
 const handPath = join(process.cwd(), 'src/ui/hud/HandDisplay.tsx');
 const boardPath = join(process.cwd(), 'src/ui/hud/BoardDisplay.tsx');
@@ -20,6 +21,12 @@ const previewPaths = [
 ];
 
 describe('live card face rendering', () => {
+  it('scales the game surface to monitor dimensions without shrinking standard layouts', () => {
+    expect(getMonitorUiScale(1366, 768)).toBeCloseTo(1.2387, 3);
+    expect(getMonitorUiScale(1024, 600)).toBe(1);
+    expect(getMonitorUiScale(3840, 2160)).toBe(1.24);
+  });
+
   it('uses the same composed art and shimmer helpers in hand and on board', () => {
     const handSource = readFileSync(handPath, 'utf8');
     const boardSource = readFileSync(boardPath, 'utf8');
@@ -106,14 +113,31 @@ describe('live card face rendering', () => {
 
   it('surfaces current deck stats in the manuscript header', () => {
     const deckBuilderSource = readFileSync(deckBuilderPath, 'utf8');
+    const appSource = readFileSync(join(process.cwd(), 'src/app/App.tsx'), 'utf8');
+    const forgeSource = readFileSync(join(process.cwd(), 'src/ui/forge/ForgeOfTranscendence.tsx'), 'utf8');
 
-    expect(deckBuilderSource).toContain('The Deck Manuscript');
+    expect(deckBuilderSource).toContain('The Deck Manuscript · {deckSetName} deck');
     expect(deckBuilderSource).toContain('Est. 3-Min Damage');
     expect(deckBuilderSource).toContain('label="Main"');
     expect(deckBuilderSource).toContain('label="Extra"');
-    expect(deckBuilderSource).toContain('Spectrum curve, Main deck cards by level');
+    expect(deckBuilderSource).toContain('className="deck-builder-left-rail"');
+    expect(deckBuilderSource).toContain('className="deck-builder-inspector"');
+    expect(deckBuilderSource).toContain('setHoveredCardPreview({ card: def.def, finish: def.finish })');
+    expect(deckBuilderSource).toContain('onContextMenu={event => pinCardPreview(event, def.def, def.finish)}');
+    expect(deckBuilderSource).toContain('Right-click a card to pin its stats here');
+    expect(deckBuilderSource).toContain('Pinned!');
+    expect(deckBuilderSource).toContain('{totalForDefinition}/4');
+    expect(deckBuilderSource).not.toContain('renderLockControl');
+    expect(deckBuilderSource).toContain('deckStats.lightLevelCounts[level]');
+    expect(deckBuilderSource).toContain('deckStats.darkLevelCounts[level]');
     expect(deckBuilderSource).toContain('deckStats.levelCounts.map');
     expect(deckBuilderSource).toContain("return 'Neutrality'");
+    expect(deckBuilderSource).not.toContain('Card hover tooltip');
+    expect(appSource).toContain('appRoot.style.zoom = String(scale)');
+    expect(appSource).toContain('getMonitorUiScale(window.screen.availWidth');
+    expect(forgeSource).toContain('Before the First Shuffle · The Lore of the Card-born World');
+    expect(forgeSource).toContain('Vol. 1: Before the First Shuffle');
+    expect(forgeSource).not.toContain('Beyond All Sets · Vol. 1');
   });
 
   it('uses hover outlines and brightness instead of upward movement', () => {

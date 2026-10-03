@@ -480,7 +480,7 @@ function ModesBody() {
         <div style={sectionHeadingStyle}>More Modes</div>
         <ListItem label="Challenges">Daily and weekly challenges provide rotating rewards. Claim every weekly reward to consume that rotation into two Super Weekly boss challenges.</ListItem>
         <ListItem label="Card-light Resonance">Refine eligible duplicate copies into Card-light Shards, then spend them 1:1 to add Card-light to any card.</ListItem>
-        <ListItem label="Monthly Login">Open Login Calendar from Main Menu → Progress. The calendar shows each date&apos;s reward; claim the current UTC day&apos;s reward, with at most one claim per day. Missed dates do not queue for later claims.</ListItem>
+        <ListItem label="Monthly Login">Open Login Calendar from Main Menu → Progress. The calendar shows each local date&apos;s reward; claim the current day&apos;s reward, with at most one claim per day. Missed dates do not queue for later claims.</ListItem>
         <ListItem label="Enigma">After 10 packs, the Enigma menu lets you search for manuscripts. An opening riddle passively unlocks a manuscript without focusing it. Only an acquired manuscript can be locked on, and only the selected Enigma progresses. Cumulative goals show live trackers, while requirements that say “in one turn,” “at once,” or “at end of turn” only complete in that exact scope.</ListItem>
         <ListItem label="Phantom Matrix">This ability spends 10 Limitless Light Stacks to open a free-summon picker. Choose any Ain Soph Aur without selecting or spending summon materials; normal summons still require their listed materials.</ListItem>
         <ListItem label="Amplifier of the Void">This Enigmatic Dark reward draws 2 cards and grants 3 Limitless Light Stacks. If you hold at least 5 stacks after activation, it also grants 1,500 Divine Light.</ListItem>
@@ -545,7 +545,7 @@ function ProgressionBody() {
       </div>
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Monthly Login Calendar</div>
-        <div style={bodyTextStyle}>Login rewards follow a persistent full-screen monthly track available from Main Menu → Progress → Login Calendar. Every date is displayed with its reward icon or card artwork. Claim the current UTC date&apos;s reward; missed dates do not queue, and only one daily reward can be claimed per UTC day.</div>
+        <div style={bodyTextStyle}>Login rewards follow a persistent full-screen monthly track available from Main Menu → Progress → Login Calendar. Every date is displayed with its reward icon or card artwork. Claim the current local date&apos;s reward; missed dates do not queue, and only one daily reward can be claimed per local day.</div>
       </div>
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Card-born Tier</div>
@@ -591,7 +591,7 @@ function ForgeBody() {
           for 1–3 Shards are available only after the Forge is open:
         </div>
         <ListItem label="Boss clears">Any Eternity's Wake boss victory has a 1% chance (multiplied by x2/x3 fight choice) to drop 1–3 Shards.</ListItem>
-        <ListItem label="Login bonus">The Forge-open bonus roll is available on calendar days 10 and 22. Day 10 also has its direct 1-Shard reward; day 25 directly grants 2 Shards.</ListItem>
+        <ListItem label="Login bonus">The Forge-open bonus roll is available on calendar days 10 and 25. Day 10 also has its direct 1-Shard reward; day 25 directly grants 2 Shards.</ListItem>
         <ListItem label="Garden expeditions">The final encounter of any available Garden expedition has a 1% chance to drop 1–3 Shards. Earlier encounters do not roll.</ListItem>
       </div>
 

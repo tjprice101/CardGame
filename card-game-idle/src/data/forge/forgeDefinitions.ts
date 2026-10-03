@@ -138,4 +138,4 @@ export function formatShardDropChance(variantMultiplier = 1): string {
  * Login Calendar days eligible for a rare bonus Shard of Transcendence roll
  * (only once the Forge is open) — about 1-2 days across a 30-day cycle.
  */
-export const FORGE_CALENDAR_BONUS_DAYS: readonly number[] = [10, 22];
+export const FORGE_CALENDAR_BONUS_DAYS: readonly number[] = [10, 25];

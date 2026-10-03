@@ -112,6 +112,11 @@ export function getFontScale(preset: FontSizePreset = currentPreferences.fontSiz
   }
 }
 
+export function getMonitorUiScale(width: number, height: number): number {
+  const monitorScale = Math.min(width / 1100, height / 620);
+  return Math.min(1.24, Math.max(1, monitorScale));
+}
+
 export function getCardArtDisplay(): CardArtDisplay {
   return currentPreferences.cardArtDisplay;
 }

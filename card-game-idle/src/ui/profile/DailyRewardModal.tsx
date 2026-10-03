@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useStore, selectProgress } from '@/state/store';
 import { warmTheme } from '@/ui/theme';
-import { evaluateDailyLogin, getMonthlyTrackDays, getMonthlyTrackKey, monthlyRewardForDay } from '@/systems/progression/dailyLogin';
-import { getNextDailyResetAt, formatQuestCountdown } from '@/systems/progression/quests';
+import { evaluateDailyLogin, getLocalDayIndex, getMonthlyTrackDays, getMonthlyTrackKey, getNextLocalDayResetAt, monthlyRewardForDay } from '@/systems/progression/dailyLogin';
+import { formatQuestCountdown } from '@/systems/progression/quests';
 import { CardRegistry } from '@/cards/CardRegistry';
 import {
   getLiveCardFaceBackgroundStyle,
@@ -32,7 +32,7 @@ export default function DailyRewardModal({ onClose }: Props) {
     const timer = window.setInterval(() => setNowTick(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, []);
-  const nextResetCountdown = formatQuestCountdown(getNextDailyResetAt(nowTick) - nowTick);
+  const nextResetCountdown = formatQuestCountdown(getNextLocalDayResetAt(nowTick) - nowTick);
 
   const now = Date.now();
   const trackKey = getMonthlyTrackKey(now);
@@ -40,8 +40,8 @@ export default function DailyRewardModal({ onClose }: Props) {
   const rawClaimedDays = progress.dailyLogin.monthlyTrackKey === trackKey
     ? (progress.dailyLogin.monthlyClaimedDays ?? [])
     : [];
-  const dayOfMonth = new Date(now).getUTCDate();
-  const isClaimedToday = progress.dailyLogin.lastClaimedDayIndex === Math.floor(now / (24 * 60 * 60 * 1000));
+  const dayOfMonth = new Date(now).getDate();
+  const isClaimedToday = progress.dailyLogin.lastClaimedDayIndex === getLocalDayIndex(now);
   const claimedDays = useMemo(() => {
     let list = rawClaimedDays;
     if (isClaimedToday && progress.dailyLogin.monthlyTrackKey === trackKey && !rawClaimedDays.includes(dayOfMonth) && rawClaimedDays.some(d => d > dayOfMonth)) {
@@ -58,12 +58,12 @@ export default function DailyRewardModal({ onClose }: Props) {
     if (result) onClose();
   }
 
-  const today = new Date(now).getUTCDate();
+  const today = new Date(now).getDate();
   const pendingDay = evalResult.monthlyDay;
   const pendingReward = evalResult.monthlyReward;
   const canClaim = evalResult.claimable && pendingReward !== undefined;
-  const monthLabel = new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(now));
-  const firstWeekday = new Date(Date.UTC(new Date(now).getUTCFullYear(), new Date(now).getUTCMonth(), 1)).getUTCDay();
+  const monthLabel = new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' }).format(new Date(now));
+  const firstWeekday = new Date(new Date(now).getFullYear(), new Date(now).getMonth(), 1).getDay();
   const calendarFaceMetrics = getCardFaceMetrics('boardMini');
   const showShardRates = areShardDropRatesVisible(progress);
 
@@ -95,7 +95,7 @@ export default function DailyRewardModal({ onClose }: Props) {
         <div>
           <div style={{ color: warmTheme.accentSoft, fontSize: 9, letterSpacing: 3, textTransform: 'uppercase' }}>Monthly Expedition</div>
           <h1 className="ui-title-glow" style={{ margin: '3px 0 2px', fontSize: 'clamp(18px, 2.2vw, 26px)', letterSpacing: 1.4 }}>Login Calendar</h1>
-          <div style={{ color: warmTheme.textMuted, fontSize: 10 }}>Claim today's calendar reward once per UTC day. Login streak rewards are tracked separately.</div>
+          <div style={{ color: warmTheme.textMuted, fontSize: 10 }}>Claim today's calendar reward once per local day. Login streak rewards are tracked separately.</div>
         </div>
         <div style={{ textAlign: 'right', color: warmTheme.textMuted, fontSize: 10 }}>
           <div style={{ color: warmTheme.text, fontSize: 14, fontWeight: 'bold' }}>{monthLabel}</div>
