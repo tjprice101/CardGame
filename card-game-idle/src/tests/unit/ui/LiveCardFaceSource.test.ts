@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { CardRegistry } from '@/cards/CardRegistry';
+import { infiniteCards } from '@/data/cards/infiniteCards';
 
 const handPath = join(process.cwd(), 'src/ui/hud/HandDisplay.tsx');
 const boardPath = join(process.cwd(), 'src/ui/hud/BoardDisplay.tsx');
@@ -30,15 +32,16 @@ describe('live card face rendering', () => {
     expect(handSource).toContain("getLiveCardShimmerClassName(def, deckCard.finish, 'front')");
     expect(boardSource).toContain('getLiveCardShimmerClassName(mainDef, mainCard.finish, mainCard.faceState)');
     expect(handSource).not.toContain("getLiveCardFaceBackgroundStyle(def, deckCard.finish, 'front', true)");
-    expect(handSource).toContain("'hand-card-hover-glow'");
-    expect(handSource).toContain('hand-card-hover-shimmer');
+    expect(handSource).toContain("'hand-card-hover-edge'");
+    expect(handSource).not.toContain('hand-card-hover-shimmer');
     expect(handSource).toContain('isHovered && !selected && !isDragging');
     expect(handSource).toContain('Mulligan · Hand (${viewCards.length})');
     expect(handSource).not.toContain('MULLIGAN ? Click cards to swap them out');
     expect(handSource).not.toContain("transform: 'translateY(-16px) scale(1.025)'");
-    expect(animationSource).toContain('@keyframes handCardHoverGlow');
-    expect(animationSource).toContain('html.reduced-motion .hand-card-hover-glow');
-    expect(animationSource).toContain('@keyframes handCardHoverShimmer');
+    expect(animationSource).toContain('@keyframes handCardHoverEdgePulse');
+    expect(animationSource).toContain('.hand-card-hover-edge::before');
+    expect(animationSource).toContain('html.reduced-motion .hand-card-hover-edge');
+    expect(animationSource).not.toContain('@keyframes handCardHoverShimmer');
   });
 
   it('routes board name and rules markup through the shared hidden-band helpers', () => {
@@ -53,7 +56,7 @@ describe('live card face rendering', () => {
     const collectionSource = readFileSync(collectionPath, 'utf8');
     const deckBuilderSource = readFileSync(deckBuilderPath, 'utf8');
 
-    expect(collectionSource).toContain("getLiveCardFaceBackgroundStyle(card, finish, 'front')");
+    expect(collectionSource).toContain("getLiveCardFaceBackgroundStyle(displayCard, finish, 'front')");
     expect(collectionSource).toContain('getLiveCardShimmerClassName');
     expect(collectionSource).not.toContain('holofoil-menu-card');
     expect(collectionSource).not.toContain('const artUrl = owned > 0 ? getCardBackgroundUrl(card)');
@@ -63,6 +66,19 @@ describe('live card face rendering', () => {
     expect(deckBuilderSource).toContain('getLiveCardShimmerClassName');
     expect(deckBuilderSource).not.toContain('holofoil-menu-card');
     expect(deckBuilderSource).not.toContain('DeferredCardArt');
+  });
+
+  it('shows legacy craftable Infinite cards in Collection without registering them as playable', () => {
+    const collectionSource = readFileSync(collectionPath, 'utf8');
+    const legacyInfinite = infiniteCards.filter(card => !CardRegistry.has(card.definitionId));
+
+    expect(legacyInfinite).toHaveLength(8);
+    expect(legacyInfinite.every(card => !CardRegistry.get(card.definitionId))).toBe(true);
+    expect(collectionSource).toContain('legacyInfiniteCards');
+    expect(collectionSource).toContain('legacyInfinite: true');
+    expect(collectionSource).toContain("label: 'Neutrality'");
+    expect(collectionSource).toContain('legacyInfiniteEntries.length > 0');
+    expect(collectionSource).toContain('Archived Infinite');
   });
 
   it('keeps every preview surface on the same canonical foil path', () => {
@@ -104,6 +120,16 @@ describe('live card face rendering', () => {
     expect(battlegroundSource).toContain("right: 'var(--turn-side-rail-width, 278px)'");
   });
 
+  it('keeps Main Menu Radio audible while the login calendar is open', () => {
+    const appSource = readFileSync(join(process.cwd(), 'src/app/App.tsx'), 'utf8');
+    const musicSuppression = appSource.match(/const musicSuppressed =([\s\S]*?);/)?.[1] ?? '';
+
+    expect(appSource).toContain("track = 'menu-main'");
+    expect(musicSuppression).not.toContain('showDailyReward');
+    expect(appSource).toContain("showDailyReward && scene === 'menu' && e.code === 'KeyR'");
+    expect(appSource).toContain('setRadioUiAutoHidden(false);');
+  });
+
   it('surfaces current deck stats in the manuscript header', () => {
     const deckBuilderSource = readFileSync(deckBuilderPath, 'utf8');
     const forgeSource = readFileSync(join(process.cwd(), 'src/ui/forge/ForgeOfTranscendence.tsx'), 'utf8');
@@ -126,18 +152,44 @@ describe('live card face rendering', () => {
     expect(deckBuilderSource).toContain("return 'Neutrality'");
     expect(deckBuilderSource).not.toContain('Card hover tooltip');
     expect(forgeSource).toContain('Before the First Shuffle · The Lore of the Card-born World');
+    expect(forgeSource).toContain('every current Causality event boss is defeated');
     expect(forgeSource).toContain('Vol. 1: Before the First Shuffle');
     expect(forgeSource).not.toContain('Beyond All Sets · Vol. 1');
+    expect(forgeSource).not.toContain('answers to no set and no master');
+    const tutorialSource = readFileSync(join(process.cwd(), 'src/ui/menus/TutorialModal.tsx'), 'utf8');
+    const tutorialContentSource = readFileSync(join(process.cwd(), 'src/data/tutorialContent.ts'), 'utf8');
+    expect(tutorialSource).toContain('Vol. 1: Before the First Shuffle contains');
+    expect(tutorialSource).not.toContain('Vol. 1 subset');
+    expect(tutorialContentSource).toContain('The endgame gallery for Transcendent cards.');
+    expect(tutorialContentSource).not.toContain('gallery beyond every set');
   });
 
   it('keeps all main-menu sections visible with fixed Begin Turn and live claim badges', () => {
     const menuSource = readFileSync(join(process.cwd(), 'src/ui/menu/MainMenuHub.tsx'), 'utf8');
     const emblemSource = readFileSync(join(process.cwd(), 'src/ui/components/GameEmblem.tsx'), 'utf8');
+    const animationSource = readFileSync(join(process.cwd(), 'src/styles/animations.css'), 'utf8');
+    const controlsSource = readFileSync(join(process.cwd(), 'src/ui/settings/ControlsSection.tsx'), 'utf8');
 
     expect(menuSource).toContain('main-menu-progress-grid');
     expect(menuSource).toContain('main-menu-collection-grid');
     expect(menuSource).toContain('main-menu-play-grid');
     expect(menuSource).toContain('main-menu-begin-turn');
+    expect(menuSource).toContain('main-menu-reference-hub');
+    expect(menuSource).toContain('main-menu-center-stage');
+    expect(menuSource).toContain('main-menu-daily-highlights');
+    expect(menuSource).toContain('main-menu-resource-zone');
+    expect(menuSource).toContain('main-menu-daily-heading');
+    expect(menuSource).toContain('main-menu-section-heading">Identity</h2>');
+    expect(menuSource).toContain("showCaption={action.id === 'eternitys-wake' && action.disabled}");
+    expect(menuSource).toContain('Requires 3 Enigmatic cards');
+    expect(menuSource).not.toContain('main-menu-stage-figure');
+    expect(menuSource).not.toContain('rgba(75,48,137,0.58)');
+    expect(menuSource).toContain('label="Shards" value={shards.toLocaleString()} tone="crimson" theme={uiTheme} onClick={props.onCardStore} showPlus={false}');
+    expect(menuSource).not.toContain('has-button-frame');
+    expect(menuSource).not.toContain('deckBuilderFrame');
+    expect(menuSource).toContain('BEYOND ALL SETS');
+    expect(menuSource).toContain('A light with no allegiance.');
+    expect(menuSource).not.toContain('beyond every set');
     expect(menuSource).toContain('refreshQuestRotation({');
     expect(menuSource).toContain('claimableQuestCount');
     expect(menuSource).toContain('.filter(quest => !quest.claimed && isQuestComplete(quest)).length');
@@ -150,16 +202,69 @@ describe('live card face rendering', () => {
     expect(menuSource).toContain("const playActions = ['garden', 'eternitys-wake']");
     expect(menuSource).toContain('Previous event banner');
     expect(menuSource).toContain('Next event banner');
+    expect(menuSource).toContain("['mainMenuCardStore', props.onCardStore]");
+    expect(menuSource).toContain("['mainMenuDeckBuilder', props.onDeckBuilder]");
+    expect(menuSource).toContain("['mainMenuDailyCalendar', props.onDailyCalendar]");
+    expect(menuSource).toContain("['mainMenuChallenges', props.onQuests]");
+    expect(menuSource).toContain("['mainMenuBeginTurn', props.onBeginTurn]");
+    expect(menuSource).toContain('controls[id] === e.code');
+    expect(menuSource).toContain("formatMenuShortcut(controls.mainMenuCardStore)");
+    expect(controlsSource).toContain("id: 'mainMenuCardStore'");
+    expect(controlsSource).toContain("id: 'mainMenuDeckBuilder'");
+    expect(controlsSource).toContain("id: 'mainMenuDailyCalendar'");
+    expect(controlsSource).toContain("id: 'mainMenuChallenges'");
+    expect(controlsSource).toContain("id: 'mainMenuBeginTurn'");
+    expect(menuSource).toContain("window.addEventListener('keydown', onMenuShortcut, true)");
+    expect(menuSource).toContain('e.stopImmediatePropagation()');
+    expect(menuSource).toContain('EVENT_BANNER_DURATION_MS = 7_500');
+    expect(menuSource).toContain('main-menu-event-timer');
+    expect(menuSource).toContain('main-menu-event-slide-picks');
+    expect(menuSource.match(/className="main-menu-event-timer"/g)?.length ?? 0).toBe(1);
+    expect(animationSource).toContain('.main-menu-event-timer { width: 100%; height: 3px; margin-top: 10px; background: var(--menu-surface-muted); }');
+    expect(menuSource).toContain('remainingMs + 50');
+    expect(menuSource).toContain('setEventSlideStartedAtMs(Date.now())');
+    expect(menuSource).toContain('key={eventSlideStartedAtMs}');
     expect(menuSource).toContain('main-menu-quote');
-    expect(menuSource).toContain("background: 'transparent'");
     expect(emblemSource).toContain("case 'daily-calendar':");
     expect(emblemSource).toContain("case 'achievements':");
     expect(menuSource).not.toContain('role="tablist" aria-label="Main menu sections"');
   });
 
+  it('keeps Card Store history tied to live pity and pack-open records', () => {
+    const storeSource = readFileSync(join(process.cwd(), 'src/ui/store/CardPackStore.tsx'), 'utf8');
+
+    expect(storeSource).toContain('className="pack-history-view"');
+    expect(storeSource).toContain('className="pack-history-summary-grid"');
+    expect(storeSource).toContain('const PACK_EPIC_PITY_THRESHOLD = 10;');
+    expect(storeSource).toContain('const BOX_LEGENDARY_PITY_MISS_THRESHOLD = 4;');
+    expect(storeSource).toContain('After 4 consecutive Boxes without a Legendary, the next Box guarantees one.');
+    expect(storeSource).toContain('history.map((entry, idx)');
+    expect(storeSource).toContain('entry.rarityCounts[rarity]');
+    expect(storeSource).toContain('<time dateTime={new Date(entry.ts).toISOString()}>');
+    expect(storeSource).not.toContain('Math.max(0, 3 - n)');
+  });
+
+  it('uses the active profile palette for Main Menu and Login Calendar chrome', () => {
+    const menuSource = readFileSync(join(process.cwd(), 'src/ui/menu/MainMenuHub.tsx'), 'utf8');
+    const calendarSource = readFileSync(join(process.cwd(), 'src/ui/profile/DailyRewardModal.tsx'), 'utf8');
+    const animationSource = readFileSync(join(process.cwd(), 'src/styles/animations.css'), 'utf8');
+
+    expect(menuSource).toContain("['--menu-accent' as any]: uiTheme.accent");
+    expect(menuSource).toContain("['--menu-surface' as any]: uiTheme.surface");
+    expect(animationSource).toContain('scrollbar-color: var(--menu-border-strong) var(--menu-surface-muted)');
+    expect(calendarSource).toContain('useThemeVersion();');
+    expect(calendarSource).toContain("['--calendar-accent' as string]: warmTheme.accent");
+    expect(calendarSource).toContain("['--calendar-surface' as string]: warmTheme.surface");
+    expect(animationSource).toContain('.login-calendar-screen {');
+    expect(animationSource).toContain('color: var(--calendar-text);');
+    expect(animationSource).toContain('.login-calendar-day.is-today { border-color: var(--calendar-accent);');
+    expect(calendarSource).toContain('stroke="var(--calendar-border-strong)"');
+  });
+
   it('keeps full Forge wheel prize names out of narrow slices and in a keyed legend', () => {
     const calendarSource = readFileSync(join(process.cwd(), 'src/ui/profile/DailyRewardModal.tsx'), 'utf8');
 
+    expect(calendarSource).not.toContain('className="login-calendar-legend"');
     expect(calendarSource).toContain('{segment.index}');
     expect(calendarSource).toContain('login-calendar-next login-wheel-prize-row');
     expect(calendarSource).toContain('<strong>{prize.label}</strong>');
@@ -169,11 +274,30 @@ describe('live card face rendering', () => {
     expect(calendarSource).not.toContain('wheelLabel(segment.prize)');
   });
 
+  it('keeps Settings previews and board hints aligned with live card systems', () => {
+    const settingsSource = readFileSync(join(process.cwd(), 'src/ui/settings/SettingsPanel.tsx'), 'utf8');
+    const boardSource = readFileSync(boardPath, 'utf8');
+
+    expect(settingsSource).toContain("CardRegistry.getAll().find(card => card.type === 'Light')");
+    expect(settingsSource).not.toContain('OPHANIM');
+    expect(settingsSource).not.toContain('Divine Light Shard');
+    expect(settingsSource).not.toContain('Draw 2 cards. +800 Divine Light.');
+    expect(boardSource).toContain('renderSophChargeBadge');
+    expect(boardSource).toContain('Soph Charge ${stacks}');
+    expect(boardSource).not.toContain('renderPatienceBadge');
+    expect(boardSource).not.toContain('Drop Seraphim');
+    expect(boardSource).not.toContain('Drop Cherubim');
+  });
+
   it('uses hover outlines and brightness instead of upward movement', () => {
     const styleSource = readFileSync(join(process.cwd(), 'src/styles/animations.css'), 'utf8');
+    const menuSource = readFileSync(join(process.cwd(), 'src/ui/menu/MainMenuHub.tsx'), 'utf8');
     const hoverRules = Array.from(styleSource.matchAll(/[^{}]*:hover[^{}]*\{[^}]*\}/g), match => match[0]);
     expect(hoverRules.filter(rule => /transform:\s*translateY\(\s*-/.test(rule))).toEqual([]);
     expect(styleSource).not.toMatch(/:hover[^{}]*\{[^}]*\bscale\s*:/);
+    expect(styleSource).toContain('.main-menu-reference-hub .menu-tactile-btn:not(:disabled):hover');
+    expect(styleSource).toContain('filter: brightness(1.26) saturate(1.18)');
+    expect(menuSource).toContain("btn.style.filter = 'brightness(1.3) saturate(1.24)'");
     for (const relativePath of [
       'src/ui/menu/MainMenuHub.tsx',
       'src/ui/eternitysWake/BossResultModal.tsx',
@@ -193,7 +317,7 @@ describe('live card face rendering', () => {
 
   it('uses unobstructed shared framed art for compact Collection cards', () => {
     const collectionSource = readFileSync(collectionPath, 'utf8');
-    expect(collectionSource).toContain("getLiveCardFaceBackgroundStyle(card, finish, 'front')");
+    expect(collectionSource).toContain("getLiveCardFaceBackgroundStyle(displayCard, finish, 'front')");
     expect(collectionSource).not.toContain('getCardArtTopBottomBorderOverlayStyleForCard');
     expect(collectionSource).not.toContain('getCardNameRibbonStyle');
     expect(collectionSource).not.toContain('getCardRulesPanelStyle');

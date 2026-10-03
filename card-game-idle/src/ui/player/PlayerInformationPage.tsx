@@ -4,13 +4,12 @@
 // wipe). Replaces the separate Profile, Social, and Save-section-inside-
 // Settings surfaces with one calm, soft-hued, well-organised page.
 
-import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore, selectProfile, selectProgress } from '@/state/store';
-import { warmTheme, uiTypography, applyUiPalette, type UiPalette } from '@/ui/theme';
+import { warmTheme, uiTypography, normalizeUiPalette, resetUiPalette, type UiPalette } from '@/ui/theme';
 import { resolveAvatar } from '@/data/profile/avatars';
 import { TITLE_BADGES, resolveTitleBadge } from '@/data/profile/titleBadges';
 import {
-  applyEffectiveTheme,
   DEFAULT_UI_THEME_ID,
   UI_THEME_BY_ID,
   UI_THEMES,
@@ -153,11 +152,15 @@ export default function PlayerInformationPage({
   const [mainMenuBackgroundsError, setMainMenuBackgroundsError] = useState<string | null>(null);
   const [bioSaved, setBioSaved] = useState(false);
   const [titleSaved, setTitleSaved] = useState(false);
-  const [, forceThemeRender] = useReducer((n: number) => n + 1, 0);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const currentAvatar = resolveAvatar(profile.avatarId, progress);
   const currentTitle = resolveTitleBadge(profile.titleId, progress);
+  const profilePalette = useMemo(() => {
+    const def = UI_THEME_BY_ID[themeBaseId];
+    const base = def ? getThemePreviewPalette(def, themeNowMs) : warmTheme;
+    return normalizeUiPalette({ ...base, ...themeDraft });
+  }, [themeBaseId, themeDraft, themeNowMs]);
 
   const totalCollection = useMemo(
     () => Object.values(progress.collection).reduce((a, b) => a + b, 0),
@@ -220,27 +223,14 @@ export default function PlayerInformationPage({
     setBioDraft(profile.bio ?? '');
   }, [profile.bio]);
 
-  // Restore the saved effective theme when this screen closes so preview edits
-  // do not leak into the rest of the app.
+  // Keep profile theme previews scoped to this screen; the rest of the app uses
+  // the shared warm default palette.
   useEffect(() => {
     return () => {
-      applyEffectiveTheme(
-        profile.uiThemeId || DEFAULT_UI_THEME_ID,
-        profile.customUiTheme ?? null,
-        progress,
-      );
+      resetUiPalette();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Re-apply whenever the draft changes so preview is live while editing.
-  useEffect(() => {
-    const def = UI_THEME_BY_ID[themeBaseId];
-    const base = def ? getThemePreviewPalette(def, themeNowMs) : null;
-    if (!base) return;
-    applyUiPalette(themeDraft ? { ...base, ...themeDraft } : { ...base });
-    forceThemeRender();
-  }, [themeBaseId, themeDraft, themeNowMs]);
 
   function chooseThemeBase(themeId: string) {
     if (!isThemeUnlocked(themeId, progress)) return;
@@ -372,24 +362,25 @@ export default function PlayerInformationPage({
   return (
     <div style={{
       ...S.backdrop,
-      ['--profile-accent' as any]: warmTheme.accent,
-      ['--profile-accent-soft' as any]: warmTheme.accentSoft,
-      ['--profile-accent-deep' as any]: warmTheme.accentDeep,
-      ['--profile-text' as any]: warmTheme.text,
-      ['--profile-text-soft' as any]: warmTheme.textSoft,
-      ['--profile-text-muted' as any]: warmTheme.textMuted,
-      ['--profile-text-faint' as any]: warmTheme.textFaint,
-      ['--profile-border' as any]: warmTheme.border,
-      ['--profile-border-strong' as any]: warmTheme.borderStrong,
-      ['--profile-accent-glass' as any]: warmTheme.surfaceMuted,
-      ['--profile-app-bg' as any]: warmTheme.appBackground,
-      ['--profile-surface' as any]: warmTheme.surface,
-      ['--profile-surface-strong' as any]: warmTheme.surfaceStrong,
-      ['--profile-surface-muted' as any]: warmTheme.surfaceMuted,
-      ['--profile-button' as any]: warmTheme.button,
-      ['--profile-glow' as any]: warmTheme.glow,
-      ['--profile-success' as any]: warmTheme.success,
-      ['--profile-danger' as any]: warmTheme.danger,
+      ['--profile-accent' as any]: profilePalette.accent,
+      ['--profile-accent-soft' as any]: profilePalette.accentSoft,
+      ['--profile-accent-deep' as any]: profilePalette.accentDeep,
+      ['--profile-text' as any]: profilePalette.text,
+      ['--profile-text-soft' as any]: profilePalette.textSoft,
+      ['--profile-text-muted' as any]: profilePalette.textMuted,
+      ['--profile-text-faint' as any]: profilePalette.textFaint,
+      ['--profile-border' as any]: profilePalette.border,
+      ['--profile-border-strong' as any]: profilePalette.borderStrong,
+      ['--profile-accent-glass' as any]: profilePalette.surfaceMuted,
+      ['--profile-app-bg' as any]: profilePalette.appBackground,
+      ['--profile-surface' as any]: profilePalette.surface,
+      ['--profile-surface-strong' as any]: profilePalette.surfaceStrong,
+      ['--profile-surface-muted' as any]: profilePalette.surfaceMuted,
+      ['--profile-button' as any]: profilePalette.button,
+      ['--profile-button-text' as any]: profilePalette.accentDeep,
+      ['--profile-glow' as any]: profilePalette.glow,
+      ['--profile-success' as any]: profilePalette.success,
+      ['--profile-danger' as any]: profilePalette.danger,
       ['--profile-danger-soft' as any]: 'rgba(184,92,79,0.2)',
       ['--profile-danger-border' as any]: 'rgba(184,92,79,0.58)',
     }}>
@@ -501,7 +492,7 @@ export default function PlayerInformationPage({
                   ...S.tabBtn,
                   background: active ? G.goldGlass : 'transparent',
                   borderBottom: active ? `3px solid ${G.gold}` : '3px solid transparent',
-                  boxShadow: active ? warmTheme.glow : 'none',
+                  boxShadow: active ? profilePalette.glow : 'none',
                 }}
               >
                 <span style={{ ...S.tabGlyph, opacity: active ? 0.9 : 0.35 }}>{tab.glyph}</span>
@@ -531,6 +522,7 @@ export default function PlayerInformationPage({
                 onOpenTitles={() => setShowTitles(true)}
                 onChangePicture={() => setShowPictures(true)}
                 themeBaseId={themeBaseId}
+                palette={profilePalette}
                 onChooseTheme={chooseThemeBase}
                 onSaveTheme={saveUiTheme}
                 onResetThemeDraft={resetUiThemeDraft}
@@ -546,6 +538,7 @@ export default function PlayerInformationPage({
             {activeTab === 'menu-backgrounds' && (
               <MainMenuBackgroundsTab
                 selectedBackgroundId={profile.mainMenuBackgroundId ?? DEFAULT_MAIN_MENU_BACKGROUND_ID}
+                palette={profilePalette}
                 backgrounds={mainMenuBackgrounds}
                 progress={progress}
                 loading={mainMenuBackgroundsLoading}
@@ -563,6 +556,7 @@ export default function PlayerInformationPage({
                 onImportFile={handleImportFile}
                 importStatus={importStatus}
                 saveTampered={saveTampered}
+                palette={profilePalette}
                 confirmDelete={confirmDelete}
                 setConfirmDelete={setConfirmDelete}
                 onWipe={handleWipe}
@@ -652,6 +646,7 @@ function ProfileTab(props: {
   onOpenTitles: () => void;
   onChangePicture: () => void;
   themeBaseId: string;
+  palette: UiPalette;
   onChooseTheme: (id: string) => void;
   onSaveTheme: () => void;
   onResetThemeDraft: () => void;
@@ -661,7 +656,7 @@ function ProfileTab(props: {
   onClearSignatureCard: (slot: number) => void;
 }) {
   const {
-    progress, profile, currentAvatar, currentTitle,
+    progress, profile, currentAvatar, currentTitle, palette,
     totalCollection, distinctCards, totalBossClears, distinctBosses,
     unlockedTitlesCount, titlesTotal, dailyLogin,
     onOpenTitles, onChangePicture, themeBaseId,
@@ -777,9 +772,9 @@ function ProfileTab(props: {
                 disabled={!unlocked}
                 style={{
                   ...S.themeCard,
-                  background: active ? warmTheme.surfaceStrong : warmTheme.surface,
-                  border: active ? `2px solid ${warmTheme.accent}` : `1px solid ${warmTheme.border}`,
-                  boxShadow: active ? warmTheme.glow : 'none',
+                  background: active ? palette.surfaceStrong : palette.surface,
+                  border: active ? `2px solid ${palette.accent}` : `1px solid ${palette.border}`,
+                  boxShadow: active ? palette.glow : 'none',
                   cursor: unlocked ? 'pointer' : 'not-allowed',
                   opacity: unlocked ? 1 : 0.52,
                 }}
@@ -816,7 +811,7 @@ function ProfileTab(props: {
           {Array.from({ length: 5 }, (_, i) => {
             const cardId = (profile.signatureCardIds ?? [])[i] ?? null;
             const def = cardId ? CardRegistry.get(cardId) : null;
-            const rarityColor = def ? (SIG_RARITY_COLOR[def.rarity] ?? G.gold) : warmTheme.border;
+            const rarityColor = def ? (SIG_RARITY_COLOR[def.rarity] ?? G.gold) : palette.border;
             return (
               <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'center' }}>
                 <button
@@ -825,9 +820,9 @@ function ProfileTab(props: {
                   title={def ? `Change: ${def.name}` : `Pick card for slot ${i + 1}`}
                   style={{
                     width: 90, height: 124, borderRadius: 12,
-                    border: def ? `1px solid ${rarityColor}55` : `1px dashed ${warmTheme.border}`,
+                    border: def ? `1px solid ${rarityColor}55` : `1px dashed ${palette.border}`,
                     ...(def ? getLiveCardFaceBackgroundStyle(def, 'normal', 'front') : {}),
-                    backgroundColor: def ? warmTheme.surfaceStrong : warmTheme.surface,
+                    backgroundColor: def ? palette.surfaceStrong : palette.surface,
                     position: 'relative',
                     display: 'flex', flexDirection: 'column', alignItems: 'stretch',
                     overflow: 'hidden', cursor: 'pointer', padding: 0,
@@ -857,8 +852,8 @@ function ProfileTab(props: {
                       position: 'absolute', inset: 0,
                       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4,
                     }}>
-                      <span style={{ fontSize: 20, color: warmTheme.textMuted, fontWeight: 300, lineHeight: 1 }}>+</span>
-                      <span style={{ fontSize: 7, color: warmTheme.textFaint, letterSpacing: 1, textTransform: 'uppercase' }}>
+                      <span style={{ fontSize: 20, color: palette.textMuted, fontWeight: 300, lineHeight: 1 }}>+</span>
+                      <span style={{ fontSize: 7, color: palette.textFaint, letterSpacing: 1, textTransform: 'uppercase' }}>
                         Slot {i + 1}
                       </span>
                     </div>
@@ -891,13 +886,14 @@ function ProfileTab(props: {
 
 function MainMenuBackgroundsTab(props: {
   selectedBackgroundId: string;
+  palette: UiPalette;
   backgrounds: MainMenuBackgroundEntry[];
   progress: ReturnType<typeof selectProgress>;
   loading: boolean;
   loadError: string | null;
   onSelectBackground: (id: string) => void;
 }) {
-  const { selectedBackgroundId, backgrounds, progress, loading, loadError, onSelectBackground } = props;
+  const { selectedBackgroundId, backgrounds, progress, loading, loadError, onSelectBackground, palette } = props;
 
   return (
     <div style={S.tabGrid}>
@@ -925,8 +921,8 @@ function MainMenuBackgroundsTab(props: {
                 }}
                 style={{
                   ...S.menuBgCard,
-                  border: active ? `2px solid ${warmTheme.accent}` : `1px solid ${warmTheme.border}`,
-                  boxShadow: active ? warmTheme.glow : 'none',
+                  border: active ? `2px solid ${palette.accent}` : `1px solid ${palette.border}`,
+                  boxShadow: active ? palette.glow : 'none',
                   opacity: unlocked ? 1 : 0.62,
                   cursor: unlocked ? 'pointer' : 'not-allowed',
                 }}
@@ -943,8 +939,8 @@ function MainMenuBackgroundsTab(props: {
                   <div
                     style={{
                       ...S.menuBgState,
-                      color: active ? warmTheme.accentDeep : unlocked ? warmTheme.textSoft : warmTheme.textMuted,
-                      background: active ? warmTheme.accentSoft : unlocked ? warmTheme.surfaceStrong : warmTheme.surfaceMuted,
+                      color: active ? palette.accentDeep : unlocked ? palette.textSoft : palette.textMuted,
+                      background: active ? palette.accentSoft : unlocked ? palette.surfaceStrong : palette.surfaceMuted,
                     }}
                   >
                     {stateLabel}
@@ -1027,13 +1023,14 @@ function SaveTab(props: {
   onImportFile: (ev: React.ChangeEvent<HTMLInputElement>) => void;
   importStatus: { kind: 'ok' | 'err'; msg: string } | null;
   saveTampered: boolean;
+  palette: UiPalette;
   confirmDelete: number;
   setConfirmDelete: (n: number) => void;
   onWipe: () => void;
 }) {
   const {
     onSave, gameSaved, onExport, onImport, fileInputRef, onImportFile,
-    importStatus, saveTampered, confirmDelete, setConfirmDelete, onWipe,
+    importStatus, saveTampered, confirmDelete, setConfirmDelete, onWipe, palette,
   } = props;
 
   return (
@@ -1045,10 +1042,10 @@ function SaveTab(props: {
           style={{
             ...S.goldBtn,
             width: '100%',
-            background: gameSaved ? 'linear-gradient(135deg, rgba(79,138,71,0.75) 0%, rgba(55,110,50,0.85) 100%)' : warmTheme.button,
+            background: gameSaved ? 'linear-gradient(135deg, rgba(79,138,71,0.75) 0%, rgba(55,110,50,0.85) 100%)' : palette.button,
             border: gameSaved ? '1px solid rgba(79,138,71,0.6)' : `1px solid ${G.goldBorderStrong}`,
-            color: gameSaved ? '#c8edc4' : warmTheme.accentDeep,
-            boxShadow: gameSaved ? '0 4px 14px rgba(79,138,71,0.28)' : warmTheme.glow,
+            color: gameSaved ? '#c8edc4' : palette.accentDeep,
+            boxShadow: gameSaved ? '0 4px 14px rgba(79,138,71,0.28)' : palette.glow,
           }}
         >
           {gameSaved ? '✓ Saved!' : 'Save Game Data'}

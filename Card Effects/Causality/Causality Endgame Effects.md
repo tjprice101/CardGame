@@ -4,19 +4,19 @@ This file summarizes implemented Causality endgame content. Causality materializ
 
 ## Eternity's Wake Rewards
 
-- **The First Cause Unwritten** — Eternal Light. Soph placement gains 4 Limitless Cosmos, inspects the top 5 cards, and keeps 2. Uses high-base Ain and Soph attacks.
-- **The Last Horizon Remembered** — Eternal Light. Soph placement searches a Dark card, then converts 3 prepared Limitless Light Stacks into 6 Cosmos when possible.
+- **The First Cause Unwritten** — Eternal Light. Soph placement gains 5 Cosmos, exchanges the top and bottom cards of the deck, then draws 2 cards.
+- **The Last Horizon Remembered** — Eternal Light. Soph placement searches for a Dark card; if you hold at least 4 Cosmos, gain 10 Limitless Light Stacks and 4,000 Divine Light.
 - **Sovereign Ink of the Black Sun** — persistent Eternal Dark. Inspects the top 5 and keeps 2; if 2 Cosmos are available, consumes them to draw 3 and gain 8 Light Stacks. Returns to hand on a four-card cooldown.
 - **Chromatic Verdict of Elsewhen** — Eternal Dark. Recovers Light/Dark cards; if 3 Cosmos are available, consumes them for 7,500 base Divine Light and shuffles discard into the deck.
-- **Pearlescent Engine Beyond Sequence** — Eternal Ain Soph Aur. Requires The First Cause Unwritten and Sovereign Ink of the Black Sun, generates 5 Cosmos and searches Light/Dark on summon, and has a 5,200-base Bridge.
+- **Pearlescent Engine Beyond Sequence** — Eternal Ain Soph Aur. Requires The First Cause Unwritten and Sovereign Ink of the Black Sun; on summon it generates 5 Cosmos and searches for one Light and one Dark card. Its Bridge value is derived from its registered Spectrum scaling.
 
 ## Infinite Cards
 
-- **Origin Script of Every Tomorrow** — Infinite Light; 8 Cosmos plus two cards on Soph placement and major two-attack scaling.
+- **Origin Script of Every Tomorrow** — Infinite Light; Soph placement gains 8 Cosmos, searches for up to 2 Light and 2 Dark cards, and gains 6 Limitless Light Stacks. It has two authored attacks.
 - **Chromatic Horizon Without End** — Infinite Light; inspects the top 7 and keeps 3, then converts 4 Light into 9 Cosmos when prepared.
-- **Law-Eater of the Pearl Void** — persistent Infinite Dark; searches all three card families, then consumes 4 Cosmos for 14,000 base Divine Light, three cards, and 10 Light Stacks.
-- **Archive Reborn in Chromatic Ink** — persistent Infinite Dark; recovers one card of every family, then consumes 3 Cosmos to search all families, shuffle discard, and regenerate 5 Cosmos.
-- **Heart Beyond All Causality** — Infinite Ain Soph Aur; generates 10 Cosmos, draws 3, searches all card families, shuffles discard, then attacks with a 15,000-base Bridge.
+- **Law-Eater of the Pearl Void** — persistent Infinite Dark; searches for one Light and one Dark card. If at least 4 Cosmos are available, it consumes them for 14,000 base Divine Light, 3 cards, and 10 Limitless Light Stacks.
+- **Archive Reborn in Chromatic Ink** — persistent Infinite Dark; recovers one Light and one Dark card. If at least 3 Cosmos are available, it consumes them to search for another Light and Dark, shuffles discard into the deck, and gains 5 Cosmos.
+- **Heart Beyond All Causality** — Infinite Ain Soph Aur; its summon generates 10 Cosmos, draws 3, searches for one Light and one Dark, and shuffles discard into the deck. Its Bridge uses registered Collection Power scaling and spends 8 Limitless Light Stacks.
 
 ## Materialized Abilities
 

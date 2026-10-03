@@ -1,11 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { uiTypography, type UiPalette } from '@/ui/theme';
-import { useStore, selectDeck, selectProfile, selectProgress, selectTurn } from '@/state/store';
+import { uiTypography, warmTheme, type UiPalette } from '@/ui/theme';
+import { useStore, selectDeck, selectProfile, selectProgress, selectSettings, selectTurn } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { getEverCollectionCount, getTotalPacksOpened } from '@/systems/progression/ownershipHistory';
 import { resolveAvatar } from '@/data/profile/avatars';
 import { resolveTitleBadge } from '@/data/profile/titleBadges';
-import { DEFAULT_UI_THEME_ID, getEffectiveThemePalette, isThemeOscillating } from '@/data/profile/uiThemes';
 import {
   DEFAULT_MAIN_MENU_BACKGROUND_ID,
   getDefaultMainMenuBackground,
@@ -19,6 +18,7 @@ import { summarizeAchievements } from '@/systems/progression/achievements';
 import { evaluateDailyLogin } from '@/systems/progression/dailyLogin';
 import { listEnigmaDefinitions } from '@/systems/progression/EnigmaSystem';
 import { isQuestComplete, refreshQuestRotation } from '@/systems/progression/quests';
+import { DEFAULT_CONTROL_BINDINGS, type KeybindActionId } from '@/types/game';
 import DivineLightAcquisitionScreen from '@/ui/hud/DivineLightAcquisitionScreen';
 import GameEmblem from '@/ui/components/GameEmblem';
 import { t } from '@/ui/preferences';
@@ -91,6 +91,8 @@ const MAIN_MENU_BANNER_ART = {
   inventory: menuAsset('menu-banners/card-mastery.png'),
 } as const;
 
+const EVENT_BANNER_DURATION_MS = 7_500;
+
 /**
  * Daily atmosphere quote — refreshes by date so the same line lasts a day
  * but the screen still feels alive across sessions. Single source of truth
@@ -108,7 +110,7 @@ const ATMOSPHERE_LINES = [
   'The board remembers what the hand forgets.',
   'No spark is wasted on the willing.',
   'Light is not waiting — it is building toward the next decisive turn.',
-  'Every Seraphim carries a war the world forgot. Honor that.',
+  'Every awakened card carries a purpose the world forgot. Honor that.',
   'Divine Light is earned. Spend it as boldly as you dare.',
   'The Wake calls. Answer when you are strong enough to finish what you start.',
   'The infinite is not granted — it is played for, one card at a time.',
@@ -117,6 +119,13 @@ const ATMOSPHERE_LINES = [
 function pickDailyLine(seed: number): string {
   const day = Math.floor(Date.now() / 86_400_000);
   return ATMOSPHERE_LINES[(day + seed) % ATMOSPHERE_LINES.length];
+}
+
+function formatMenuShortcut(code: string): string {
+  if (code.startsWith('Key')) return code.slice(3);
+  if (code.startsWith('Digit')) return code.slice(5);
+  if (code === 'Space') return 'Space';
+  return code;
 }
 
 /**
@@ -138,6 +147,7 @@ function TileButton(props: {
   badge?: { label: string; tone?: 'alert' | 'info' | 'gold' };
   /** Optional icon glyph */
   icon?: React.ReactNode;
+  showCaption?: boolean;
   selected?: boolean;
   onPreview?: () => void;
 }) {
@@ -185,7 +195,7 @@ function TileButton(props: {
 
   return (
     <button
-      className="menu-tactile-btn"
+      className={`menu-tactile-btn${props.showCaption ? ' main-menu-show-caption' : ''}`}
       onClick={props.onClick}
       disabled={props.disabled}
       aria-pressed={props.selected}
@@ -220,7 +230,7 @@ function TileButton(props: {
         props.onPreview?.();
         if (!props.disabled) {
           const btn = e.currentTarget;
-          btn.style.filter = 'brightness(1.15) saturate(1.2)';
+          btn.style.filter = 'brightness(1.3) saturate(1.24)';
           btn.style.borderColor = theme.accentSoft;
           btn.style.outline = `1px solid ${theme.accentSoft}`;
           btn.style.outlineOffset = '2px';
@@ -367,7 +377,7 @@ function ProgressActionTile({ action, theme }: { action: MenuAction; theme: UiPa
 }
 
 /** A resource counter pill in the top-right ribbon. */
-function ResourcePill(props: { glyph: React.ReactNode; label: string; value: string; tone?: 'gold' | 'crimson' | 'cool'; theme: UiPalette; onClick?: () => void }) {
+function ResourcePill(props: { glyph: React.ReactNode; label: string; value: string; tone?: 'gold' | 'crimson' | 'cool'; theme: UiPalette; onClick?: () => void; showPlus?: boolean }) {
   const t = props.tone ?? 'gold';
   const colors = t === 'crimson'
     ? { glyph: props.theme.danger, glow: props.theme.danger }
@@ -399,7 +409,7 @@ function ResourcePill(props: { glyph: React.ReactNode; label: string; value: str
         <span style={{ fontFamily: uiTypography.display, fontSize: 13, letterSpacing: 1, lineHeight: 1 }}>{props.value}</span>
         <span style={{ fontFamily: uiTypography.body, fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', opacity: 0.55, lineHeight: 1 }}>{props.label}</span>
       </span>
-      {props.onClick && <span aria-hidden style={{ width: 20, height: 20, display: 'grid', placeItems: 'center', borderRadius: '50%', background: 'rgba(125,92,192,0.28)', color: props.theme.accentSoft, fontSize: 14, fontWeight: 700 }}>+</span>}
+      {props.onClick && props.showPlus !== false && <span aria-hidden style={{ width: 20, height: 20, display: 'grid', placeItems: 'center', borderRadius: '50%', background: 'rgba(125,92,192,0.28)', color: props.theme.accentSoft, fontSize: 14, fontWeight: 700 }}>+</span>}
     </>;
   return props.onClick
     ? <button type="button" className="menu-tactile-btn" onClick={props.onClick} title={`Open ${props.label}`} style={style}>{contents}</button>
@@ -418,7 +428,12 @@ export default function MainMenuHub(props: MainMenuHubProps) {
   const deck = useStore(selectDeck);
   const profile = useStore(selectProfile);
   const progress = useStore(selectProgress);
+  const settings = useStore(selectSettings);
   const turn = useStore(selectTurn);
+  const controls: Record<KeybindActionId, string> = {
+    ...DEFAULT_CONTROL_BINDINGS,
+    ...(settings.controls ?? {}),
+  };
 
   const noDecklist = deck.deckList.length === 0;
   const canBeginTurn = !noDecklist && turn.phase === 'idle';
@@ -461,7 +476,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
   const [mounted, setMounted] = useState(false);
   const [showDivineLightReference, setShowDivineLightReference] = useState(false);
   const [eventSlide, setEventSlide] = useState(0);
-  const [themeNowMs, setThemeNowMs] = useState<number>(() => Date.now());
+  const [eventSlideStartedAtMs, setEventSlideStartedAtMs] = useState(() => Date.now());
   const [eventNowMs, setEventNowMs] = useState<number>(() => Date.now());
   const [menuBackgroundChoices, setMenuBackgroundChoices] = useState<MainMenuBackgroundEntry[]>([getDefaultMainMenuBackground()]);
   useEffect(() => { const id = window.setTimeout(() => setMounted(true), 20); return () => window.clearTimeout(id); }, []);
@@ -472,11 +487,15 @@ export default function MainMenuHub(props: MainMenuHubProps) {
   }, []);
 
   useEffect(() => {
-    const themeId = profile.uiThemeId || DEFAULT_UI_THEME_ID;
-    if (!isThemeOscillating(themeId)) return;
-    const id = setInterval(() => setThemeNowMs(Date.now()), 180);
-    return () => clearInterval(id);
-  }, [profile.uiThemeId]);
+    if (!props.onForgeOfTranscendence || !props.onEventCausality) return;
+    const elapsedMs = Date.now() - eventSlideStartedAtMs;
+    const remainingMs = Math.max(0, EVENT_BANNER_DURATION_MS - elapsedMs);
+    const timeoutId = window.setTimeout(() => {
+      setEventSlide(current => (current + 1) % 2);
+      setEventSlideStartedAtMs(Date.now());
+    }, remainingMs + 50);
+    return () => window.clearTimeout(timeoutId);
+  }, [eventSlideStartedAtMs, props.onForgeOfTranscendence, props.onEventCausality]);
 
   useEffect(() => {
     let cancelled = false;
@@ -501,15 +520,31 @@ export default function MainMenuHub(props: MainMenuHubProps) {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
-  const uiTheme = useMemo(
-    () => getEffectiveThemePalette(
-      profile.uiThemeId || DEFAULT_UI_THEME_ID,
-      profile.customUiTheme,
-      progress,
-      themeNowMs,
-    ),
-    [profile.uiThemeId, profile.customUiTheme, progress, themeNowMs],
-  );
+  useEffect(() => {
+    const shortcuts: Array<[KeybindActionId, () => void]> = [
+      ['mainMenuCardStore', props.onCardStore],
+      ['mainMenuDeckBuilder', props.onDeckBuilder],
+      ['mainMenuDailyCalendar', props.onDailyCalendar],
+      ['mainMenuChallenges', props.onQuests],
+      ['mainMenuBeginTurn', props.onBeginTurn],
+    ];
+    function onMenuShortcut(e: KeyboardEvent) {
+      const target = e.target as HTMLElement | null;
+      const isTyping = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement
+        || target?.tagName === 'SELECT' || target?.isContentEditable;
+      if (e.defaultPrevented || e.repeat || e.ctrlKey || e.metaKey || e.altKey || isTyping) return;
+      if (e.code === 'Enter' && target?.closest('button, a, [role="button"]')) return;
+      const shortcut = shortcuts.find(([id]) => controls[id] === e.code);
+      if (!shortcut) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      shortcut[1]();
+    }
+    window.addEventListener('keydown', onMenuShortcut, true);
+    return () => window.removeEventListener('keydown', onMenuShortcut, true);
+  }, [controls.mainMenuCardStore, controls.mainMenuDeckBuilder, controls.mainMenuDailyCalendar, controls.mainMenuChallenges, controls.mainMenuBeginTurn, props.onCardStore, props.onDeckBuilder, props.onDailyCalendar, props.onQuests, props.onBeginTurn]);
+
+  const uiTheme = warmTheme;
 
   const mainMenuBackground = useMemo(
     () => resolveMainMenuBackground(
@@ -523,6 +558,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
   const divineLight = Math.floor(progress.divineLight ?? 0);
   const cards = ownedCardCopies;
   const eventCountdown = formatCountdown(getCausalityEventCountdown(eventNowMs));
+  const eventSlideProgress = Math.min(1, Math.max(0, (eventNowMs - eventSlideStartedAtMs) / EVENT_BANNER_DURATION_MS));
   const refreshedQuests = useMemo(() => refreshQuestRotation({
     daily: progress.quests.daily.map(quest => ({ ...quest })),
     weekly: progress.quests.weekly.map(quest => ({ ...quest })),
@@ -650,10 +686,33 @@ export default function MainMenuHub(props: MainMenuHubProps) {
   const playActions = ['garden', 'eternitys-wake']
     .map(id => menuSections.play.find(action => action.id === id))
     .filter((action): action is MenuAction => !!action);
+  const menuShortcutLabels: Record<string, string> = {
+    store: formatMenuShortcut(controls.mainMenuCardStore),
+    'deck-builder': formatMenuShortcut(controls.mainMenuDeckBuilder),
+    'daily-calendar': formatMenuShortcut(controls.mainMenuDailyCalendar),
+    challenges: formatMenuShortcut(controls.mainMenuChallenges),
+  };
+  const beginTurnShortcut = formatMenuShortcut(controls.mainMenuBeginTurn);
+  const enigmaAction = progressActions.find(action => action.id === 'enigma')!;
+  const dailyHighlights = [
+    {
+      id: 'daily-calendar', label: 'Login reward', icon: '▦', onClick: props.onDailyCalendar,
+      detail: calendarBadgeCount > 0 ? `${calendarBadgeCount} reward${calendarBadgeCount === 1 ? '' : 's'} ready` : 'Monthly and streak rewards',
+      badge: calendarBadgeCount,
+    },
+    {
+      id: 'challenges', label: 'Challenges', icon: '⚑', onClick: props.onQuests,
+      detail: 'Daily and weekly objectives', badge: claimableQuestCount,
+    },
+    {
+      id: 'enigma', label: 'Enigma', icon: '◈', onClick: props.onEnigma,
+      detail: enigmaAction.status ?? 'Hidden manuscripts', badge: claimableEnigmaCount, disabled: enigmaAction.disabled,
+    },
+  ];
 
   return (
     <div
-      className="main-menu-hub"
+      className="main-menu-hub main-menu-reference-hub"
       style={{
         position: 'absolute',
         inset: 0,
@@ -661,256 +720,177 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         pointerEvents: 'auto',
         opacity: mounted ? 1 : 0,
         transition: 'opacity 420ms ease',
-        // Full-bleed art with deep vignette so foreground UI reads clearly
-        backgroundImage:
-          'radial-gradient(120% 80% at 30% 40%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.35) 60%, rgba(0,0,0,0.78) 100%), '
-          + 'linear-gradient(180deg, rgba(5,10,22,0.45) 0%, rgba(5,10,22,0) 22%, rgba(5,10,22,0) 70%, rgba(5,10,22,0.65) 100%), '
-          + `url("${mainMenuBackground.imageUrl}")`,
-        backgroundSize: 'cover, cover, cover',
-        backgroundPosition: 'center, center, center',
+        ['--menu-accent' as any]: uiTheme.accent,
+        ['--menu-accent-soft' as any]: uiTheme.accentSoft,
+        ['--menu-accent-deep' as any]: uiTheme.accentDeep,
+        ['--menu-border' as any]: uiTheme.border,
+        ['--menu-border-strong' as any]: uiTheme.borderStrong,
+        ['--menu-surface' as any]: uiTheme.surface,
+        ['--menu-surface-strong' as any]: uiTheme.surfaceStrong,
+        ['--menu-surface-muted' as any]: uiTheme.surfaceMuted,
+        ['--menu-text' as any]: uiTheme.text,
+        ['--menu-text-soft' as any]: uiTheme.textSoft,
+        ['--menu-text-muted' as any]: uiTheme.textMuted,
+        ['--menu-text-faint' as any]: uiTheme.textFaint,
+        ['--menu-danger' as any]: uiTheme.danger,
+        ['--menu-button' as any]: uiTheme.button,
+        ['--menu-button-text' as any]: uiTheme.accentDeep,
+        ['--menu-glow' as any]: uiTheme.glow,
+        ['--menu-background-image' as any]: `url("${mainMenuBackground.imageUrl}")`,
       }}
     >
-      {/* ───────── Top ribbon ───────── */}
-      <div className="main-menu-topbar" style={{
-        position: 'absolute', top: 0, left: 0, right: 0,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '14px 22px',
-      }}>
-        {/* Left: utility icon strip */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <IconStripButton glyph={<GameEmblem id="settings" size={21} />} ariaLabel="Settings" onClick={props.onSettings} theme={uiTheme} />
-        </div>
-        {/* Right: resource pills + clock */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            fontFamily: uiTypography.body, fontSize: 11, letterSpacing: 1.4,
-            color: uiTheme.textSoft, textTransform: 'uppercase', marginRight: 6,
-          }}>
-            Pantheon
-          </div>
-          <ResourcePill glyph={<GameEmblem id="cards" size={19} />} label="Cards" value={cards.toLocaleString()} tone="cool" theme={uiTheme} onClick={props.onCardStore} />
-          <ResourcePill glyph={<GameEmblem id="aberrated-shards" size={19} />} label="Shards" value={shards.toLocaleString()} tone="crimson" theme={uiTheme} onClick={props.onCardStore} />
-          <ResourcePill glyph={<GameEmblem id="divine-light" size={19} />} label="Divine Light" value={divineLight.toLocaleString()} tone="gold" theme={uiTheme} onClick={() => setShowDivineLightReference(true)} />
-        </div>
-      </div>
-
-      {/* ───────── Left: identity card ───────── */}
-      <div className="main-menu-identity" style={{
-        position: 'absolute',
-        left: 'clamp(40px, 7vw, 104px)',
-        top: 'clamp(220px, 32vh, 260px)',
-        transform: 'none',
-        width: 'min(360px, 32vw)',
-        display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8,
-      }}>
-        {/* Level halo + name */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div style={{
-            width: 84, height: 84,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            borderRadius: '50%',
-            border: `2px solid ${uiTheme.borderStrong}`,
-            background: uiTheme.surface,
-            overflow: 'hidden',
-          }}>
+      <header className="main-menu-profile-zone">
+        <h2 className="main-menu-section-heading">Identity</h2>
+        <div className="main-menu-profile-row">
+          <div className="main-menu-profile-avatar" title={avatar.name}>
             {avatar.imageUrl
-              ? <img
-                  src={avatar.imageUrl}
-                  alt={avatar.name}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  draggable={false}
-                />
-              : <div style={{
-                  fontFamily: uiTypography.display, fontSize: 30, color: uiTheme.text, letterSpacing: 1,
-                  textShadow: '0 2px 12px rgba(0,0,0,0.6)',
-                }} title={avatar.name}>
-                  {avatar.glyph ?? '◈'}
-                </div>
-            }
+              ? <img src={avatar.imageUrl} alt={avatar.name} draggable={false} />
+              : <span>{avatar.glyph ?? '◈'}</span>}
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{
-              fontFamily: uiTypography.display, fontSize: 22, letterSpacing: 1.4, color: uiTheme.text,
-              textShadow: '0 2px 12px rgba(0,0,0,0.7)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-            }}>
-              {profile.name || 'Acolyte'}
-            </div>
-            {titleBadge && (
-              <div style={{
-                fontFamily: uiTypography.body, fontSize: 11, fontStyle: 'italic',
-                color: uiTheme.accentSoft, letterSpacing: 0.6, textShadow: '0 1px 6px rgba(0,0,0,0.6)',
-              }}>
-                {titleBadge.text}
-              </div>
-            )}
-            <div style={{
-              fontFamily: uiTypography.body, fontSize: 10, letterSpacing: 1.4,
-              color: uiTheme.textMuted, textTransform: 'uppercase', marginTop: 2,
-            }}>
-              Active Deck · {deck.deckList.length} cards
-            </div>
+          <div className="main-menu-profile-copy">
+            <strong>{profile.name || 'Acolyte'}</strong>
+            {titleBadge && <em>{titleBadge.text}</em>}
+            <small>Active deck · {deck.deckList.length} cards</small>
           </div>
+          <IconStripButton glyph={<GameEmblem id="settings" size={20} />} ariaLabel="Settings" onClick={props.onSettings} theme={uiTheme} />
         </div>
         <button className="menu-tactile-btn main-menu-quote" onClick={props.onPlayerInfo} title="Open Player Information">
           “{dailyLine}”
         </button>
-      </div>
+      </header>
 
-      {/* ───────── Bottom-left: news / event banners ───────── */}
-      <div className="main-menu-events" style={{
-        position: 'absolute',
-        left: 'clamp(20px, 3vw, 56px)',
-        bottom: 'clamp(22px, 3vh, 38px)',
-        display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 10,
-        maxWidth: 'min(520px, 40vw)',
-        width: 'min(520px, 40vw)',
-      }}>
-        {/* Forge of Transcendence — matches the Causality banner's size/dimensions. */}
-        {props.onForgeOfTranscendence && eventSlide === 0 && (
-          <button
-            className="menu-tactile-btn"
-            onClick={props.onForgeOfTranscendence}
-            disabled={forgeLocked}
-            style={{
-              position: 'relative',
-              width: 'min(460px, 40vw)',
-              minHeight: 280,
-              padding: '24px 30px 28px',
-              borderRadius: 14,
-              border: '1px solid rgba(210,180,255,0.55)',
-              backgroundImage: `linear-gradient(90deg, rgba(20,10,36,0.92) 0%, rgba(20,10,36,0.7) 62%, rgba(20,10,36,0.22) 100%), url("${MAIN_MENU_BANNER_ART.forgeOfTranscendence}")`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              color: '#f4ecff',
-              fontFamily: uiTypography.body,
-              textAlign: 'left',
-              boxShadow: '0 26px 62px rgba(150,90,255,0.28)',
-              cursor: forgeLocked ? 'not-allowed' : 'pointer',
-              opacity: forgeLocked ? 0.72 : 1,
-              overflow: 'hidden',
-            }}
-          >
-            <div style={{
-              position: 'absolute', top: 14, left: 18,
-              padding: '3px 13px', borderRadius: 6,
-              background: 'linear-gradient(90deg, #8f102f, #d51f52 45%, #ff2f92 72%, #9d1239)', color: '#fff4f7',
-              fontFamily: uiTypography.display, fontSize: 12, letterSpacing: 1.8, fontWeight: 700,
-            }}>BEYOND ALL SETS</div>
-            <div style={{ marginTop: 40, fontFamily: uiTypography.display, fontSize: 26, letterSpacing: 2, textTransform: 'uppercase' }}>
-              Forge of Transcendence
-            </div>
-            <div style={{ marginTop: 7, fontSize: 13, opacity: 0.85, letterSpacing: 0.6, color: 'rgba(238,228,255,0.9)' }}>
-              {forgeUnlocked ? 'Enter the gallery beyond every set.' : `Requires every event boss beaten · ${forgeBossesCleared}/${FORGE_EVENT_BOSS_IDS.length}`}
-            </div>
-            <div style={{
-              position: 'absolute', bottom: 14, right: 22,
-              display: 'flex', alignItems: 'center', gap: 6,
-              fontFamily: uiTypography.display, fontSize: 13, letterSpacing: 1.8,
-              color: '#e2c9ff',
-            }}>
-              {forgeUnlocked ? 'OPEN ▶' : `${progress.keysOfTranscendence ?? 0} KEYS OF TRANSCENDENCE`}
-            </div>
-          </button>
-        )}
-        {props.onEventCausality && eventSlide === 1 && (
-          <button
-            className="menu-tactile-btn causality-event-shimmer"
-            onClick={props.onEventCausality}
-            style={{
-              position: 'relative',
-              width: 'min(460px, 40vw)',
-              minHeight: 280,
-              padding: '24px 30px 28px',
-              borderRadius: 14,
-              border: '1px solid rgba(138, 221, 255, 0.72)',
-              backgroundImage: `linear-gradient(90deg, rgba(8,14,36,0.96) 0%, rgba(8,14,36,0.78) 62%, rgba(8,14,36,0.28) 100%), url("${MAIN_MENU_BANNER_ART.causalityEvent}")`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              color: '#eef4ff',
-              fontFamily: uiTypography.body,
-              textAlign: 'left',
-              boxShadow: '0 26px 62px rgba(83, 176, 255, 0.25)',
-              cursor: 'pointer',
-              overflow: 'hidden',
-            }}
-          >
-            <div style={{
-              position: 'absolute', top: 14, left: 18,
-              padding: '3px 13px', borderRadius: 6,
-              background: 'rgba(255, 125, 185, 0.9)', color: '#fff',
-              fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.5,
-            }}>LIMITED-TIME</div>
-            <div style={{ marginTop: 40, fontFamily: uiTypography.display, fontSize: 32, letterSpacing: 2.9, textTransform: 'uppercase' }}>
-              Causality
-            </div>
-            <div style={{ marginTop: 7, fontSize: 11, opacity: 0.82, letterSpacing: 0.6, color: 'rgba(214, 224, 248, 0.95)' }}>
-              Stellar Wish Event · Spend Aberrated Shards
-            </div>
-            <div style={{ marginTop: 10, fontSize: 11, letterSpacing: 1, color: '#d7b7ff', fontFamily: uiTypography.display }}>
-              Ends {CAUSALITY_EVENT_ENDS_LABEL}
-            </div>
-            <div style={{ marginTop: 4, fontSize: 13, letterSpacing: 1.2, color: '#8de6ff', fontFamily: uiTypography.display }}>
-              {eventCountdown}
-            </div>
-            <div style={{
-              position: 'absolute', bottom: 14, right: 22,
-              fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.5,
-              color: '#8de6ff',
-            }}>NEW ▶</div>
-          </button>
-        )}
-        {props.onForgeOfTranscendence && props.onEventCausality && (
-          <div className="main-menu-event-carousel-controls" aria-label="Event banners">
-            <button type="button" aria-label="Previous event banner" onClick={() => setEventSlide(current => (current + 1) % 2)}>‹</button>
-            <span aria-live="polite">{eventSlide + 1} / 2</span>
-            <button type="button" aria-label="Next event banner" onClick={() => setEventSlide(current => (current + 1) % 2)}>›</button>
-          </div>
-        )}
-      </div>
-
-      {/* ───────── Right: focused command deck ───────── */}
-      <div className="main-menu-command-deck" style={{
-        position: 'absolute',
-        right: 'clamp(80px, 7vw, 104px)',
-        top: 'clamp(96px, 13vh, 104px)',
-        bottom: 'clamp(6px, 1vh, 10px)',
-        width: 'min(500px, 36vw)',
-        display: 'flex', flexDirection: 'column', gap: 0,
-        padding: 0, boxSizing: 'border-box',
-        border: 'none', borderRadius: 0,
-        background: 'transparent',
-        backdropFilter: 'none',
-        WebkitBackdropFilter: 'none',
-        boxShadow: 'none',
-      }}>
-        <div className="main-menu-command-content">
-          <section className="main-menu-group">
-            <h2>Progress</h2>
-            <div className="main-menu-progress-grid">
-              {progressActions.map(action => <ProgressActionTile key={action.id} action={action} theme={uiTheme} />)}
-            </div>
-          </section>
-          <section className="main-menu-group">
-            <h2>Collection</h2>
-            <div className="main-menu-collection-grid">
-              {collectionActions.map(action => <TileButton key={action.id} theme={uiTheme} label={action.label} caption={action.status} icon={<GameEmblem id={action.id} size={18} />} tone={action.tone ?? 'cream-dim'} size="small" onClick={action.onClick} disabled={action.disabled} badge={action.badge} />)}
-            </div>
-          </section>
-          <section className="main-menu-group main-menu-play-group">
-            <h2>Play</h2>
-            <div className="main-menu-play-grid">
-              <div className="main-menu-play-links">
-                {playActions.map(action => <TileButton key={action.id} theme={uiTheme} label={action.label} caption={action.status} icon={<GameEmblem id={action.id} size={18} />} tone={action.tone ?? 'cream-dim'} size="small" onClick={action.onClick} disabled={action.disabled} badge={action.badge} />)}
-              </div>
-              <button type="button" className="menu-tactile-btn main-menu-begin-turn" onClick={beginTurnAction.onClick} disabled={beginTurnAction.disabled}>
-                <span>Active deck · Enter</span>
-                <strong>Begin Turn <i aria-hidden="true">→</i></strong>
-                <small>{beginTurnAction.status}</small>
-              </button>
-            </div>
-          </section>
+      <section className="main-menu-resource-zone" aria-labelledby="main-menu-resources-heading">
+        <h2 className="main-menu-section-heading" id="main-menu-resources-heading">Resources</h2>
+        <div className="main-menu-resource-bar" aria-label="Current resources">
+          <ResourcePill glyph={<GameEmblem id="cards" size={19} />} label="Cards" value={cards.toLocaleString()} tone="cool" theme={uiTheme} onClick={props.onCardStore} />
+          <ResourcePill glyph={<GameEmblem id="aberrated-shards" size={19} />} label="Shards" value={shards.toLocaleString()} tone="crimson" theme={uiTheme} onClick={props.onCardStore} showPlus={false} />
+          <ResourcePill glyph={<GameEmblem id="divine-light" size={19} />} label="Divine Light" value={divineLight.toLocaleString()} tone="gold" theme={uiTheme} onClick={() => setShowDivineLightReference(true)} />
         </div>
+      </section>
+
+      <nav className="main-menu-collection-rail" aria-label="Collection">
+        <h2 className="main-menu-section-heading">Collection</h2>
+        <div className="main-menu-collection-grid">
+          {collectionActions.map(action => {
+            const shortcut = menuShortcutLabels[action.id];
+            return (
+              <button
+                key={action.id}
+                type="button"
+                className="main-menu-rail-action"
+                onClick={action.onClick}
+                disabled={action.disabled}
+                title={`${action.label}${action.status ? ` · ${action.status}` : ''}`}
+                aria-keyshortcuts={shortcut}
+              >
+                <span className="main-menu-rail-icon"><GameEmblem id={action.id} size={23} /></span>
+                <span className="main-menu-rail-copy"><strong>{action.label}</strong><small>{action.status}</small></span>
+                {shortcut && <kbd aria-hidden="true">{shortcut}</kbd>}
+                {action.badge && <span className="main-menu-rail-badge" aria-label={`${action.badge.label} available`}>{action.badge.label}</span>}
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
+      <div className="main-menu-center-stage" aria-hidden="true">
+        <div className="main-menu-stage-orbit main-menu-stage-orbit-outer" />
+        <div className="main-menu-stage-orbit main-menu-stage-orbit-inner" />
+        <div className="main-menu-stage-sigil" />
+        <span className="main-menu-stage-card main-menu-stage-card-left" />
+        <span className="main-menu-stage-card main-menu-stage-card-right" />
       </div>
+
+      <div className="main-menu-right-stack">
+        <section className="main-menu-event-zone" aria-labelledby="main-menu-events-heading">
+          <h2 id="main-menu-events-heading" className="main-menu-section-heading">Events</h2>
+          {props.onForgeOfTranscendence && eventSlide === 0 && (
+            <button
+              type="button"
+              className="main-menu-event-card main-menu-event-card-forge"
+              onClick={props.onForgeOfTranscendence}
+              disabled={forgeLocked}
+              style={{ backgroundImage: `linear-gradient(180deg, rgba(8,7,14,0.05), rgba(8,7,14,0.9)), url("${MAIN_MENU_BANNER_ART.forgeOfTranscendence}")` }}
+            >
+              <span className="main-menu-event-tag">BEYOND ALL SETS</span>
+              <strong>Forge of Transcendence</strong>
+              <small>{forgeUnlocked ? 'A light with no allegiance.' : `Requires every event boss beaten · ${forgeBossesCleared}/${FORGE_EVENT_BOSS_IDS.length}`}</small>
+              <em>{forgeUnlocked ? 'OPEN' : `${progress.keysOfTranscendence ?? 0} Keys of Transcendence`}</em>
+            </button>
+          )}
+          {props.onEventCausality && eventSlide === 1 && (
+            <button
+              type="button"
+              className="main-menu-event-card main-menu-event-card-causality"
+              onClick={props.onEventCausality}
+              style={{ backgroundImage: `linear-gradient(180deg, rgba(8,7,14,0.04), rgba(8,7,14,0.92)), url("${MAIN_MENU_BANNER_ART.causalityEvent}")` }}
+            >
+              <span className="main-menu-event-tag is-limited">LIMITED-TIME</span>
+              <strong>Causality</strong>
+              <small>Stellar Wish Event · Spend Aberrated Shards</small>
+              <small>Ends {CAUSALITY_EVENT_ENDS_LABEL}</small>
+              <em>{eventCountdown}</em>
+            </button>
+          )}
+          {props.onForgeOfTranscendence && props.onEventCausality && (
+            <>
+              <div className="main-menu-event-carousel-controls" aria-label="Event banners">
+                <button type="button" aria-label="Previous event banner" onClick={() => { setEventSlide(current => (current + 1) % 2); setEventSlideStartedAtMs(Date.now()); }}>‹</button>
+                <div className="main-menu-event-slide-picks" role="group" aria-label="Choose event banner">
+                  {[0, 1].map(index => (
+                    <button key={index} type="button" aria-label={index === 0 ? 'Show Forge of Transcendence' : 'Show Causality'} aria-pressed={eventSlide === index} onClick={() => { setEventSlide(index); setEventSlideStartedAtMs(Date.now()); }}>
+                    </button>
+                  ))}
+                </div>
+                <span aria-live="polite">{eventSlide + 1} / 2</span>
+                <button type="button" aria-label="Next event banner" onClick={() => { setEventSlide(current => (current + 1) % 2); setEventSlideStartedAtMs(Date.now()); }}>›</button>
+              </div>
+              <div className="main-menu-event-timer" role="progressbar" aria-label="Time until next event banner" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(eventSlideProgress * 100)}>
+                <i key={eventSlideStartedAtMs} style={{ animationDuration: `${EVENT_BANNER_DURATION_MS}ms` }} />
+              </div>
+            </>
+          )}
+        </section>
+
+        <section className="main-menu-progress-zone" aria-labelledby="main-menu-progress-heading">
+          <h2 id="main-menu-progress-heading" className="main-menu-section-heading">Progress</h2>
+          <div className="main-menu-progress-grid main-menu-reference-progress-grid">
+            {progressActions.map(action => <ProgressActionTile key={action.id} action={action} theme={uiTheme} />)}
+          </div>
+        </section>
+      </div>
+
+      <div className="main-menu-status-zone">
+        <span className="main-menu-autosave-status"><i />Autosave active</span>
+        <small>Shortcuts: <kbd>{menuShortcutLabels.store}</kbd> Store · <kbd>{menuShortcutLabels['deck-builder']}</kbd> Builder · <kbd>{menuShortcutLabels['daily-calendar']}</kbd> Calendar · <kbd>{menuShortcutLabels.challenges}</kbd> Challenges</small>
+      </div>
+
+      <section className="main-menu-daily-zone" aria-labelledby="main-menu-daily-heading">
+        <h2 className="main-menu-section-heading" id="main-menu-daily-heading">Daily</h2>
+        <div className="main-menu-daily-highlights" aria-label="Daily highlights">
+          {dailyHighlights.map(highlight => (
+            <button key={highlight.id} type="button" className="main-menu-highlight" onClick={highlight.onClick} disabled={highlight.disabled}>
+              <span className="main-menu-highlight-icon"><GameEmblem id={highlight.id} size={22} /></span>
+              <span className="main-menu-highlight-copy"><strong>{highlight.label}</strong><small>{highlight.detail}</small></span>
+              {highlight.badge > 0 && <span className="main-menu-highlight-badge">{highlight.badge}</span>}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="main-menu-play-zone" aria-labelledby="main-menu-play-heading">
+        <h2 id="main-menu-play-heading" className="main-menu-section-heading">Play</h2>
+        <div className="main-menu-play-grid">
+          <div className="main-menu-play-links">
+            {playActions.map(action => <TileButton key={action.id} theme={uiTheme} label={action.label} caption={action.status} icon={<GameEmblem id={action.id} size={18} />} tone={action.tone ?? 'cream-dim'} size="small" onClick={action.onClick} disabled={action.disabled} badge={action.badge} showCaption={action.id === 'eternitys-wake' && action.disabled} />)}
+          </div>
+          <button type="button" className="menu-tactile-btn main-menu-begin-turn" onClick={beginTurnAction.onClick} disabled={beginTurnAction.disabled}>
+            <span>Active deck · {beginTurnShortcut}</span>
+            <strong>Begin Turn <i aria-hidden="true">→</i></strong>
+            <small>{beginTurnAction.status}</small>
+          </button>
+        </div>
+      </section>
 
       {showDivineLightReference && <div className="main-menu-reference-overlay"><DivineLightAcquisitionScreen onClose={() => setShowDivineLightReference(false)} /></div>}
     </div>

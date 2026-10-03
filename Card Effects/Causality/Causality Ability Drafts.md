@@ -28,7 +28,7 @@ All six use the existing Ability Amplification slots. A saved deck can equip any
 ### Eternal
 
 - **Pearlescent Mandate** — 2,500,000 Divine Light; requires any Causality Eternal card. Spend 6 Limitless Cosmos to reduce active Causality card cooldowns by 2 and gain 12 Limitless Light Stacks. Cooldown: 100 seconds.
-- **Archive of Elsewhen** — 2,500,000 Divine Light; requires any Causality Eternal card. Spend 8 Limitless Cosmos to draw 5 cards and recover one Light, one Dark, and one Ain Soph Aur card from the deck. Cooldown: 150 seconds.
+- **Archive of Elsewhen** — 2,500,000 Divine Light; requires any Causality Eternal card. Spend 8 Limitless Cosmos to draw 5 cards and recover one Light and one Dark card from the deck. Ain Soph Aur cards remain in the Extra Deck. Cooldown: 150 seconds.
 
 ### Infinite
 

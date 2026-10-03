@@ -1,7 +1,10 @@
 ﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
+import type { CardDefinition } from '@/types/cards';
 import { useStore } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
+import { infiniteCards as legacyInfiniteCards } from '@/data/cards/infiniteCards';
+import type { LegacyCosmeticCard } from '@/data/cards/eternalCards';
 import { SET_ACCENT } from '@/data/elements';
 import { PACK_DEFINITIONS, STORE_PACK_ORDER } from '@/data/packs/packDefinitions';
 import { getCardFinishKey, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
@@ -46,11 +49,12 @@ interface CollectionVariantEntry {
   key: string;
   finish: 'normal' | 'holo';
   owned: number;
-  card: ReturnType<typeof CardRegistry.getAll>[number];
+  card: CardDefinition | LegacyCosmeticCard;
+  legacyInfinite?: boolean;
 }
 
 interface SelectedCard {
-  card: ReturnType<typeof CardRegistry.getAll>[number];
+  card: CardDefinition | LegacyCosmeticCard;
   finish: 'normal' | 'holo';
   owned: number;
 }
@@ -103,38 +107,54 @@ export default function CollectionViewer({ onClose }: Props) {
   );
   const registryCards = useMemo(() => CardRegistry.getAll(), []);
 
-  const allCards = useMemo(() => registryCards.flatMap(card => {
-    const variants: CollectionVariantEntry[] = [];
-    const everCollectionOwned = card.rarity === 'Transcendent'
-      ? (progress.transcendentCollection?.[card.definitionId] ?? 0)
-      : getEverCollectionCount(progress, card.definitionId);
-    const everInfiniteOwned = card.rarity === 'Infinite'
-      ? getEverInfiniteCount(progress, card.definitionId)
-      : 0;
-    const everTotalOwned = Math.max(everCollectionOwned, everInfiniteOwned);
-    // Legacy saves may only track Infinite ownership in infiniteCollection.
-    const baseHoloOwned = getEverHoloCount(progress, card.definitionId);
-    const everHoloOwned = Math.min(
-      everTotalOwned,
-      card.rarity === 'Infinite' ? Math.max(baseHoloOwned, everInfiniteOwned) : baseHoloOwned,
-    );
-    const everNormalOwned = isHoloOnlyCard(card) ? 0 : Math.max(0, everTotalOwned - everHoloOwned);
-    if (!isHoloOnlyCard(card)) {
+  const allCards = useMemo(() => [
+    ...registryCards.flatMap(card => {
+      const variants: CollectionVariantEntry[] = [];
+      const everCollectionOwned = card.rarity === 'Transcendent'
+        ? (progress.transcendentCollection?.[card.definitionId] ?? 0)
+        : getEverCollectionCount(progress, card.definitionId);
+      const everInfiniteOwned = card.rarity === 'Infinite'
+        ? getEverInfiniteCount(progress, card.definitionId)
+        : 0;
+      const everTotalOwned = Math.max(everCollectionOwned, everInfiniteOwned);
+      // Legacy saves may only track Infinite ownership in infiniteCollection.
+      const baseHoloOwned = getEverHoloCount(progress, card.definitionId);
+      const everHoloOwned = Math.min(
+        everTotalOwned,
+        card.rarity === 'Infinite' ? Math.max(baseHoloOwned, everInfiniteOwned) : baseHoloOwned,
+      );
+      const everNormalOwned = isHoloOnlyCard(card) ? 0 : Math.max(0, everTotalOwned - everHoloOwned);
+      if (!isHoloOnlyCard(card)) {
+        variants.push({
+          key: getCardFinishKey(card.definitionId, 'normal'),
+          finish: 'normal',
+          owned: everNormalOwned,
+          card,
+        });
+      }
       variants.push({
-        key: getCardFinishKey(card.definitionId, 'normal'),
-        finish: 'normal',
-        owned: everNormalOwned,
+        key: getCardFinishKey(card.definitionId, 'holo'),
+        finish: 'holo',
+        owned: everHoloOwned,
         card,
       });
-    }
-    variants.push({
-      key: getCardFinishKey(card.definitionId, 'holo'),
-      finish: 'holo',
-      owned: everHoloOwned,
-      card,
-    });
-    return variants;
-  }).sort((a, b) => {
+      return variants;
+    }),
+    ...legacyInfiniteCards
+      .filter(card => !registryCards.some(registered => registered.definitionId === card.definitionId))
+      .map(card => {
+        const everCollectionOwned = getEverCollectionCount(progress, card.definitionId);
+        const everInfiniteOwned = getEverInfiniteCount(progress, card.definitionId);
+        const owned = Math.max(everCollectionOwned, everInfiniteOwned);
+        return {
+          key: getCardFinishKey(card.definitionId, 'holo'),
+          finish: 'holo' as const,
+          owned,
+          card,
+          legacyInfinite: true,
+        };
+      }),
+  ].sort((a, b) => {
     if (sortMode === 'rarity') {
       if (RARITY_ORDER[a.card.rarity] !== RARITY_ORDER[b.card.rarity]) {
         return RARITY_ORDER[b.card.rarity] - RARITY_ORDER[a.card.rarity];
@@ -181,10 +201,10 @@ export default function CollectionViewer({ onClose }: Props) {
       const searchable = [
         entry.card.name,
         entry.card.definitionId,
-        entry.card.type ?? '',
+        entry.legacyInfinite ? 'Archived Infinite' : ('type' in entry.card ? entry.card.type : ''),
         entry.card.rarity,
         getCardSet(entry.card.definitionId),
-        getCardPreviewLines(entry.card, 8).join(' '),
+        entry.legacyInfinite ? '' : getCardPreviewLines(entry.card as CardDefinition, 8).join(' '),
       ].join(' ').toLowerCase();
       if (!searchable.includes(lowerSearch)) return false;
     }
@@ -198,9 +218,13 @@ export default function CollectionViewer({ onClose }: Props) {
   const infiniteSections = useMemo(() => INFINITE_TYPE_ORDER
     .map(typeLabel => ({
       typeLabel,
-      entries: filtered.filter(entry => entry.card.rarity === 'Infinite' && entry.card.type === typeLabel),
+      entries: filtered.filter(entry => entry.card.rarity === 'Infinite' && 'type' in entry.card && entry.card.type === typeLabel),
     }))
     .filter(section => section.entries.length > 0), [filtered]);
+  const legacyInfiniteEntries = useMemo(
+    () => filtered.filter(entry => entry.legacyInfinite),
+    [filtered],
+  );
 
   const totalOwned = useMemo(() => allCards.filter(card => card.owned > 0).length, [allCards]);
   const totalCards = allCards.length;
@@ -229,7 +253,7 @@ export default function CollectionViewer({ onClose }: Props) {
 
     pushCardRows(standardFiltered, 'standard');
 
-    if (infiniteSections.length > 0) {
+    if (infiniteSections.length > 0 || legacyInfiniteEntries.length > 0) {
       rows.push({
         key: 'infinite-heading',
         kind: 'heading',
@@ -248,11 +272,21 @@ export default function CollectionViewer({ onClose }: Props) {
       });
     }
 
+    if (legacyInfiniteEntries.length > 0) {
+      rows.push({
+        key: 'infinite-archive-label',
+        kind: 'subheading',
+        height: 28,
+        label: 'Neutrality',
+      });
+      pushCardRows(legacyInfiniteEntries, 'infinite-archive');
+    }
     return rows;
-  }, [filtered, gridColumns, infiniteSections, sortMode, standardFiltered]);
+  }, [filtered, gridColumns, infiniteSections, legacyInfiniteEntries, sortMode, standardFiltered]);
 
   const renderCardEntry = (entry: CollectionVariantEntry) => {
     const { card, finish, owned } = entry;
+    const displayCard = card as CardDefinition;
     const rarityColor = RARITY_COLORS[card.rarity] ?? '#888';
     const acquiredAt = recentlyAcquired?.[card.definitionId] ?? 0;
     const isNew = owned > 0 && acquiredAt > lastViewedSnapshotRef.current;
@@ -263,11 +297,11 @@ export default function CollectionViewer({ onClose }: Props) {
       && card.rarity !== 'Transcendent'
       && card.rarity !== 'Enigmatic';
     const cardSurfaceStyle = owned > 0
-      ? getLiveCardFaceBackgroundStyle(card, finish, 'front')
+      ? getLiveCardFaceBackgroundStyle(displayCard, finish, 'front')
       : (isLockedStandardHolo
-        ? getLockedHoloCardBackStyle(card)
-        : getCardBackBackgroundStyle(card, { dimmed: false }));
-    const shimmerClassName = owned > 0 ? getLiveCardShimmerClassName(card, finish, 'front') : undefined;
+        ? getLockedHoloCardBackStyle(displayCard)
+        : getCardBackBackgroundStyle(displayCard, { dimmed: false }));
+    const shimmerClassName = owned > 0 ? getLiveCardShimmerClassName(displayCard, finish, 'front') : undefined;
 
     return (
       <div
@@ -304,7 +338,7 @@ export default function CollectionViewer({ onClose }: Props) {
           (e.currentTarget as HTMLElement).style.outline = '';
           (e.currentTarget as HTMLElement).style.filter = '';
         }}
-        title={owned > 0 ? getCardPreviewLines(card, 4).join('\n') : 'Card not discovered'}
+        title={owned > 0 ? (entry.legacyInfinite ? 'Archived Infinite card · Not playable' : getCardPreviewLines(displayCard, 4).join('\n')) : 'Card not discovered'}
         aria-label={owned > 0 ? `${card.name}, ${card.rarity}` : 'Card not discovered'}
       >
         {isNew && (

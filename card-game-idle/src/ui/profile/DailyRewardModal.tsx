@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useStore, selectProgress } from '@/state/store';
+import { warmTheme } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 import {
   evaluateDailyLogin,
   getLocalDayIndex,
@@ -50,7 +52,17 @@ function wheelSegmentPath(startAngle: number, endAngle: number): string {
   return `M 112 112 L ${startX} ${startY} A 102 102 0 ${largeArc} 1 ${endX} ${endY} Z`;
 }
 
+function colorToRgbChannels(color: string): string {
+  const match = color.trim().match(/^#([\da-f]{3}|[\da-f]{6})$/i);
+  if (!match) return '201, 164, 92';
+  const hex = match[1]!.length === 3
+    ? match[1]!.split('').map(channel => `${channel}${channel}`).join('')
+    : match[1]!;
+  return `${parseInt(hex.slice(0, 2), 16)}, ${parseInt(hex.slice(2, 4), 16)}, ${parseInt(hex.slice(4, 6), 16)}`;
+}
+
 export default function DailyRewardModal({ onClose, onOpenForge }: Props) {
+  useThemeVersion();
   const progress = useStore(selectProgress);
   const claimDailyReward = useStore(state => state.claimDailyReward);
   const claimDailyStreakMilestone = useStore(state => state.claimDailyStreakMilestone);
@@ -163,8 +175,23 @@ export default function DailyRewardModal({ onClose, onOpenForge }: Props) {
 
   return (
     <div className="login-calendar-screen" style={{
-      ['--ui-accent' as string]: '201, 164, 92',
-      ['--ui-accent-soft' as string]: '235, 217, 143',
+      ['--ui-accent' as string]: colorToRgbChannels(warmTheme.accent),
+      ['--ui-accent-soft' as string]: colorToRgbChannels(warmTheme.accentSoft),
+      ['--calendar-accent' as string]: warmTheme.accent,
+      ['--calendar-accent-soft' as string]: warmTheme.accentSoft,
+      ['--calendar-accent-deep' as string]: warmTheme.accentDeep,
+      ['--calendar-border' as string]: warmTheme.border,
+      ['--calendar-border-strong' as string]: warmTheme.borderStrong,
+      ['--calendar-surface' as string]: warmTheme.surface,
+      ['--calendar-surface-strong' as string]: warmTheme.surfaceStrong,
+      ['--calendar-surface-muted' as string]: warmTheme.surfaceMuted,
+      ['--calendar-text' as string]: warmTheme.text,
+      ['--calendar-text-soft' as string]: warmTheme.textSoft,
+      ['--calendar-text-muted' as string]: warmTheme.textMuted,
+      ['--calendar-text-faint' as string]: warmTheme.textFaint,
+      ['--calendar-success' as string]: warmTheme.accentSoft,
+      ['--calendar-danger' as string]: warmTheme.danger,
+      ['--calendar-button' as string]: warmTheme.button,
     } as React.CSSProperties}>
       <header className="login-calendar-header">
         <div className="login-calendar-heading">
@@ -227,12 +254,6 @@ export default function DailyRewardModal({ onClose, onOpenForge }: Props) {
                     </button>
                   );
                 })}
-              </div>
-              <div className="login-calendar-legend">
-                <span><i className="is-shard" />Aberrated Shards</span>
-                <span><i className="is-light" />Card-light</span>
-                <span><i className="is-dl" />Divine Light</span>
-                <span><i className="is-trans" />Shards of Transcendence</span>
               </div>
             </section>
 
@@ -302,14 +323,14 @@ export default function DailyRewardModal({ onClose, onOpenForge }: Props) {
               <div className="login-wheel-stage">
                 <div className="login-wheel-pointer" />
                 <svg className="login-wheel-svg" viewBox="0 0 224 224" role="img" aria-label="Wheel of Transcendence prize wheel">
-                  <circle cx="112" cy="112" r="108" fill="#100d19" stroke="#c9a45c" strokeWidth="2" />
+                  <circle cx="112" cy="112" r="108" fill="var(--calendar-surface-muted)" stroke="var(--calendar-border-strong)" strokeWidth="2" />
                   <g className="login-wheel-rotor" style={{ transform: `rotate(${wheelRotation}deg)` }}>
                     {WHEEL_SEGMENTS.map(segment => {
                       const labelPosition = polarPoint(segment.middleAngle, 75);
                       return (
                         <g key={segment.prize.id}>
-                          <path d={wheelSegmentPath(segment.startAngle, segment.endAngle)} fill={segment.prize.color} stroke="#c9a45c" strokeWidth="0.8" />
-                          <text x={labelPosition[0]} y={labelPosition[1]} fill="#fff1c9" stroke="rgba(16,12,24,0.85)" strokeWidth="1.4" paintOrder="stroke" textAnchor="middle" dominantBaseline="middle" fontSize="9" fontWeight="700">
+                          <path d={wheelSegmentPath(segment.startAngle, segment.endAngle)} fill={segment.prize.color} stroke="var(--calendar-border-strong)" strokeWidth="0.8" />
+                          <text x={labelPosition[0]} y={labelPosition[1]} fill="var(--calendar-text)" stroke="var(--calendar-surface-strong)" strokeWidth="1.4" paintOrder="stroke" textAnchor="middle" dominantBaseline="middle" fontSize="9" fontWeight="700">
                             {segment.index}
                           </text>
                         </g>
@@ -317,9 +338,9 @@ export default function DailyRewardModal({ onClose, onOpenForge }: Props) {
                     })}
                     <circle cx="112" cy="112" r="88" fill="none" stroke="rgba(248,232,199,0.42)" strokeWidth="0.7" />
                   </g>
-                  <circle cx="112" cy="112" r="16" fill="#0d0a15" stroke="#c9a45c" strokeWidth="2" />
-                  <path d="m112 103 8 9-8 9-8-9 8-9Z" fill="none" stroke="#f3d98f" strokeWidth="1.4" />
-                  <circle cx="112" cy="112" r="2" fill="#72d9c6" />
+                    <circle cx="112" cy="112" r="16" fill="var(--calendar-surface-strong)" stroke="var(--calendar-border-strong)" strokeWidth="2" />
+                    <path d="m112 103 8 9-8 9-8-9 8-9Z" fill="none" stroke="var(--calendar-accent-soft)" strokeWidth="1.4" />
+                    <circle cx="112" cy="112" r="2" fill="var(--calendar-success)" />
                 </svg>
               </div>
               <div className="login-wheel-controls">

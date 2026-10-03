@@ -259,7 +259,7 @@ export default function SignatureCardPickerModal({ slotIndex, onClose, onPick }:
                       style={{
                         width: 128, height: 176,
                         ...getLiveCardFaceBackgroundStyle(d, 'normal', 'front'),
-                        backgroundColor: warmTheme.surfaceStrong,
+                        backgroundColor: `var(--profile-surface-strong, ${warmTheme.surfaceStrong})`,
                         border: `1px solid ${rarityColor}55`,
                         borderRadius: 12,
                         position: 'relative',

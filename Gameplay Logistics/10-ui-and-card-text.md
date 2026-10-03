@@ -25,7 +25,7 @@ Face-down Soph cards render only the canonical card backing plus state badges su
 
 `HUD.tsx` owns a shared left-side information rail. `AngelStatPanel` and `CardBornStacksPanel` participate in its column layout with a fixed gap; do not give those children independent absolute top positions.
 
-`MainMenuHub.tsx` uses a responsive Command Deck organized into Play, Collection, and Progress. It shows one artwork-backed contextual destination and only the active category's actions. All destinations and lock requirements must remain reachable, and theme colors remain profile-driven.
+`MainMenuHub.tsx` shows Progress, Collection, and Play together, keeps Begin Turn as the fixed primary action, uses a timed Forge/Causality event-banner carousel, and preserves the selected background and profile quote. Resource counters route to existing destinations. All actions and lock requirements must remain reachable, and theme colors remain profile-driven.
 
 ## Card Text Pipeline
 
@@ -41,7 +41,7 @@ Do not repeat rarity/type labels inside effect descriptions when structured card
 
 ## Hover Details
 
-Card hover details belong in the right-rail Card Inspector (`src/ui/hud/CardInspectorPanel.tsx`). Do not add floating hover cards over the board or hand. The inspector is shared by normal turns, boss fights, Null Raids, and battleground overlays because they use the same HUD.
+Card hover details belong in the right-rail Card Inspector (`src/ui/hud/CardInspectorPanel.tsx`). Do not add floating hover cards over the board or hand. The inspector is shared by normal turns, Eternity's Wake fights, Garden encounters, and Battleground overlays because they use the same HUD. Null Raid is legacy-only and is not an active player-facing mode.
 
 ## Pack Opening
 

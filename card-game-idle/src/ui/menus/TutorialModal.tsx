@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { uiTypography } from '@/ui/theme';
+import { uiTypography, warmTheme } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 import { RARITY_TIERS, CARD_BORN_TIERS, TUTORIAL_SECTIONS } from '@/data/tutorialContent';
 import { AIN_SOPH_AUR_SUMMON_STACK_REWARD, SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
 import { MASTERY_TIERS } from '@/systems/progression/cardMastery';
@@ -12,18 +13,17 @@ interface Props {
 const DISPLAY_FONT = uiTypography.display;
 const BODY_FONT = uiTypography.body;
 
-// Local accent palette - parchment / warm gold to match the rest of the menus.
+// Use the shared profile palette so this reference screen follows the rest of the UI.
 const PALETTE = {
-  parchment: 'linear-gradient(180deg, rgba(248, 238, 223, 0.97) 0%, rgba(241, 226, 201, 0.97) 100%)',
-  panel: 'linear-gradient(180deg, rgba(246, 233, 212, 0.96) 0%, rgba(238, 220, 193, 0.94) 100%)',
-  panelAlt: 'linear-gradient(180deg, rgba(252, 244, 228, 0.96) 0%, rgba(244, 228, 200, 0.94) 100%)',
-  border: 'rgba(150, 104, 66, 0.44)',
-  borderSoft: 'rgba(134, 94, 58, 0.26)',
-  ink: '#3a2115',
-  inkDeep: '#5f2f17',
-  inkMuted: '#704022',
-  inkSoft: '#6f3112',
-  accent: '#b56a2e',
+  panel: 'linear-gradient(180deg, var(--profile-surface) 0%, var(--profile-surface-muted) 100%)',
+  panelAlt: 'linear-gradient(180deg, var(--profile-surface-strong) 0%, var(--profile-surface) 100%)',
+  border: 'var(--profile-border-strong)',
+  borderSoft: 'var(--profile-border)',
+  ink: 'var(--profile-text)',
+  inkDeep: 'var(--profile-accent)',
+  inkMuted: 'var(--profile-text-muted)',
+  inkSoft: 'var(--profile-text-soft)',
+  accent: 'var(--profile-accent-soft)',
 };
 
 interface Section {
@@ -70,7 +70,7 @@ const inlineTagStyle: React.CSSProperties = {
   display: 'inline-block',
   padding: '1px 7px',
   borderRadius: 6,
-  background: 'rgba(150, 104, 66, 0.18)',
+  background: 'color-mix(in srgb, var(--profile-accent) 18%, transparent)',
   border: `1px solid ${PALETTE.borderSoft}`,
   color: PALETTE.inkDeep,
   fontSize: 11,
@@ -109,7 +109,7 @@ function NumberedStep({ n, title, children }: { n: number; title: string; childr
       <div style={{
         flexShrink: 0,
         width: 26, height: 26, borderRadius: '50%',
-        background: 'linear-gradient(180deg, #ebc48e 0%, #d59f55 100%)',
+        background: 'linear-gradient(180deg, var(--profile-accent-soft) 0%, var(--profile-accent) 100%)',
         border: `1px solid ${PALETTE.border}`,
         color: PALETTE.inkDeep,
         fontWeight: 700,
@@ -225,7 +225,7 @@ function BoardBody() {
           margin: 0,
           lineHeight: 1.5,
           color: PALETTE.inkDeep,
-          background: 'rgba(255, 246, 226, 0.6)',
+          background: 'color-mix(in srgb, var(--profile-accent) 10%, transparent)',
           border: `1px solid ${PALETTE.borderSoft}`,
           borderRadius: 8,
           padding: '10px 14px',
@@ -599,7 +599,7 @@ function ForgeBody() {
         <div style={sectionHeadingStyle}>Transcendent Cards (Vol. 1)</div>
         <div style={bodyTextStyle}>
           Every Transcendent card carries the same innate <Tag>Transcendent Ability</Tag>: if it is in your Main
-          Deck or Extra Deck, your maximum hand size becomes 10 instead of 8. The initial Vol. 1 subset contains
+          Deck or Extra Deck, your maximum hand size becomes 10 instead of 8. Vol. 1: Before the First Shuffle contains
           four cards, with additional Transcendent volumes planned for future expansions. Each card also has its own
           Spectrum Level 5 rules and attacks. Each Forge gallery card costs 25 Shards of Transcendence. Separately,
           Ability Materialization offers four abilities, each costing 8,000,000 Divine Light and 30 Shards: First
@@ -634,6 +634,7 @@ function buildSections(): Section[] {
 }
 
 export default function TutorialModal({ onClose }: Props) {
+  useThemeVersion();
   const sections = buildSections();
   const [activeId, setActiveId] = useState<string>(sections[0].id);
   const active = sections.find(s => s.id === activeId) ?? sections[0];
@@ -643,8 +644,7 @@ export default function TutorialModal({ onClose }: Props) {
       style={{
         position: 'absolute',
         inset: 0,
-        background:
-          'radial-gradient(circle at 15% 12%, rgba(230, 155, 79, 0.23) 0%, rgba(230, 155, 79, 0) 36%), radial-gradient(circle at 84% 20%, rgba(154, 111, 70, 0.2) 0%, rgba(154, 111, 70, 0) 34%), linear-gradient(180deg, rgba(14, 11, 11, 0.94) 0%, rgba(26, 22, 19, 0.96) 100%)',
+        background: warmTheme.appBackground,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -659,17 +659,17 @@ export default function TutorialModal({ onClose }: Props) {
         style={{
           width: 'min(960px, calc(100vw - 32px))',
           height: 'min(88vh, 720px)',
-          background: PALETTE.parchment,
+          background: PALETTE.panelAlt,
           border: `1px solid ${PALETTE.border}`,
           borderRadius: 20,
-          boxShadow: '0 28px 52px rgba(0,0,0,0.54), inset 0 0 0 1px rgba(255,255,255,0.38)',
+          boxShadow: `0 28px 52px rgba(0,0,0,0.54), inset 0 0 0 1px color-mix(in srgb, ${warmTheme.text} 14%, transparent)`,
           color: PALETTE.ink,
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
           position: 'relative',
-          ['--ui-accent' as any]: '230, 155, 79',
-          ['--ui-accent-soft' as any]: '250, 215, 165',
+          ['--ui-accent' as any]: 'var(--profile-accent-rgb, 97, 216, 255)',
+          ['--ui-accent-soft' as any]: 'var(--profile-accent-soft-rgb, 179, 154, 255)',
         } as React.CSSProperties}
       >
         {/* Header */}
@@ -701,7 +701,7 @@ export default function TutorialModal({ onClose }: Props) {
             style={{
               borderRadius: 10,
               border: `1px solid ${PALETTE.border}`,
-              background: 'linear-gradient(180deg, rgba(255, 249, 240, 0.95) 0%, rgba(243, 223, 192, 0.92) 100%)',
+              background: 'linear-gradient(180deg, var(--profile-surface-strong) 0%, var(--profile-surface-muted) 100%)',
               color: PALETTE.inkDeep,
               cursor: 'pointer',
               fontSize: 12.5,
@@ -721,7 +721,7 @@ export default function TutorialModal({ onClose }: Props) {
             width: 184,
             flexShrink: 0,
             borderRight: `1px solid ${PALETTE.borderSoft}`,
-            background: 'rgba(245, 230, 205, 0.55)',
+            background: 'color-mix(in srgb, var(--profile-surface-muted) 82%, transparent)',
             padding: '12px 8px',
             display: 'flex',
             flexDirection: 'column',
@@ -740,7 +740,7 @@ export default function TutorialModal({ onClose }: Props) {
                     borderRadius: 9,
                     border: `1px solid ${isActive ? PALETTE.border : 'transparent'}`,
                     background: isActive
-                      ? 'linear-gradient(180deg, rgba(255, 240, 213, 0.98) 0%, rgba(244, 217, 175, 0.96) 100%)'
+                      ? 'linear-gradient(180deg, var(--profile-surface-strong) 0%, color-mix(in srgb, var(--profile-accent) 18%, var(--profile-surface-strong)) 100%)'
                       : 'transparent',
                     color: isActive ? PALETTE.inkDeep : PALETTE.inkMuted,
                     fontFamily: DISPLAY_FONT,

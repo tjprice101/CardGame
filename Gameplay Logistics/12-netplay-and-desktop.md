@@ -29,4 +29,4 @@ Single-player card resolution must not depend on network availability.
 
 ## Turn UI Consistency
 
-Normal turns, Eternity's Wake fights, Null Raids, and battleground overlays share the main HUD. Shared HUD elements such as the right-rail Card Inspector should remain mode-safe and avoid fixed overlays that cover the board.
+Normal turns, Eternity's Wake fights, Garden encounters, and Battleground matches share the main HUD. Shared HUD elements such as the right-rail Card Inspector should remain mode-safe and avoid fixed overlays that cover the board. Null Raid remains legacy save/netplay infrastructure, not an active player-facing mode.

@@ -28,27 +28,27 @@ export interface UiPalette {
 }
 
 export const DEFAULT_WARM_PALETTE: UiPalette = {
-  appBackground: 'radial-gradient(circle at 22% -8%, #1e3a58 0%, rgba(30,58,88,0) 55%), linear-gradient(180deg, #0c1a2c 0%, #111f35 42%, #08111e 100%)',
-  overlay: 'rgba(10, 18, 30, 0.88)',
-  backdrop: 'rgba(8, 18, 38, 0.56)',
-  surface: 'rgba(20, 32, 50, 0.92)',
-  surfaceStrong: 'rgba(26, 40, 62, 0.95)',
-  surfaceMuted: 'rgba(16, 26, 40, 0.9)',
-  border: 'rgba(100, 140, 188, 0.34)',
-  borderStrong: 'rgba(92, 152, 220, 0.58)',
-  text: '#eaf2ff',
-  textSoft: 'rgba(234, 242, 255, 0.9)',
-  textMuted: 'rgba(234, 242, 255, 0.72)',
-  textFaint: 'rgba(234, 242, 255, 0.52)',
-  accent: '#3a8ec8',
-  accentSoft: '#58aada',
-  accentDeep: '#0d1e34',
-  success: '#4f8a47',
-  danger: '#b85c4f',
-  cherubim: '#7a82c0',
-  shadow: '0 16px 36px rgba(16, 52, 100, 0.18)',
-  glow: '0 10px 24px rgba(72, 152, 220, 0.20)',
-  button: 'linear-gradient(180deg, #5aabdc 0%, #3888c4 100%)',
+  appBackground: 'radial-gradient(circle at 50% -12%, rgba(77, 49, 145, 0.34) 0%, rgba(77, 49, 145, 0) 48%), radial-gradient(circle at 12% 80%, rgba(42, 168, 220, 0.12) 0%, transparent 36%), linear-gradient(180deg, #090a10 0%, #11121b 48%, #05060a 100%)',
+  overlay: 'rgba(4, 5, 10, 0.94)',
+  backdrop: 'rgba(3, 4, 8, 0.76)',
+  surface: 'rgba(13, 15, 24, 0.95)',
+  surfaceStrong: 'rgba(22, 24, 37, 0.98)',
+  surfaceMuted: 'rgba(7, 8, 14, 0.94)',
+  border: 'rgba(226, 235, 255, 0.2)',
+  borderStrong: 'rgba(150, 191, 255, 0.58)',
+  text: '#f8faff',
+  textSoft: 'rgba(248, 250, 255, 0.92)',
+  textMuted: 'rgba(218, 225, 241, 0.74)',
+  textFaint: 'rgba(199, 208, 230, 0.52)',
+  accent: '#61d8ff',
+  accentSoft: '#b39aff',
+  accentDeep: '#21113c',
+  success: '#85b879',
+  danger: '#cb5b50',
+  cherubim: '#d7ad63',
+  shadow: '0 16px 36px rgba(0, 0, 0, 0.34)',
+  glow: '0 10px 28px rgba(111, 101, 255, 0.3), 0 0 18px rgba(88, 211, 255, 0.16)',
+  button: 'linear-gradient(110deg, #60d9ff 0%, #9085ff 54%, #54298f 100%)',
 };
 
 /**
@@ -165,7 +165,7 @@ function withAlpha(c: Rgba, a: number): Rgba {
   return { r: c.r, g: c.g, b: c.b, a: clamp01(a) };
 }
 
-function normalizePaletteForLegibility(palette: UiPalette): UiPalette {
+export function normalizeUiPalette(palette: UiPalette): UiPalette {
   const fallbackBg: Rgba = { r: 20, g: 28, b: 40, a: 1 };
   const bgs = [palette.surface, palette.surfaceStrong, palette.surfaceMuted]
     .map(parseColor)
@@ -240,7 +240,7 @@ function bumpThemeVersion(): void {
 
 /** Overwrite warmTheme in-place with `palette`. */
 export function applyUiPalette(palette: UiPalette): void {
-  Object.assign(warmTheme, normalizePaletteForLegibility(palette));
+  Object.assign(warmTheme, normalizeUiPalette(palette));
   publishThemeCssVariables();
   bumpThemeVersion();
 }
@@ -266,6 +266,11 @@ function publishThemeCssVariables(): void {
   const setVar = (name: string, value: string) => {
     root.style.setProperty(name, value);
   };
+  const colorToRgbChannels = (value: string): string => {
+    const color = parseColor(value);
+    return color ? `${clamp255(color.r)}, ${clamp255(color.g)}, ${clamp255(color.b)}` : '97, 216, 255';
+  };
+  setVar('--profile-app-background', warmTheme.appBackground);
   setVar('--profile-text', warmTheme.text);
   setVar('--profile-text-soft', warmTheme.textSoft);
   setVar('--profile-text-muted', warmTheme.textMuted);
@@ -279,6 +284,9 @@ function publishThemeCssVariables(): void {
   setVar('--profile-surface', warmTheme.surface);
   setVar('--profile-surface-strong', warmTheme.surfaceStrong);
   setVar('--profile-surface-muted', warmTheme.surfaceMuted);
+  setVar('--profile-accent-rgb', colorToRgbChannels(warmTheme.accent));
+  setVar('--profile-accent-soft-rgb', colorToRgbChannels(warmTheme.accentSoft));
+  setVar('--profile-button', warmTheme.button);
 }
 
 export const uiTypography = {

@@ -10,7 +10,7 @@ Ability Materialization contains Neutrality, Causality, and Transcendent filters
 
 Neutrality packs draw from the live base Neutrality pool: 24 Light, 24 Dark, and 4 Ain Soph Aur cards. Pack purchase must generate all five rewards before currency is deducted. Awarded cards are added to collection, then the pack-opening modal displays them face-down for manual reveal.
 
-Starter accounts, new saves, and wiped saves start with zero currency balances: Divine Light, lifetime Divine Light counters, Aberrated Shards, Card-light Shards, Card-bane Light, Entropic Energy, and the legacy entropy compatibility field all begin at 0. The persisted `fractureShards` key remains for save compatibility only.
+Starter accounts, new saves, and wiped saves start with 5,000 Divine Light and 5,000 lifetime Divine Light. Aberrated Shards, Card-light Shards, Card-bane Light, Entropic Energy, and the legacy entropy compatibility field start at 0. New accounts also receive the starter Neutrality collection/deck; the persisted `fractureShards` key remains for save compatibility only.
 
 `PackOpeningFlow.test.ts` verifies pool validity, five-card rewards, collection updates, and currency deduction.
 
@@ -47,23 +47,47 @@ After all four weekly challenge rewards are claimed, the weekly rotation can be 
 
 ## Monthly Login Calendar
 
-The login reward surface is a persistent monthly calendar. A claim awards the reward for the current UTC calendar date, not the next streak number; consecutive-login streak rewards are separate. The monthly track mixes Aberrated Shards, base-card copies, holofoil base-card copies, Card-light grants applied to owned cards, and occasional Shards of Transcendence.
+The login reward surface is a persistent monthly calendar using local dates. A claim awards the current local calendar date, not the next streak number; consecutive-login streak rewards are separate. Save migration 54 standardizes current accounts to Days 1–2 claimed and marks the current local day claimed, so Day 3 becomes available the next local day. New accounts begin from that same Day 2 state.
+
+The live monthly schedule uses existing rewards only:
+
+- Day 1: +2,000 Divine Light.
+- Days 7, 14, and 21: +3 Card-light to every owned card.
+- Day 10: +1 Shard of Transcendence.
+- Day 15: +5,000 Divine Light.
+- Day 25: +2 Shards of Transcendence.
+- Day 28: +15,000 Divine Light.
+- Other non-special dates: `20 + 5 × day` Aberrated Shards.
+
+Forge-open bonus Shard rolls occur on Days 10 and 25, in addition to their direct calendar rewards. Streak milestones are one-time claims at 3 days (+100 Aberrated Shards) and 14 days (+2 Shards of Transcendence). After Forge unlock, one free wheel spin accrues per local day; unspent spins accumulate. Opening the Forge grants the first spin. Save v55 persists spin balance and accrual day.
+
+The wheel contains only existing rewards; weights are normalized over 82 total tickets:
+
+| Reward | Weight |
+|---|---:|
+| +50 Aberrated Shards | 20 |
+| +3 Card-light to owned cards | 14 |
+| +100 Aberrated Shards | 16 |
+| +150 Aberrated Shards | 10 |
+| +1 Shard of Transcendence | 8 |
+| +500 Aberrated Shards | 5 |
+| +1,725 Divine Light | 9 |
 
 ## Rarity Progression
 
 - Enigmatic cards come from Enigmas.
 - Eternal cards come from Eternity's Wake bosses.
 - Infinite cards are crafted in Infinitude from specific Eternal recipes.
-- Transcendent cards come from the Forge of Transcendence. The first four form the Vol. 1 subset, with more volumes planned for future expansions.
+- Transcendent cards come from the Forge of Transcendence. Vol. 1: Before the First Shuffle contains the first four cards; further chapters may be added in future expansions.
 
 The four materialized Transcendent abilities are separate from the four Transcendent cards and are not owned through a card. They are set-independent and use shared turn, card-play, hand/discard, and attack systems. They do not generate or spend Cosmos, target Causality cards/cooldowns, or depend on another set's systems. Their purchase cost is paid once; their listed Limitless Light Stack cost is paid on activation.
 
 - First Dawn Accord: spend 6 stacks; your next 3 cards played each grant 1,500 base Divine Light (90s cooldown).
 - Axiom of Acceleration: spend 8 stacks; your next 3 card plays each add 1 extra charge to every face-down Soph card (105s cooldown).
-- Vault of Unwritten Futures: spend 10 stacks; select 2 cards from your discard pile and raise your hand limit by 2 for the rest of the turn (120s cooldown).
+- Vault of Unwritten Futures: spend 10 stacks; choose 2 cards from your discard pile and raise your hand limit by 2 for 40 seconds. On expiry, discard down to your normal hand limit (120s cooldown).
 - Confluence of All Origins: spend 12 stacks; your next Ain, Soph, or Bridge attack gains +2 multiplier (150s cooldown).
 
-Shard drop rolls are gated until all five Forge Causality bosses have been cleared and the Forge is open. Each qualifying boss clear has a 1% base chance (dropping 1–3 Shards with equal 33.3% weighting), multiplied by the selected x2/x3 fight count. The final encounter of each available Garden expedition has a 1% roll (1–3 Shards). Monthly Login Calendar bonus rolls occur on days 10 and 22, also at 1% (1–3 Shards). Drop-rate labels remain hidden until both unlock conditions are satisfied.
+Shard drop rolls are gated until all five Forge Causality bosses have been cleared and the Forge is open. Each qualifying boss clear has a 1% base chance (dropping 1–3 Shards with equal 33.3% weighting), multiplied by the selected x2/x3 fight count. The final encounter of each available Garden expedition has a 1% roll (1–3 Shards). Monthly Login Calendar bonus rolls occur on days 10 and 25, also at 1% (1–3 Shards). Drop-rate labels remain hidden until both unlock conditions are satisfied.
 
 Achievements and unlock gates should distinguish those rarity sources instead of treating all premium cards as one bucket.
 

@@ -2,9 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useFriendsStore, selectFriendsList, selectFriendsLoaded } from '@/state/friendsStore';
 import { useSocialStore } from '@/state/socialStore';
 import { usePartyStore } from '@/state/partyStore';
-import { uiTypography, type UiPalette } from '@/ui/theme';
-import { DEFAULT_UI_THEME_ID, getEffectiveThemePalette, isThemeOscillating } from '@/data/profile/uiThemes';
-import { useStore, selectProgress, selectProfile } from '@/state/store';
+import { uiTypography, warmTheme } from '@/ui/theme';
 
 export default function PartyHub() {
   const activePartyId = usePartyStore(s => s.activePartyId);
@@ -26,29 +24,13 @@ export default function PartyHub() {
   const friendsLoaded = useFriendsStore(selectFriendsLoaded);
   const loadFriends = useFriendsStore(s => s.load);
   const [message, setMessage] = useState('');
-  const [themeNowMs, setThemeNowMs] = useState<number>(() => Date.now());
-  const profile = useStore(selectProfile);
-  const progress = useStore(selectProgress);
 
   useEffect(() => { if (!friendsLoaded) void loadFriends(); }, [friendsLoaded, loadFriends]);
-  useEffect(() => {
-    const themeId = profile.uiThemeId || DEFAULT_UI_THEME_ID;
-    if (!isThemeOscillating(themeId)) return;
-    const id = setInterval(() => setThemeNowMs(Date.now()), 180);
-    return () => clearInterval(id);
-  }, [profile.uiThemeId]);
 
   const host = members.find(m => m.role === 'host');
   const partyLabel = activityDraft?.label ?? 'Card-bound Co-op';
   const mode = activityDraft?.type ?? 'general';
-  const uiTheme = useMemo<UiPalette>(() => {
-    return getEffectiveThemePalette(
-      profile.uiThemeId || DEFAULT_UI_THEME_ID,
-      profile.customUiTheme,
-      progress,
-      themeNowMs,
-    );
-  }, [profile.uiThemeId, profile.customUiTheme, progress, themeNowMs]);
+  const uiTheme = warmTheme;
   const modeAccent = mode === 'battleground'
     ? '#ff9f8f'
     : mode === 'eternity_boss'

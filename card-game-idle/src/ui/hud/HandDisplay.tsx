@@ -187,7 +187,6 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const dragSideRef = useRef<'soph' | 'ain'>('soph');
   const [freeSummonSelection, setFreeSummonSelection] = useState(false);
-  const [attackPanelOpen, setAttackPanelOpen] = useState(false);
   const [idleShowcaseCards, setIdleShowcaseCards] = useState<IdleShowcaseCard[]>([]);
   const [idleSwapState, setIdleSwapState] = useState<{ slot: number; phase: 'out' | 'in' } | null>(null);
   // Hand <-> Extra Deck view toggle. Driven by the configurable keybind in
@@ -216,21 +215,6 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
     return () => window.removeEventListener('asa-free-summon-request', handler);
   }, []);
   useEffect(() => { setHandView('hand'); }, [turn.phase]);
-
-  useEffect(() => {
-    function onAttackPanelOpen(event: Event) {
-      const customEvent = event as CustomEvent<boolean>;
-      setAttackPanelOpen(Boolean(customEvent.detail));
-    }
-
-    window.addEventListener('hr-attack-panel-open', onAttackPanelOpen as EventListener);
-    return () => window.removeEventListener('hr-attack-panel-open', onAttackPanelOpen as EventListener);
-  }, []);
-
-  useEffect(() => {
-    if (!attackPanelOpen) return;
-    setHoveredId(null);
-  }, [attackPanelOpen]);
 
   useEffect(() => {
     document.documentElement.style.setProperty('--hand-strip-height', '190px');
@@ -548,7 +532,7 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
               className={[
                 getLiveCardShimmerClassName(def, deckCard.finish, 'front'),
                 isGuideHighlighted ? 'trial-guide-pulse' : undefined,
-                isHovered && !selected && !isDragging ? 'hand-card-hover-glow' : undefined,
+                isHovered && !selected && !isDragging && !isExtraDeckView ? 'hand-card-hover-edge' : undefined,
               ].filter(Boolean).join(' ') || undefined}
               draggable={isDraggable}
               style={{
@@ -641,10 +625,6 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
                 </div>
               )}
 
-              {/* Shimmer sweep on hover */}
-              {isHovered && !selected && !isDragging && (
-                <div className="hand-card-hover-shimmer" aria-hidden="true" />
-              )}
             </div>
           );
         })}

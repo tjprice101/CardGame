@@ -80,7 +80,7 @@ export default function ForgeOfTranscendence({ onClose }: Props) {
       {!forgeUnlocked ? (
         <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 22, padding: 32 }}>
           <div style={{ fontSize: 15, letterSpacing: 1, color: 'rgba(20,10,30,0.7)', textAlign: 'center', maxWidth: 520 }}>
-            The Forge answers to no set and no master. It will open only once every boss of the current event has fallen.
+            The Forge opens after every current Causality event boss is defeated and you claim a Key of Transcendence. Its first gallery chapter is Vol. 1: Before the First Shuffle.
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: 'min(420px, 90vw)' }}>
             {FORGE_EVENT_BOSS_IDS.map(bossId => {

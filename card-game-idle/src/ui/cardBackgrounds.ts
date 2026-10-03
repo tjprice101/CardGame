@@ -6,6 +6,11 @@ import { getCardThemePackStyle, getFontScale } from '@/ui/preferences';
 
 const CARD_BACKGROUND_ROOT = `${import.meta.env.BASE_URL}assets/card-backgrounds`;
 const CARD_FRONT_FRAME_IMAGE = `url("${CARD_BACKGROUND_ROOT}/card-front-frame-splotched-ink.png")`;
+const CARD_FRONT_FRAME_IMAGE_BY_RARITY: Partial<Record<CardDefinition['rarity'], string>> = {
+  Eternal: `url("${CARD_BACKGROUND_ROOT}/eternal/${encodeURI('Eternal Card Front Frame.png')}")`,
+  Infinite: `url("${CARD_BACKGROUND_ROOT}/infinite/${encodeURI('Infinity Card Front Frame.png')}")`,
+  Transcendent: `url("${CARD_BACKGROUND_ROOT}/infinite/${encodeURI('Transcendant Card Front Frame.png')}")`,
+};
 const FORGE_ART_ROOT = `${import.meta.env.BASE_URL}assets/forge`;
 
 /** The 4 Forge of Transcendence gallery cards use their own dedicated art, not the shared Neutrality/Infinite folders. */
@@ -108,6 +113,14 @@ interface CardFaceMetrics {
 }
 
 const CARD_BACKGROUND_FILE_OVERRIDES: Record<string, string> = {
+  'inf-oblivion-absolute': 'Oblivion Absolute.png',
+  'inf-void-cascade': 'Void Cascade.png',
+  'inf-genesis-throne': 'Genesis Throne.png',
+  'inf-null-apex': 'Celestial Blackout.png',
+  'inf-entropic-crown': 'Entropic Crown.png',
+  'inf-annihilation-field': 'Annihilation Field.png',
+  'inf-sovereign-void': 'Sovereign Void.png',
+  'inf-eternity-rupture': 'Eternity Rupture.png',
   'enig-neutral-amplifier-of-the-void': 'Void Amplifier.png',
   'enig-neutral-null-born-surgeblade': 'Void Surge.png',
   'tx-angel-starbound-null-archangel': 'Starbound Null Archangel.png',
@@ -643,7 +656,9 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
   if (imageUrl) imageLayers.push(`url("${imageUrl}")`);
   if (fallbackImageUrl && fallbackImageUrl !== imageUrl) imageLayers.push(`url("${fallbackImageUrl}")`);
 
-  const frontFrameLayers = card ? [CARD_FRONT_FRAME_IMAGE] : [];
+  const frontFrameLayers = card
+    ? [CARD_FRONT_FRAME_IMAGE_BY_RARITY[card.rarity] ?? CARD_FRONT_FRAME_IMAGE]
+    : [];
   const layerCount = frontFrameLayers.length + overlayLayers.length + tintOverlay.length + (imageLayers.length > 0 ? imageLayers.length : 1);
   const layerPositions = Array(layerCount).fill('center').join(', ');
   const layerSizes = Array(layerCount).fill('cover').join(', ');

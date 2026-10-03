@@ -58,6 +58,21 @@ describe('card background asset audit', () => {
     expect(missing).toEqual([]);
   });
 
+  it('resolves every collection-only Infinite card to an existing background file', () => {
+    const root = path.resolve(process.cwd(), 'public');
+    const legacyInfinite = infiniteCards.filter(card => !CardRegistry.has(card.definitionId));
+    expect(legacyInfinite).toHaveLength(8);
+
+    const missing = legacyInfinite.filter(card => {
+      const url = getCardBackgroundUrl(card as unknown as Parameters<typeof getCardBackgroundUrl>[0]);
+      if (!url) return true;
+      const relPath = decodeURI(url.replace(/^\/?/, ''));
+      return !existsSync(path.resolve(root, relPath.replace(/^assets[\\/]/, 'assets/')));
+    }).map(card => card.definitionId);
+
+    expect(missing).toEqual([]);
+  });
+
   it('keeps rarity-specific frame variables while hiding the name and rules bands', () => {
     const byRarity = (rarity: 'Enigmatic' | 'Eternal' | 'Infinite' | 'Transcendent') => {
       if (rarity === 'Infinite') return infiniteCards[0] as unknown as Parameters<typeof getCardFaceBackgroundStyle>[0];
@@ -101,6 +116,23 @@ describe('card background asset audit', () => {
     expect(front.backgroundImage).toContain('card-front-frame-splotched-ink.png');
     expect(front.backgroundBlendMode?.split(',')[0].trim()).toBe('screen');
     expect(back.backgroundImage).not.toContain('card-front-frame-splotched-ink.png');
+  });
+
+  it('routes premium rarities through their dedicated front-frame overlays', () => {
+    const cards = [
+      { rarity: 'Eternal', file: 'eternal/Eternal Card Front Frame.png' },
+      { rarity: 'Infinite', file: 'infinite/Infinity Card Front Frame.png' },
+      { rarity: 'Transcendent', file: 'infinite/Transcendant Card Front Frame.png' },
+    ] as const;
+    const root = path.resolve(process.cwd(), 'public/assets/card-backgrounds');
+
+    for (const entry of cards) {
+      const card = CardRegistry.getAll().find(candidate => candidate.rarity === entry.rarity);
+      expect(card, `${entry.rarity} card`).toBeDefined();
+      const front = getCardFaceBackgroundStyle(card!);
+      expect(front.backgroundImage).toContain(encodeURI(entry.file));
+      expect(existsSync(path.resolve(root, entry.file))).toBe(true);
+    }
   });
 
   it('uses one cached, lightweight live treatment for every foil rarity', () => {

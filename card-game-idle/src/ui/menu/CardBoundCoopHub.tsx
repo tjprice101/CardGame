@@ -8,8 +8,7 @@ import { useStore } from '@/state/store';
 import { usePartyStore } from '@/state/partyStore';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
 import { NULL_RAID_DEFINITIONS } from '@/data/ascension/nullRaidDefinitions';
-import { uiTypography, type UiPalette } from '@/ui/theme';
-import { DEFAULT_UI_THEME_ID, getEffectiveThemePalette, isThemeOscillating } from '@/data/profile/uiThemes';
+import { uiTypography, warmTheme } from '@/ui/theme';
 
 const MODE_THEME = {
   general: {
@@ -54,22 +53,14 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
   const sendRaidInvites = useCoopRaidStore(s => s.sendInvites);
   const sendEternityInvites = useEternityBossCoopStore(s => s.sendInvites);
   const enqueueToast = useStore(s => s.enqueueToast);
-  const profile = useStore(s => s.progress.profile);
   const progress = useStore(s => s.progress);
   const friends = useFriendsStore(selectFriendsList);
   const friendsLoaded = useFriendsStore(selectFriendsLoaded);
   const loadFriends = useFriendsStore(s => s.load);
   const [busy, setBusy] = useState(false);
   const [sendingBattleTo, setSendingBattleTo] = useState<string | null>(null);
-  const [themeNowMs, setThemeNowMs] = useState<number>(() => Date.now());
 
   useEffect(() => { if (!friendsLoaded) void loadFriends(); }, [friendsLoaded, loadFriends]);
-  useEffect(() => {
-    const themeId = profile.uiThemeId || DEFAULT_UI_THEME_ID;
-    if (!isThemeOscillating(themeId)) return;
-    const id = setInterval(() => setThemeNowMs(Date.now()), 180);
-    return () => clearInterval(id);
-  }, [profile.uiThemeId]);
   const inviteables = useMemo(() => friends.filter(f => !members.some(m => m.userId === f.other.id)), [friends, members]);
   const mode = activityDraft?.type ?? 'general';
   const modeTheme = MODE_THEME[mode];
@@ -77,14 +68,7 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
   const localMemberId = me ?? (members.length === 1 ? members[0]?.userId ?? null : null);
   const eternityDraft = activityDraft?.type === 'eternity_boss' ? activityDraft : null;
   const nullRaidDraft = activityDraft?.type === 'null_raid' ? activityDraft : null;
-  const uiTheme = useMemo<UiPalette>(() => {
-    return getEffectiveThemePalette(
-      profile.uiThemeId || DEFAULT_UI_THEME_ID,
-      profile.customUiTheme,
-      progress,
-      themeNowMs,
-    );
-  }, [profile.uiThemeId, profile.customUiTheme, progress, themeNowMs]);
+  const uiTheme = warmTheme;
   const selectedBoss = eternityDraft ? BOSS_DEFINITIONS.find(boss => boss.id === eternityDraft.bossId) ?? null : null;
   const selectedRaid = nullRaidDraft ? NULL_RAID_DEFINITIONS.find(raid => raid.id === nullRaidDraft.raidId) ?? null : null;
   const selectedDeckId = eternityDraft ? (eternityDraft.deckId ?? progress.savedDecks[0]?.id ?? '') : '';

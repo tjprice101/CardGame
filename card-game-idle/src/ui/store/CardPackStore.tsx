@@ -2,12 +2,10 @@ import { useState } from 'react';
 import { useEffect, useRef } from 'react';
 import { useStore } from '@/state/store';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
-import { getCardSetColor } from '@/data/elements';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { warmTheme, uiTypography } from '@/ui/theme';
 import { useThemeVersion } from '@/ui/useThemeVersion';
 import PackOpeningModal from './PackOpeningModal';
-import { useSuppressMusic } from '@/audio/musicSuppression';
 import CollectionViewer from './CollectionViewer';
 import AbilityMaterialization from './AbilityMaterialization';
 import { getSpotlightPackId, getSpotlightPackCost, SPOTLIGHT_DISCOUNT } from '@/systems/progression/spotlightPack';
@@ -17,6 +15,8 @@ import { getLiveCardFaceBackgroundStyle, getLiveCardShimmerClassName, getCardFac
 const RARITY_COLORS: Record<string, string> = {
   Common: '#b8bcc6', Rare: '#7cbcff', Epic: '#c58bff', Legendary: '#ffd38a', Eternal: '#ff9f9f', Infinite: '#f2f4ff',
 };
+const PACK_EPIC_PITY_THRESHOLD = 10;
+const BOX_LEGENDARY_PITY_MISS_THRESHOLD = 4;
 
 const PACK_ART_BASE = `${import.meta.env.BASE_URL}assets/pack-art`;
 const PACK_ART: Record<string, string> = {
@@ -28,26 +28,26 @@ const styles: Record<string, React.CSSProperties> = {
   overlay: {
     position: 'absolute',
     inset: 0,
-    background: 'radial-gradient(circle at 16% 8%, rgba(78,158,220,0.18) 0%, rgba(78,158,220,0) 34%), radial-gradient(circle at 84% 90%, rgba(20,55,180,0.28) 0%, rgba(20,55,180,0) 42%), repeating-linear-gradient(135deg, rgba(88,170,218,0.04) 0px, rgba(88,170,218,0.04) 2px, rgba(0,0,0,0) 2px, rgba(0,0,0,0) 22px), linear-gradient(180deg, rgba(3,8,18,0.98) 0%, rgba(5,11,24,0.98) 100%)',
+    background: 'var(--profile-app-background, linear-gradient(180deg, #090a10, #05060a))',
     zIndex: 50,
     display: 'flex',
     flexDirection: 'column',
     pointerEvents: 'auto',
     fontFamily: uiTypography.body,
-    color: '#c8dff2',
+    color: 'var(--profile-text, #f8faff)',
   },
   header: {
     padding: '16px 24px',
-    borderBottom: `1px solid ${warmTheme.border}`,
+    borderBottom: '1px solid var(--profile-border, rgba(226,235,255,0.2))',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     flexShrink: 0,
-    background: `linear-gradient(90deg, rgba(3,8,18,0.96) 0%, rgba(5,12,24,0.82) 58%, rgba(5,12,24,0.48) 100%), url("${import.meta.env.BASE_URL}assets/menu-banners/updated/card-store-archive.png") right center / cover`,
-    boxShadow: '0 8px 26px rgba(0,0,0,0.32), inset 0 -1px 0 rgba(180,220,255,0.08)',
+    background: `linear-gradient(90deg, rgba(5,6,12,0.96) 0%, rgba(7,8,16,0.82) 58%, rgba(7,8,16,0.48) 100%), url("${import.meta.env.BASE_URL}assets/menu-banners/updated/card-store-archive.png") right center / cover`,
+    boxShadow: '0 8px 26px rgba(0,0,0,0.32), inset 0 -1px 0 color-mix(in srgb, var(--profile-accent) 16%, transparent)',
   },
-  title: { fontSize: 26, fontWeight: 'bold', color: '#f4cf6b', letterSpacing: 2.5, textShadow: '0 0 28px rgba(244,207,107,0.42), 0 2px 6px rgba(0,0,0,0.8)' },
-  score: { fontSize: 13, color: 'rgba(210,235,255,0.82)' },
+  title: { fontSize: 26, fontWeight: 'bold', color: 'var(--profile-accent-soft, #b39aff)', letterSpacing: 2.5, textShadow: '0 0 28px color-mix(in srgb, var(--profile-accent-soft) 42%, transparent), 0 2px 6px rgba(0,0,0,0.8)' },
+  score: { fontSize: 13, color: 'var(--profile-text-muted, rgba(218,225,241,0.74))' },
   body: {
     flex: 1,
     overflowY: 'auto',
@@ -70,29 +70,29 @@ const styles: Record<string, React.CSSProperties> = {
   },
   packCard: {
     width: '100%',
-    background: 'linear-gradient(180deg, rgba(4,10,24,0.97) 0%, rgba(6,14,30,0.97) 100%)',
-    border: '1px solid rgba(110,160,215,0.34)',
+    background: 'linear-gradient(180deg, var(--profile-surface-strong, rgba(22,24,37,0.98)) 0%, var(--profile-surface-muted, rgba(7,8,14,0.94)) 100%)',
+    border: '1px solid var(--profile-border, rgba(226,235,255,0.2))',
     borderRadius: 16,
     padding: '12px',
     display: 'flex',
     flexDirection: 'column',
     gap: 8,
-    boxShadow: 'inset 0 1px 0 rgba(140,210,255,0.08), 0 2px 14px rgba(0,0,0,0.60)',
+    boxShadow: 'inset 0 1px 0 color-mix(in srgb, var(--profile-text) 8%, transparent), 0 2px 14px rgba(0,0,0,0.60)',
   },
   packLocked: {
     opacity: 0.5,
     filter: 'grayscale(0.6)',
   },
-  packName: { fontSize: 14, fontWeight: 'bold', color: '#96daff', letterSpacing: 0.4 },
-  packDesc: { fontSize: 11, color: 'rgba(205,228,255,0.78)', lineHeight: 1.42 },
-  packCost: { fontSize: 13, color: '#90d0f8' },
+  packName: { fontSize: 14, fontWeight: 'bold', color: 'var(--profile-accent, #61d8ff)', letterSpacing: 0.4 },
+  packDesc: { fontSize: 11, color: 'var(--profile-text-muted, rgba(218,225,241,0.74))', lineHeight: 1.42 },
+  packCost: { fontSize: 13, color: 'var(--profile-accent-soft, #b39aff)' },
   openBtn: {
     padding: '6px 12px',
     borderRadius: 10,
-    border: `1px solid rgba(72,148,210,0.60)`,
-    background: 'linear-gradient(180deg, #6ec8f0 0%, #4298d8 100%)',
-    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15), 0 2px 8px rgba(60,140,210,0.35)',
-    color: '#05111f',
+    border: '1px solid var(--profile-border-strong, rgba(150,191,255,0.58))',
+    background: 'var(--profile-button, linear-gradient(110deg, #60d9ff, #9085ff 54%, #54298f))',
+    boxShadow: 'inset 0 1px 0 color-mix(in srgb, var(--profile-text) 15%, transparent), 0 2px 8px color-mix(in srgb, var(--profile-accent) 35%, transparent)',
+    color: 'var(--profile-accent-deep, #21113c)',
     fontSize: 11,
     fontWeight: 600,
     fontFamily: uiTypography.body,
@@ -122,14 +122,14 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 9,
     padding: '2px 7px',
     borderRadius: 3,
-    background: 'linear-gradient(180deg, rgba(5,11,24,0.94) 0%, rgba(4,8,18,0.94) 100%)',
-    border: '1px solid rgba(110,165,220,0.34)',
+    background: 'linear-gradient(180deg, var(--profile-surface-strong, rgba(22,24,37,0.98)) 0%, var(--profile-surface-muted, rgba(7,8,14,0.94)) 100%)',
+    border: '1px solid var(--profile-border, rgba(226,235,255,0.2))',
     textShadow: '0 1px 2px rgba(0, 0, 0, 0.8)',
     letterSpacing: 1,
   },
   footer: {
     padding: '12px 24px',
-    borderTop: `1px solid ${warmTheme.border}`,
+    borderTop: '1px solid var(--profile-border, rgba(226,235,255,0.2))',
     display: 'flex',
     justifyContent: 'flex-end',
     flexShrink: 0,
@@ -138,16 +138,16 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     gap: 8,
     padding: '12px 24px',
-    borderBottom: `1px solid ${warmTheme.border}`,
+    borderBottom: '1px solid var(--profile-border, rgba(226,235,255,0.2))',
     flexShrink: 0,
-    background: 'rgba(9, 12, 16, 0.32)',
+    background: 'color-mix(in srgb, var(--profile-surface-muted) 82%, transparent)',
   },
   tabBtn: {
     padding: '6px 16px',
     borderRadius: 999,
-    border: `1px solid rgba(100,140,188,0.28)`,
-    background: 'rgba(5,18,36,0.85)',
-    color: '#c8dff2',
+    border: '1px solid var(--profile-border, rgba(226,235,255,0.2))',
+    background: 'var(--profile-surface-strong, rgba(22,24,37,0.98))',
+    color: 'var(--profile-text-soft, rgba(248,250,255,0.92))',
     fontSize: 11,
     cursor: 'pointer',
     fontFamily: uiTypography.body,
@@ -156,26 +156,26 @@ const styles: Record<string, React.CSSProperties> = {
   closeBtn: {
     padding: '8px 20px',
     borderRadius: 10,
-    border: `1px solid rgba(100,140,188,0.28)`,
-    background: 'rgba(5,18,36,0.85)',
-    color: '#c8dff2',
+    border: '1px solid var(--profile-border-strong, rgba(150,191,255,0.58))',
+    background: 'var(--profile-surface-strong, rgba(22,24,37,0.98))',
+    color: 'var(--profile-text-soft, rgba(248,250,255,0.92))',
     fontSize: 12,
     cursor: 'pointer',
     fontFamily: uiTypography.body,
   },
   collectionBar: {
     fontSize: 11,
-    color: 'rgba(190,215,245,0.72)',
+    color: 'var(--profile-text-muted, rgba(218,225,241,0.74))',
   },
   helpPanel: {
     width: '100%',
-    background: 'linear-gradient(180deg, rgba(4,10,24,0.93) 0%, rgba(3,8,18,0.93) 100%)',
-    border: '1px solid rgba(110,160,215,0.34)',
-    boxShadow: 'inset 0 1px 0 rgba(140,210,255,0.07), 0 2px 12px rgba(0,0,0,0.55)',
+    background: 'linear-gradient(180deg, var(--profile-surface-strong, rgba(22,24,37,0.98)) 0%, var(--profile-surface-muted, rgba(7,8,14,0.94)) 100%)',
+    border: '1px solid var(--profile-border, rgba(226,235,255,0.2))',
+    boxShadow: 'inset 0 1px 0 color-mix(in srgb, var(--profile-text) 7%, transparent), 0 2px 12px rgba(0,0,0,0.55)',
     borderRadius: 14,
     padding: '10px 12px',
     fontSize: 10,
-    color: 'rgba(205,228,255,0.82)',
+    color: 'var(--profile-text-soft, rgba(248,250,255,0.92))',
     lineHeight: 1.4,
   },
   helpGrid: {
@@ -185,17 +185,17 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 6,
   },
   helpItem: {
-    border: '1px solid rgba(110,165,220,0.24)',
+    border: '1px solid var(--profile-border, rgba(226,235,255,0.2))',
     borderRadius: 8,
     padding: '6px 8px',
-    background: 'rgba(3,8,20,0.40)',
+    background: 'color-mix(in srgb, var(--profile-surface-muted) 75%, transparent)',
   },
   pityNote: {
     marginTop: 4,
-    borderTop: '1px solid rgba(110,165,220,0.26)',
+    borderTop: '1px solid var(--profile-border, rgba(226,235,255,0.2))',
     paddingTop: 7,
     fontSize: 9,
-    color: 'rgba(190,215,245,0.80)',
+    color: 'var(--profile-text-muted, rgba(218,225,241,0.74))',
     lineHeight: 1.45,
   },
   eventDivider: {
@@ -207,18 +207,18 @@ const styles: Record<string, React.CSSProperties> = {
   eventDividerLine: {
     flex: 1,
     height: 1,
-    background: 'linear-gradient(90deg, transparent, rgba(180, 130, 255, 0.5), transparent)',
+    background: 'linear-gradient(90deg, transparent, color-mix(in srgb, var(--profile-accent-soft) 50%, transparent), transparent)',
   } as React.CSSProperties,
   eventDividerLabel: {
     fontSize: 11,
-    color: '#d9a6f5',
+    color: 'var(--profile-accent-soft, #b39aff)',
     letterSpacing: 2,
     fontWeight: 700,
     textTransform: 'uppercase',
     padding: '4px 12px',
-    border: '1px solid rgba(200, 130, 240, 0.4)',
+    border: '1px solid var(--profile-border-strong, rgba(150,191,255,0.58))',
     borderRadius: 20,
-    background: 'rgba(190, 110, 230, 0.12)',
+    background: 'color-mix(in srgb, var(--profile-accent-soft) 12%, transparent)',
   } as React.CSSProperties,
 };
 
@@ -228,7 +228,6 @@ function BulkHolofoilResult(props: {
   holoCards: Array<{ definitionId: string; count: number }>;
   onClose: () => void;
 }) {
-  useSuppressMusic();
   const metrics = getCardFaceMetrics('grid');
   return (
     <div style={{
@@ -303,9 +302,10 @@ export default function CardPackStore({ onClose }: Props) {
   const [bulkResult, setBulkResult] = useState<{ packName: string; totalCards: number; holoCards: Array<{ definitionId: string; count: number }> } | null>(null);
   const [showCollection, setShowCollection] = useState(false);
   const [activeTab, setActiveTab] = useState<'packs' | 'history' | 'abilities'>('packs');
+  const [selectedPackId, setSelectedPackId] = useState('pack-neutrality');
   const [focusPackId, setFocusPackId] = useState<string | null>(null);
   const [quantity, setQuantity] = useState<1 | 5 | 100>(1);
-  const packRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const packRefs = useRef<Record<string, HTMLElement | null>>({});
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -314,6 +314,7 @@ export default function CardPackStore({ onClose }: Props) {
       if (!packId) return;
       setShowCollection(false);
       setActiveTab('packs');
+      setSelectedPackId(packId);
       setFocusPackId(packId);
       window.setTimeout(() => {
         const el = packRefs.current[packId];
@@ -372,9 +373,11 @@ export default function CardPackStore({ onClose }: Props) {
 
   const rarityCount = (poolIds: string[], rarity: string) =>
     poolIds.filter(id => CardRegistry.get(id)?.rarity === rarity).length;
+  const selectedPack = PACK_DEFINITIONS.find(pack => pack.id === selectedPackId) ?? PACK_DEFINITIONS[0];
+  const uniqueCardsCollected = Object.values(collection).filter(copies => copies > 0).length;
+  const totalRegisteredCards = CardRegistry.getAll().length;
 
   const renderPackCard = (pack: typeof PACK_DEFINITIONS[0]) => {
-    const elementColor = getCardSetColor(`${pack.setId.toLowerCase()}-`);
     const setName = pack.setId;
     const isSpotlight = pack.id === getSpotlightPackId();
     const isDailyDeal = pack.id === getDailyDealPackId();
@@ -388,12 +391,11 @@ export default function CardPackStore({ onClose }: Props) {
     const boxCost = Math.round(pack.cost * 5 * 0.98);
     const caseCost = Math.round(boxCost * 2 * 0.96);
     const boxPityMisses = pityCounters[pack.id] ?? 0;
-    const boxGuaranteedNext = boxPityMisses >= 2;
-    const boxesUntilPity = Math.max(0, 3 - boxPityMisses);
+    const boxGuaranteedNext = boxPityMisses >= BOX_LEGENDARY_PITY_MISS_THRESHOLD;
+    const boxesUntilPity = Math.max(0, BOX_LEGENDARY_PITY_MISS_THRESHOLD - boxPityMisses);
     const packPityMisses = packPityCounters[pack.id] ?? 0;
-    const packEpicPityThreshold = 10;
-    const packGuaranteedNext = packPityMisses + 1 >= packEpicPityThreshold;
-    const packsUntilEpicPity = Math.max(0, packEpicPityThreshold - packPityMisses);
+    const packGuaranteedNext = packPityMisses + 1 >= PACK_EPIC_PITY_THRESHOLD;
+    const packsUntilEpicPity = Math.max(0, PACK_EPIC_PITY_THRESHOLD - packPityMisses);
 
     // Compute effective locked state from oblivionUnlock milestone
     const isLocked = pack.divineLightUnlock !== undefined
@@ -414,182 +416,113 @@ export default function CardPackStore({ onClose }: Props) {
     const artSrc = PACK_ART[pack.id];
     const displayName = pack.name.replace(/^\[EVENT\]\s*/, '');
 
+    const rarityOrder = ['Common', 'Rare', 'Epic', 'Legendary', 'Eternal', 'Infinite'] as const;
+    const rarityCounts = rarityOrder.map(rarity => ({ rarity, count: rarityCount(pack.cardPool, rarity) })).filter(entry => entry.count > 0);
+    const totalPoolCards = rarityCounts.reduce((total, entry) => total + entry.count, 0);
+
     return (
-      <div
+      <article
         key={pack.id}
-        ref={(el) => { packRefs.current[pack.id] = el; }}
-        className={isLocked ? undefined : 'ui-tile-hover'}
-        style={{
-          ...styles.packCard,
-          ...(isLocked ? styles.packLocked : {}),
-          ...(focusPackId === pack.id ? {
-            outline: '2px solid #ffd86b',
-            outlineOffset: 4,
-            boxShadow: '0 0 36px rgba(255, 216, 107, 0.7)',
-            transition: 'box-shadow 220ms ease, outline-color 220ms ease',
-          } : {}),
-        }}
+        ref={(element) => { packRefs.current[pack.id] = element; }}
+        className={`celestial-store-pack-detail${isLocked ? ' is-locked' : ''}${focusPackId === pack.id ? ' is-focused' : ''}`}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 10, height: 10, borderRadius: '50%',
-            background: elementColor, flexShrink: 0,
-            boxShadow: `0 0 8px ${elementColor}`,
-          }} />
-          <div style={styles.packName}>
-            {displayName}
+        <header className="celestial-store-pack-banner" style={{
+          backgroundImage: artSrc
+            ? `linear-gradient(90deg, rgba(8,7,14,0.94), rgba(12,10,20,0.48) 68%, rgba(12,10,20,0.18)), url("${artSrc}")`
+            : 'linear-gradient(120deg, rgba(30,22,48,0.95), rgba(9,8,15,0.95))',
+        }}>
+          <span className={`celestial-store-tag${usesShards ? ' is-event' : ' is-featured'}`}>{usesShards ? 'Event pack' : isDailyDeal ? 'Daily deal' : isSpotlight ? 'Featured' : 'Core set'}</span>
+          <h2>{displayName}</h2>
+          <p>{pack.description}</p>
+        </header>
+
+        <div className="celestial-store-pack-content">
+          <section className="celestial-store-distribution" aria-label={`${setName} rarity distribution`}>
+            <div className="celestial-store-distribution-bar">
+              {rarityCounts.map(({ rarity, count }) => (
+                <i key={rarity} title={`${count} ${rarity}`} style={{ flex: count, background: RARITY_COLORS[rarity] ?? '#9aa4b8' }} />
+              ))}
+            </div>
+            <div className="celestial-store-rarity-list">
+              {rarityCounts.map(({ rarity, count }) => (
+                <span key={rarity} style={{ color: RARITY_COLORS[rarity] ?? '#9aa4b8' }}>{count} {rarity}</span>
+              ))}
+              <span className="celestial-store-pool-total">{totalPoolCards} unique cards in pool</span>
+            </div>
+          </section>
+
+          <div className="celestial-store-pity-grid">
+            <div className="celestial-store-pity-meter">
+              <small><b>Pack Epic pity</b>{packGuaranteedNext ? ' · next pack guaranteed' : ` · ${packsUntilEpicPity} pack${packsUntilEpicPity === 1 ? '' : 's'} until guaranteed`}</small>
+              <div><i style={{ width: `${Math.min(100, packPityMisses / PACK_EPIC_PITY_THRESHOLD * 100)}%` }} /></div>
+            </div>
+            {!usesShards && (
+              <div className="celestial-store-pity-meter">
+                <small><b>Box Legendary pity</b>{boxGuaranteedNext ? ' · next box guaranteed' : ` · ${boxesUntilPity} box${boxesUntilPity === 1 ? '' : 'es'} until guaranteed`}</small>
+                <div><i style={{ width: `${Math.min(100, boxPityMisses / BOX_LEGENDARY_PITY_MISS_THRESHOLD * 100)}%` }} /></div>
+              </div>
+            )}
           </div>
-          {isSpotlight && (
-            <div style={{
-              fontSize: 9,
-              letterSpacing: 1.2,
-              fontWeight: 'bold',
-              padding: '2px 6px',
-              borderRadius: 4,
-              background: warmTheme.accent,
-              color: '#fff',
-              marginLeft: 'auto',
-            }}>FEATURED</div>
+
+          {isLocked ? (
+            <div className="celestial-store-locked-copy">
+              {pack.divineLightUnlock !== undefined ? `${setName} unlocks at ${pack.divineLightUnlock.toLocaleString()} Divine Light.` : 'This pack is not available yet.'}
+            </div>
+          ) : (
+            <div className="celestial-store-offers">
+              {tiers.map(({ tier, label, cards, cost, discount }) => {
+                const totalCost = cost * quantity;
+                const totalCards = cards * quantity;
+                const canAfford = usesShards ? shards >= totalCost : divineLight >= totalCost;
+                return (
+                  <button
+                    key={tier}
+                    type="button"
+                    data-sfx="claim"
+                    className="celestial-store-offer"
+                    disabled={!canAfford}
+                    onClick={canAfford ? () => handleOpen(pack.id, tier) : undefined}
+                  >
+                    <span className="celestial-store-offer-title">{label}{quantity > 1 ? ` ×${quantity}` : ''}<small>{totalCards} cards</small></span>
+                    <strong>{totalCost.toLocaleString()}<small> {currencyLabel}</small></strong>
+                    {discount && <em>{discount}</em>}
+                  </button>
+                );
+              })}
+            </div>
           )}
         </div>
-
-        {artSrc && (
-          <img
-            src={artSrc}
-            alt={displayName}
-            style={{ width: '100%', height: 108, borderRadius: 8, objectFit: 'cover', display: 'block' }}
-          />
-        )}
-
-        <div style={styles.packDesc}>{pack.description}</div>
-
-        <div style={styles.cardPreview}>
-          {(['Common', 'Rare', 'Epic', 'Legendary'] as const).map(r => {
-            const count = rarityCount(pack.cardPool, r);
-            if (count === 0) return null;
-            return (
-              <span key={r} style={{ ...styles.rarityChip, color: RARITY_COLORS[r] }}>
-                {count} {r}
-              </span>
-            );
-          })}
-        </div>
-
-        {isLocked ? (
-          <div style={styles.lockedLabel}>
-            {pack.divineLightUnlock !== undefined ? (
-              <>
-                <div style={{ marginBottom: 4 }}>
-                  🔒 {setName} — Unlocks at {pack.divineLightUnlock.toLocaleString()} Divine Light
-                </div>
-              </>
-            ) : '🔒 Coming Soon'}
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {tiers.map(({ tier, label, cards, cost, discount }) => {
-              const totalCost = cost * quantity;
-              const totalCards = cards * quantity;
-              const canAfford = usesShards ? shards >= totalCost : divineLight >= totalCost;
-              return (
-                <button
-                  key={tier}
-                  data-sfx="claim"
-                  style={{
-                    ...styles.openBtn,
-                    ...(canAfford ? {} : styles.openBtnDisabled),
-                  }}
-                  onClick={canAfford ? () => handleOpen(pack.id, tier) : undefined}
-                >
-                  <span style={{ fontWeight: 'bold' }}>
-                    {label}{quantity > 1 && <span style={{ color: 'rgba(12,30,52,0.65)', marginLeft: 4 }}>×{quantity}</span>}
-                  </span>
-                  <span style={{ color: 'rgba(12,30,52,0.55)', marginLeft: 6, fontWeight: 700 }}>({totalCards} cards)</span>
-                  <span style={{ float: 'right', fontSize: 11, color: 'rgba(12,30,52,0.80)', fontWeight: 700 }}>
-                    {totalCost.toLocaleString()} {currencyLabel}
-                    {discount && <span style={{ color: 'rgba(100,220,100,0.8)', marginLeft: 5 }}>{discount}</span>}
-                  </span>
-                </button>
-              );
-            })}
-
-            <div style={styles.pityNote}>
-              {packGuaranteedNext && (
-                <div style={{
-                  marginBottom: 5,
-                  padding: '4px 7px',
-                  borderRadius: 4,
-                  background: 'rgba(190, 110, 230, 0.18)',
-                  border: '1px solid rgba(200, 130, 240, 0.55)',
-                  color: '#e6b3ff',
-                  fontWeight: 700,
-                  letterSpacing: 0.4,
-                }}>
-                  🎯 Next Pack guaranteed Epic+
-                </div>
-              )}
-              {!usesShards && boxGuaranteedNext && (
-                <div style={{
-                  marginBottom: 5,
-                  padding: '4px 7px',
-                  borderRadius: 4,
-                  background: 'rgba(255, 170, 60, 0.20)',
-                  border: '1px solid rgba(255, 200, 100, 0.6)',
-                  color: '#ffd07a',
-                  fontWeight: 700,
-                  letterSpacing: 0.4,
-                }}>
-                  🌟 Next Box guaranteed Legendary
-                </div>
-              )}
-              <div>
-                <span style={{ color: '#d9a6f5' }}>Pack Epic Pity:</span>{' '}
-                {packGuaranteedNext
-                  ? 'Next Pack guaranteed.'
-                  : `${packsUntilEpicPity} Pack${packsUntilEpicPity === 1 ? '' : 's'} until guaranteed Epic+.`}
-              </div>
-              {!usesShards && (
-                <div>
-                  <span style={{ color: '#7bbde8' }}>Box Legendary Pity:</span>{' '}
-                  {boxGuaranteedNext
-                    ? 'Next Box guaranteed.'
-                    : `${boxesUntilPity} Box${boxesUntilPity === 1 ? '' : 'es'} until guaranteed.`}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
+      </article>
     );
   };
 
   return (
-    <div className="ui-panel-intro" style={{ ...styles.overlay, ['--ui-accent' as any]: '240, 189, 120', ['--ui-accent-soft' as any]: '250, 224, 184' } as React.CSSProperties}>
+    <div className="ui-panel-intro celestial-store-screen" style={styles.overlay}>
       <div style={{ ...styles.header, position: 'relative' }}>
         <div>
-          <div style={{ color: '#f4cf6b', fontFamily: uiTypography.display, fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 5 }}>THE CELESTIAL ARCHIVE</div>
+          <div style={{ color: 'var(--profile-accent, #61d8ff)', fontFamily: uiTypography.display, fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 5 }}>THE CELESTIAL ARCHIVE</div>
           <div className="ui-title-glow" style={styles.title}>Card Store</div>
-          <div style={{ color: 'rgba(220,232,250,0.66)', fontSize: 11, marginTop: 4 }}>Open sealed collections and trace new card identities.</div>
+          <div style={{ color: 'var(--profile-text-muted, rgba(218,225,241,0.74))', fontSize: 11, marginTop: 4 }}>Open sealed collections and trace new card identities.</div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
           <div style={styles.score}>Divine Light: {Math.floor(divineLight).toLocaleString()}</div>
           <div style={styles.score}>Aberrated Shards: {shards.toLocaleString()}</div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 4 }}>
-            <div style={styles.collectionBar}>{Object.keys(collection).length} unique cards collected</div>
+            <div style={styles.collectionBar}>{uniqueCardsCollected} / {totalRegisteredCards} unique cards</div>
             <button
               onClick={() => setShowCollection(true)}
               style={{
                 padding: '4px 12px', borderRadius: 5, fontSize: 11, cursor: 'pointer',
                 fontFamily: uiTypography.body, letterSpacing: 1,
-                background: 'rgba(58,142,200,0.10)', border: '1px solid rgba(88,170,218,0.35)',
-                color: '#7bbde8',
+                background: 'color-mix(in srgb, var(--profile-accent) 10%, transparent)', border: '1px solid var(--profile-border-strong)',
+                color: 'var(--profile-accent-soft)',
               }}
             >
               View Collection
             </button>
           </div>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 6 }}>
-            <span style={{ fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase', color: 'rgba(205,228,255,0.72)', fontWeight: 700 }}>
+            <span style={{ fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase', color: 'var(--profile-text-muted)', fontWeight: 700 }}>
               Buy Qty
             </span>
             {([1, 5, 100] as const).map(q => {
@@ -606,10 +539,10 @@ export default function CardPackStore({ onClose }: Props) {
                     fontFamily: uiTypography.body,
                     letterSpacing: 1,
                     fontWeight: 700,
-                    background: active ? 'rgba(78,160,220,0.32)' : 'rgba(58,142,200,0.07)',
-                    border: `1px solid ${active ? 'rgba(110,185,240,0.78)' : 'rgba(88,170,218,0.26)'}`,
-                    color: active ? '#d8f0ff' : 'rgba(110,185,240,0.72)',
-                    boxShadow: active ? '0 0 12px rgba(78,160,220,0.40), inset 0 1px 0 rgba(200,235,255,0.12)' : 'none',
+                    background: active ? 'color-mix(in srgb, var(--profile-accent) 24%, transparent)' : 'color-mix(in srgb, var(--profile-accent) 6%, transparent)',
+                    border: `1px solid ${active ? 'var(--profile-border-strong)' : 'var(--profile-border)'}`,
+                    color: active ? 'var(--profile-text)' : 'var(--profile-text-muted)',
+                    boxShadow: active ? '0 0 12px color-mix(in srgb, var(--profile-accent) 24%, transparent), inset 0 1px 0 color-mix(in srgb, var(--profile-text) 12%, transparent)' : 'none',
                   }}
                 >
                   ×{q}
@@ -625,7 +558,7 @@ export default function CardPackStore({ onClose }: Props) {
           style={{
             ...styles.tabBtn,
             ...(activeTab === 'packs'
-              ? { color: '#0c1e34', borderColor: 'rgba(88,170,218,0.70)', background: 'rgba(88,170,218,0.88)' }
+              ? { color: 'var(--profile-accent-deep)', borderColor: 'var(--profile-border-strong)', background: 'var(--profile-button)' }
               : {}),
           }}
           onClick={() => setActiveTab('packs')}
@@ -636,7 +569,7 @@ export default function CardPackStore({ onClose }: Props) {
           style={{
             ...styles.tabBtn,
             ...(activeTab === 'history'
-              ? { color: '#0c1e34', borderColor: 'rgba(88,170,218,0.70)', background: 'rgba(88,170,218,0.88)' }
+              ? { color: 'var(--profile-accent-deep)', borderColor: 'var(--profile-border-strong)', background: 'var(--profile-button)' }
               : {}),
           }}
           onClick={() => setActiveTab('history')}
@@ -651,7 +584,7 @@ export default function CardPackStore({ onClose }: Props) {
             fontWeight: 800,
             boxShadow: '0 0 22px rgba(255,255,255,0.18)',
             ...(activeTab === 'abilities'
-              ? { color: '#0c1e34', borderColor: 'rgba(88,170,218,0.70)', background: 'rgba(88,170,218,0.88)' }
+              ? { color: 'var(--profile-accent-deep)', borderColor: 'var(--profile-border-strong)', background: 'var(--profile-button)' }
               : {}),
           }}
           onClick={() => setActiveTab('abilities')}
@@ -661,42 +594,52 @@ export default function CardPackStore({ onClose }: Props) {
       </div>
 
       {activeTab === 'packs' ? (
-        <div style={styles.body}>
-          <div style={styles.packsColumn}>
-            <div style={styles.helpPanel}>
-              <strong style={{ color: '#7dd4f8', letterSpacing: 1 }}>How Opening Works</strong>
-              <div style={styles.helpGrid}>
-                <div style={styles.helpItem}><strong>Pack:</strong> 5 cards.</div>
-                <div style={styles.helpItem}><strong>Box:</strong> 25 cards (5 packs), 2% discount, Legendary pity for that set.</div>
-                <div style={styles.helpItem}><strong>Case:</strong> 50 cards (10 packs), 4% discount, at least 1 guaranteed Legendary.</div>
-                <div style={styles.helpItem}><strong>Holofoil:</strong> Each rolled card has a 2% holofoil chance. Every Box and Case guarantees at least 1 holofoil.</div>
-                <div style={styles.helpItem}>
-                  <strong>Legendary Box Pity:</strong> 2 no-Legendary Boxes in a set makes the next Box guaranteed.
-                </div>
-                <div style={styles.helpItem}>
-                  <strong>Epic Pack Pity:</strong> 10 single Packs without an Epic+ guarantees the next.
-                </div>
-              </div>
-            </div>
-
-            <div className="ui-grid-stagger" style={styles.packGrid}>
-            {PACK_DEFINITIONS.filter(p => !(p as typeof p & { currencyType?: string }).currencyType).map(renderPackCard)}
-            </div>
-
-            {PACK_DEFINITIONS.some(p => (p as typeof p & { currencyType?: string }).currencyType) && (
+        <div className="celestial-store-body">
+          <aside className="celestial-store-set-rail" aria-label="Pack sets">
+            <div className="celestial-store-rail-heading">Core sets</div>
+            {PACK_DEFINITIONS.filter(pack => !pack.currencyType).map(pack => {
+              const isSelected = pack.id === selectedPack?.id;
+              return (
+                <button key={pack.id} type="button" className={`celestial-store-set-button${isSelected ? ' is-selected' : ''}`} aria-pressed={isSelected} onClick={() => setSelectedPackId(pack.id)}>
+                  <span className="celestial-store-set-art" style={{ backgroundImage: `url("${PACK_ART[pack.id] ?? ''}")` }} />
+                  <span><strong>{pack.setId}</strong><small>{pack.id === getSpotlightPackId() || pack.id === getDailyDealPackId() ? 'Featured' : 'Core set'}</small></span>
+                </button>
+              );
+            })}
+            {PACK_DEFINITIONS.some(pack => pack.currencyType === 'aberratedShards') && (
               <>
-                <div style={styles.eventDivider}>
-                  <div style={styles.eventDividerLine} />
-                  <span style={styles.eventDividerLabel}>⭐  Event Packs</span>
-                  <div style={styles.eventDividerLine} />
-                </div>
-                <div className="ui-grid-stagger" style={{ ...styles.packGrid, gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 288px))' }}>
-                {PACK_DEFINITIONS.filter(p => (p as typeof p & { currencyType?: string }).currencyType === 'aberratedShards').map(renderPackCard)}
-                </div>
+                <div className="celestial-store-rail-heading is-event">Event packs</div>
+                {PACK_DEFINITIONS.filter(pack => pack.currencyType === 'aberratedShards').map(pack => {
+                  const isSelected = pack.id === selectedPack?.id;
+                  return (
+                    <button key={pack.id} type="button" className={`celestial-store-set-button${isSelected ? ' is-selected' : ''}`} aria-pressed={isSelected} onClick={() => setSelectedPackId(pack.id)}>
+                      <span className="celestial-store-set-art" style={{ backgroundImage: `url("${PACK_ART[pack.id] ?? ''}")` }} />
+                      <span><strong>{pack.setId}</strong><small>Event pack</small></span>
+                    </button>
+                  );
+                })}
               </>
             )}
+          </aside>
 
-          </div>
+          <section className="celestial-store-stage" aria-label={selectedPack ? `${selectedPack.name} details` : 'Pack details'}>
+            {selectedPack ? renderPackCard(selectedPack) : <div style={styles.empty}>No packs are available.</div>}
+          </section>
+
+          <aside className="celestial-store-guide" aria-label="Pack opening rules">
+            <div className="celestial-store-guide-title">Opening rules</div>
+            <div className="celestial-store-guide-item"><strong>Pack</strong><span>5 cards</span></div>
+            <div className="celestial-store-guide-item"><strong>Box</strong><span>25 cards · 5 packs · 2% discount</span></div>
+            <div className="celestial-store-guide-item"><strong>Case</strong><span>50 cards · 10 packs · 4% discount</span></div>
+            <div className="celestial-store-guide-item"><strong>Holofoil</strong><span>2% per card; every Box and Case guarantees at least one.</span></div>
+            <div className="celestial-store-guide-item"><strong>Epic pity</strong><span>10 single Packs without an Epic+ guarantees the next.</span></div>
+            <div className="celestial-store-guide-item"><strong>Legendary pity</strong><span>After 4 consecutive Boxes without a Legendary, the next Box guarantees one.</span></div>
+            <div className="celestial-store-collection-progress">
+              <span>Collection</span>
+              <strong>{uniqueCardsCollected} / {totalRegisteredCards}</strong>
+              <div><i style={{ width: `${totalRegisteredCards ? Math.min(100, uniqueCardsCollected / totalRegisteredCards * 100) : 0}%` }} /></div>
+            </div>
+          </aside>
         </div>
       ) : activeTab === 'history' ? (
         <PackHistoryPanel />
@@ -740,118 +683,109 @@ function PackHistoryPanel() {
   const packPityCounters = useStore(s => s.progress.packPityCounters ?? {});
   const boxPityCounters = useStore(s => s.progress.pityCounters ?? {});
 
-  // Aggregate totals across history
   const totalCardsByRarity: Record<string, number> = {};
   for (const entry of history) {
     for (const [r, n] of Object.entries(entry.rarityCounts)) {
       totalCardsByRarity[r] = (totalCardsByRarity[r] ?? 0) + n;
     }
   }
+  const totalRecordedCards = Object.values(totalCardsByRarity).reduce((total, count) => total + count, 0);
+  const packStreaks = PACK_DEFINITIONS.map(pack => ({
+    pack,
+    epicMisses: packPityCounters[pack.id] ?? 0,
+    boxMisses: boxPityCounters[pack.id] ?? 0,
+  }));
   const formatTs = (ts: number) => {
     const d = new Date(ts);
     return d.toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' });
   };
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '14px 24px 18px' }}>
-      <div style={{ maxWidth: 880, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div style={{
-          padding: 14, borderRadius: 12,
-          background: 'rgba(5,12,28,0.70)',
-          border: `1px solid rgba(62,112,168,0.28)`,
-        }}>
-          <div style={{ fontSize: 13, color: '#58aada', letterSpacing: 1, marginBottom: 8 }}>Recent Streaks</div>
-          {Object.keys(packPityCounters).length === 0 && Object.keys(boxPityCounters).length === 0 ? (
-            <div style={{ fontSize: 12, color: 'rgba(190,215,245,0.60)' }}>No active streaks.</div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {Object.entries(packPityCounters).filter(([, v]) => v > 0).map(([packId, n]) => {
-                const pack = PACK_DEFINITIONS.find(p => p.id === packId);
-                return (
-                  <div key={`epic-${packId}`} style={{ fontSize: 11, color: '#c58bff' }}>
-                    {pack?.name ?? packId}: {n} pack{n === 1 ? '' : 's'} without Epic+ ({10 - n} until guarantee)
+    <div className="pack-history-view">
+      <div className="pack-history-content">
+        <div className="pack-history-summary-grid">
+          <section className="pack-history-panel pack-history-streak-panel" aria-labelledby="pack-history-streak-title">
+            <h2 className="pack-history-panel-title" id="pack-history-streak-title">Pity Progress</h2>
+            <div className="pack-history-streak-grid">
+              {packStreaks.map(({ pack, epicMisses, boxMisses }) => (
+                <div className="pack-history-streak-set" key={pack.id}>
+                  <h3>{pack.setId}</h3>
+                  <div className="pack-history-pity-metric is-epic">
+                    <div><span>Epic+ · single packs</span><strong>{epicMisses}/{PACK_EPIC_PITY_THRESHOLD}</strong></div>
+                    <div className="pack-history-meter" role="progressbar" aria-label={`${pack.setId} Epic pity`} aria-valuemin={0} aria-valuemax={PACK_EPIC_PITY_THRESHOLD} aria-valuenow={Math.min(PACK_EPIC_PITY_THRESHOLD, epicMisses)}>
+                      <i style={{ width: `${Math.min(100, epicMisses / PACK_EPIC_PITY_THRESHOLD * 100)}%` }} />
+                    </div>
+                    <small>{epicMisses + 1 >= PACK_EPIC_PITY_THRESHOLD ? 'Next single pack guaranteed' : `${PACK_EPIC_PITY_THRESHOLD - epicMisses} single pack${PACK_EPIC_PITY_THRESHOLD - epicMisses === 1 ? '' : 's'} until guarantee`}</small>
                   </div>
-                );
-              })}
-              {Object.entries(boxPityCounters).filter(([, v]) => v > 0).map(([packId, n]) => {
-                const pack = PACK_DEFINITIONS.find(p => p.id === packId);
-                return (
-                  <div key={`leg-${packId}`} style={{ fontSize: 11, color: '#ffd38a' }}>
-                    {pack?.name ?? packId}: {n} box{n === 1 ? '' : 'es'} without Legendary ({Math.max(0, 3 - n)} until guarantee)
-                  </div>
-                );
-              })}
+                  {pack.currencyType !== 'aberratedShards' && (
+                    <div className="pack-history-pity-metric is-legendary">
+                      <div><span>Legendary · boxes</span><strong>{boxMisses}/{BOX_LEGENDARY_PITY_MISS_THRESHOLD}</strong></div>
+                      <div className="pack-history-meter" role="progressbar" aria-label={`${pack.setId} Legendary pity`} aria-valuemin={0} aria-valuemax={BOX_LEGENDARY_PITY_MISS_THRESHOLD} aria-valuenow={Math.min(BOX_LEGENDARY_PITY_MISS_THRESHOLD, boxMisses)}>
+                        <i style={{ width: `${Math.min(100, boxMisses / BOX_LEGENDARY_PITY_MISS_THRESHOLD * 100)}%` }} />
+                      </div>
+                      <small>{boxMisses >= BOX_LEGENDARY_PITY_MISS_THRESHOLD ? 'Next box guaranteed' : `${BOX_LEGENDARY_PITY_MISS_THRESHOLD - boxMisses} failed box${BOX_LEGENDARY_PITY_MISS_THRESHOLD - boxMisses === 1 ? '' : 'es'} until guarantee`}</small>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
-          )}
+          </section>
+
+          <section className="pack-history-panel pack-history-total-panel" aria-labelledby="pack-history-totals-title">
+            <h2 className="pack-history-panel-title" id="pack-history-totals-title">
+              Last {history.length} Opens · Totals
+            </h2>
+            {totalRecordedCards > 0 ? (
+              <div className="pack-history-total-grid">
+                {RARITY_DISPLAY_ORDER.map(rarity => {
+                  const count = totalCardsByRarity[rarity] ?? 0;
+                  if (count === 0) return null;
+                  return (
+                    <div className="pack-history-total" key={rarity} style={{ '--history-rarity': RARITY_COLORS[rarity] ?? '#9aa4b8' } as React.CSSProperties}>
+                      <strong>{count.toLocaleString()}</strong>
+                      <span>{rarity}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="pack-history-empty">Open packs to build your rarity totals.</div>
+            )}
+          </section>
         </div>
 
-        {history.length > 0 && (
-          <div style={{
-            padding: 14, borderRadius: 12,
-            background: 'rgba(5,12,28,0.70)',
-            border: `1px solid rgba(62,112,168,0.28)`,
-          }}>
-            <div style={{ fontSize: 13, color: '#58aada', letterSpacing: 1, marginBottom: 8 }}>
-              Last {history.length} opens · totals
-            </div>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', fontSize: 12 }}>
-              {RARITY_DISPLAY_ORDER.map(r => {
-                const n = totalCardsByRarity[r] ?? 0;
-                if (n === 0) return null;
-                return (
-                  <div key={r} style={{ color: RARITY_COLORS[r] ?? '#ccc' }}>
-                    {r}: <strong>{n}</strong>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        <div style={{
-          padding: 14, borderRadius: 12,
-          background: 'rgba(5,12,28,0.70)',
-          border: `1px solid rgba(62,112,168,0.28)`,
-        }}>
-          <div style={{ fontSize: 13, color: '#58aada', letterSpacing: 1, marginBottom: 8 }}>
-            Open History ({history.length})
-          </div>
+        <section className="pack-history-panel pack-history-log-panel" aria-labelledby="pack-history-log-title">
+          <h2 className="pack-history-panel-title" id="pack-history-log-title">Open History ({history.length})</h2>
           {history.length === 0 ? (
-            <div style={{ fontSize: 12, color: 'rgba(190,215,245,0.60)' }}>No pack opens recorded yet.</div>
+            <div className="pack-history-empty">No pack opens recorded yet.</div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div className="pack-history-log">
               {history.map((entry, idx) => {
-                const pack = PACK_DEFINITIONS.find(p => p.id === entry.packId);
+                const pack = PACK_DEFINITIONS.find(definition => definition.id === entry.packId);
                 const tierLabel = entry.tier === 'pack' ? 'Pack' : entry.tier === 'box' ? 'Box' : 'Case';
                 return (
-                  <div key={idx} style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    fontSize: 11, padding: '6px 10px',
-                    background: 'rgba(9, 12, 16, 0.45)',
-                    border: '1px solid rgba(62,112,168,0.20)',
-                    borderRadius: 6,
-                  }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      <span style={{ color: '#7bbde8', fontWeight: 600 }}>{pack?.name ?? entry.packId} · {tierLabel}</span>
-                      <span style={{ color: 'rgba(190,215,245,0.50)', fontSize: 10 }}>{formatTs(entry.ts)}</span>
+                  <article className="pack-history-row" key={`${entry.ts}-${entry.packId}-${entry.tier}-${idx}`}>
+                    <div className="pack-history-row-main">
+                      <strong>{pack?.name ?? entry.packId} · {tierLabel}</strong>
+                      <time dateTime={new Date(entry.ts).toISOString()}>{formatTs(entry.ts)}</time>
                     </div>
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                      {RARITY_DISPLAY_ORDER.map(r => {
-                        const n = entry.rarityCounts[r] ?? 0;
-                        if (n === 0) return null;
+                    <div className="pack-history-rarities" aria-label="Cards by rarity">
+                      {RARITY_DISPLAY_ORDER.map(rarity => {
+                        const count = entry.rarityCounts[rarity] ?? 0;
+                        if (count === 0) return null;
                         return (
-                          <span key={r} style={{ color: RARITY_COLORS[r] ?? '#ccc', fontWeight: 600 }}>
-                            {n}× {r}
+                          <span key={rarity} style={{ '--history-rarity': RARITY_COLORS[rarity] ?? '#9aa4b8' } as React.CSSProperties}>
+                            <b>{count}×</b> {rarity}
                           </span>
                         );
                       })}
                     </div>
-                  </div>
+                  </article>
                 );
               })}
             </div>
           )}
-        </div>
+        </section>
       </div>
     </div>
   );

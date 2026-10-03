@@ -45,36 +45,36 @@ const RARITY_ORDER = { Common: 0, Rare: 1, Epic: 2, Legendary: 3 };
 function getSectionColors(): Record<string, string> {
   return {
     'Ain Soph Aur': warmTheme.accentDeep,
-    Light: '#f0bd78',
-    Dark: warmTheme.cherubim,
+    Light: warmTheme.accent,
+    Dark: warmTheme.accentSoft,
   };
 }
 
 const styles: Record<string, React.CSSProperties> = {
   overlay: {
     position: 'absolute', inset: 0,
-    background: 'radial-gradient(ellipse at 82% 8%, rgba(116, 74, 151, 0.14) 0%, transparent 38%), radial-gradient(ellipse at 12% 88%, rgba(153, 112, 62, 0.10) 0%, transparent 44%), radial-gradient(ellipse at 50% 50%, rgba(11, 8, 18, 0.60) 0%, transparent 100%), repeating-linear-gradient(45deg, rgba(216, 185, 136, 0.018) 0px, rgba(216, 185, 136, 0.018) 1px, transparent 1px, transparent 28px), linear-gradient(180deg, #100c17 0%, #171021 45%, #0b0912 100%)',
+    background: 'radial-gradient(ellipse at 82% 8%, color-mix(in srgb, var(--profile-accent-soft) 14%, transparent) 0%, transparent 38%), var(--profile-app-background)',
     zIndex: 50,
     display: 'flex', flexDirection: 'column', pointerEvents: 'auto',
     fontFamily: 'Georgia, serif',
-    color: '#e8f4ff',
+    color: 'var(--profile-text)',
   },
   header: {
-    padding: '12px 16px', borderBottom: '1px solid rgba(168,132,83,0.34)',
+    padding: '12px 16px', borderBottom: '1px solid var(--profile-border)',
     display: 'grid', gridTemplateColumns: 'minmax(230px, 0.9fr) minmax(340px, 1.2fr) auto',
     alignItems: 'center', flexShrink: 0,
-    background: `linear-gradient(90deg, rgba(10,8,15,0.97) 0%, rgba(17,12,25,0.94) 58%, rgba(12,9,18,0.9) 100%), url("${import.meta.env.BASE_URL}assets/menu-banners/updated/deck-builder-worktable.png") right center / cover`,
-    boxShadow: '0 1px 0 rgba(168,132,83,0.14), 0 4px 22px rgba(0,0,0,0.55)',
+    background: `linear-gradient(90deg, color-mix(in srgb, var(--profile-surface-muted) 97%, transparent) 0%, color-mix(in srgb, var(--profile-surface-strong) 94%, transparent) 58%, color-mix(in srgb, var(--profile-surface-strong) 80%, transparent) 100%), url("${import.meta.env.BASE_URL}assets/menu-banners/updated/deck-builder-worktable.png") right center / cover`,
+    boxShadow: '0 1px 0 var(--profile-border), 0 4px 22px rgba(0,0,0,0.55)',
     gap: 16,
   },
   title: {
-    fontSize: 26, fontWeight: 'bold', color: '#f4cf6b',
+    fontSize: 26, fontWeight: 'bold', color: 'var(--profile-accent)',
     letterSpacing: 3, textTransform: 'uppercase',
-    textShadow: '0 0 36px rgba(244,207,107,0.40), 0 2px 8px rgba(0,0,0,0.9)',
+    textShadow: '0 0 36px color-mix(in srgb, var(--profile-accent) 40%, transparent), 0 2px 8px rgba(0,0,0,0.9)',
     lineHeight: 1,
   },
   deckNameChip: {
-    fontSize: 11, color: 'rgba(190,215,245,0.80)', marginTop: 4, fontStyle: 'italic',
+    fontSize: 11, color: 'var(--profile-text-muted)', marginTop: 4, fontStyle: 'italic',
     display: 'flex', alignItems: 'center', gap: 6,
   },
   toolbar: {
@@ -83,8 +83,8 @@ const styles: Record<string, React.CSSProperties> = {
   },
   toolbarBtn: {
     padding: '6px 10px', borderRadius: 7,
-    border: '1px solid rgba(168,132,83,0.42)',
-    background: 'rgba(200,155,72,0.08)', color: '#e2ca91', fontSize: 11,
+    border: '1px solid var(--profile-border)',
+    background: 'color-mix(in srgb, var(--profile-accent) 8%, transparent)', color: 'var(--profile-text)', fontSize: 11,
     cursor: 'pointer', fontFamily: 'Georgia, serif',
     letterSpacing: 0.5, transition: 'background 0.15s, box-shadow 0.15s',
     display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'center', gap: 6,
@@ -101,21 +101,21 @@ const styles: Record<string, React.CSSProperties> = {
   filterBar: {
     display: 'flex', alignItems: 'center', flexShrink: 0, flexWrap: 'wrap', gap: 4,
     padding: '8px 16px',
-    background: 'rgba(3, 6, 14, 0.6)',
-    borderBottom: '1px solid rgba(72,128,190,0.20)',
+    background: 'color-mix(in srgb, var(--profile-surface-muted) 70%, transparent)',
+    borderBottom: '1px solid var(--profile-border)',
   },
   filterBtn: {
-    padding: '5px 12px', height: 28, border: '1px solid rgba(72,128,190,0.20)',
+    padding: '5px 12px', height: 28, border: '1px solid var(--profile-border)',
     borderRadius: 999,
-    background: 'transparent', color: 'rgba(205,228,255,0.55)', fontSize: 10,
+    background: 'transparent', color: 'var(--profile-text-muted)', fontSize: 10,
     cursor: 'pointer', fontFamily: 'Georgia, serif', letterSpacing: 1,
     textTransform: 'uppercase', transition: 'all 0.18s ease',
     display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0,
   },
   filterBtnActive: {
-    color: '#7dd4f8',
-    borderColor: '#4298d8',
-    background: 'rgba(78,160,220,0.16)',
+    color: 'var(--profile-accent)',
+    borderColor: 'var(--profile-border-strong)',
+    background: 'color-mix(in srgb, var(--profile-accent) 16%, transparent)',
   },
   body: { display: 'grid', gridTemplateColumns: '252px minmax(0, 1fr) 300px', gap: 8, flex: 1, overflow: 'hidden', minHeight: 0, padding: '8px 10px' },
   poolPane: { flex: '1 1 auto', display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, position: 'relative' },
@@ -129,7 +129,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '10px 0 8px', marginBottom: 10,
   },
   sectionLabel: { fontSize: 10, fontWeight: 'bold', letterSpacing: 2.5, textTransform: 'uppercase' },
-  sectionCount: { fontSize: 9, color: 'rgba(205,228,255,0.52)', letterSpacing: 1.2 },
+  sectionCount: { fontSize: 9, color: 'var(--profile-text-muted)', letterSpacing: 1.2 },
   cardWithMeta: {
     width: CARD_LIBRARY_CARD_WIDTH,
     flex: `0 0 ${CARD_LIBRARY_CARD_WIDTH}px`,
@@ -140,51 +140,51 @@ const styles: Record<string, React.CSSProperties> = {
   card: {
     width: CARD_LIBRARY_CARD_WIDTH, height: CARD_LIBRARY_CARD_HEIGHT,
     flex: `0 0 ${CARD_LIBRARY_CARD_WIDTH}px`,
-    background: 'rgba(4, 8, 18, 0.90)',
-    border: '1px solid rgba(72,128,190,0.32)', borderRadius: 12, cursor: 'pointer',
+    background: 'color-mix(in srgb, var(--profile-surface-muted) 90%, transparent)',
+    border: '1px solid var(--profile-border)', borderRadius: 12, cursor: 'pointer',
     display: 'flex', flexDirection: 'column', alignItems: 'stretch',
     transition: 'border-color 0.18s ease, box-shadow 0.18s ease, transform 0.14s ease',
     position: 'relative', overflow: 'hidden',
   },
   cardAdded: {
-    borderColor: 'rgba(110,200,245,0.90)',
-    boxShadow: '0 0 0 1px rgba(78,160,220,0.45), 0 0 22px rgba(78,160,220,0.28)',
+    borderColor: 'var(--profile-accent)',
+    boxShadow: '0 0 0 1px color-mix(in srgb, var(--profile-accent) 45%, transparent), 0 0 22px color-mix(in srgb, var(--profile-accent) 28%, transparent)',
     transform: 'translateY(-2px)',
   },
   cardFull: { opacity: 0.34, cursor: 'not-allowed' },
   badge: {
     position: 'absolute', bottom: 7, right: 6, width: 21, height: 21,
     borderRadius: '50%',
-    background: 'radial-gradient(circle at 38% 32%, #f8d878 0%, #c8850a 60%, #8a5200 100%)',
-    color: '#3a1800',
+    background: 'var(--profile-button)',
+    color: 'var(--profile-accent-deep)',
     fontSize: 11, fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center',
-    boxShadow: '0 1px 5px rgba(0,0,0,0.65), 0 0 8px rgba(240,189,120,0.35)',
+    boxShadow: '0 1px 5px rgba(0,0,0,0.65), 0 0 8px color-mix(in srgb, var(--profile-accent) 35%, transparent)',
   },
   ownedLabelBelow: {
-    fontSize: 9, color: 'rgba(205,228,255,0.75)', letterSpacing: 0.4,
+    fontSize: 9, color: 'var(--profile-text-soft)', letterSpacing: 0.4,
     textAlign: 'center',
     pointerEvents: 'none',
     textShadow: '0 1px 3px rgba(0,0,0,0.9)',
-    background: 'rgba(3, 6, 14, 0.80)',
-    border: '1px solid rgba(72,128,190,0.26)',
+    background: 'var(--profile-surface-muted)',
+    border: '1px solid var(--profile-border)',
     borderRadius: 5,
     padding: '2px 5px',
   },
   copyCountRow: {
     marginTop: 2,
     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-    fontSize: 10, color: '#e2ca91', letterSpacing: 0.4,
-    background: 'rgba(10, 8, 16, 0.82)',
-    border: '1px solid rgba(168, 132, 83, 0.25)',
+    fontSize: 10, color: 'var(--profile-text)', letterSpacing: 0.4,
+    background: 'var(--profile-surface-muted)',
+    border: '1px solid var(--profile-border)',
     borderRadius: 5,
     padding: '3px 4px',
     pointerEvents: 'auto',
   },
   copyCountBtn: {
     width: 20, height: 20, padding: 0,
-    border: '1px solid rgba(168, 132, 83, 0.36)',
-    background: 'rgba(200, 155, 72, 0.1)',
-    color: '#e2ca91',
+    border: '1px solid var(--profile-border-strong)',
+    background: 'color-mix(in srgb, var(--profile-accent) 10%, transparent)',
+    color: 'var(--profile-text)',
     borderRadius: 3, cursor: 'pointer',
     fontSize: 14, lineHeight: '18px',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -194,102 +194,102 @@ const styles: Record<string, React.CSSProperties> = {
     opacity: 0.3, cursor: 'not-allowed',
   },
   extraStripWrap: {
-    padding: '10px 14px', borderBottom: '1px solid rgba(72,128,190,0.18)', flexShrink: 0,
+    padding: '10px 14px', borderBottom: '1px solid var(--profile-border)', flexShrink: 0,
   },
   extraStripHeader: {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     fontSize: 9, letterSpacing: 2, textTransform: 'uppercase',
-    color: 'rgba(205,228,255,0.55)', marginBottom: 8,
+    color: 'var(--profile-text-muted)', marginBottom: 8,
   },
   extraStrip: {
     display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4,
   },
   extraStripCard: {
     flex: '0 0 auto', width: CARD_COLLECTION_TILE_WIDTH, height: CARD_COLLECTION_TILE_HEIGHT, borderRadius: 10,
-    border: '1px solid rgba(112,200,144,0.45)',
-    background: 'rgba(4,8,18,0.9)',
+    border: '1px solid var(--profile-border-strong)',
+    background: 'var(--profile-surface-muted)',
     position: 'relative', overflow: 'hidden', cursor: 'pointer',
   },
   extraStripEmptySlot: {
     flex: '0 0 auto', width: CARD_COLLECTION_TILE_WIDTH, height: CARD_COLLECTION_TILE_HEIGHT, borderRadius: 10,
-    border: '1px dashed rgba(72,128,190,0.30)',
+    border: '1px dashed var(--profile-border)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    color: 'rgba(190,215,245,0.28)', fontSize: 16,
+    color: 'var(--profile-text-muted)', fontSize: 16,
   },
   subTabStrip: {
     display: 'flex', alignItems: 'stretch', flexShrink: 0,
-    background: 'rgba(3,6,14,0.85)',
-    borderBottom: '1px solid rgba(72,128,190,0.20)',
+    background: 'var(--profile-surface-muted)',
+    borderBottom: '1px solid var(--profile-border)',
   },
   subTabBtn: {
     flex: 1, padding: '0 12px', height: 36, border: 'none',
     borderBottom: '2px solid transparent',
-    background: 'transparent', color: 'rgba(205,228,255,0.50)', fontSize: 10.5,
+    background: 'transparent', color: 'var(--profile-text-muted)', fontSize: 10.5,
     cursor: 'pointer', fontFamily: 'Georgia, serif', letterSpacing: 1,
     textTransform: 'uppercase', transition: 'all 0.18s ease',
   },
   subTabBtnActive: {
-    color: '#7dd4f8', borderBottomColor: '#4298d8',
-    background: 'rgba(78,160,220,0.10)',
+    color: 'var(--profile-accent)', borderBottomColor: 'var(--profile-border-strong)',
+    background: 'color-mix(in srgb, var(--profile-accent) 10%, transparent)',
   },
   entryRow: {
     display: 'flex', alignItems: 'center',
     padding: '4px 6px', marginBottom: 1, borderRadius: 4,
-    borderBottom: '1px solid rgba(72,128,190,0.14)',
+    borderBottom: '1px solid var(--profile-border)',
     gap: 5, transition: 'background 0.12s',
   },
-  entryName: { fontSize: 10.5, color: 'rgba(205,228,255,0.78)', flex: 1, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  entryName: { fontSize: 10.5, color: 'var(--profile-text-soft)', flex: 1, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   entryCount: {
-    fontSize: 11, color: '#7dd4f8', margin: '0 3px', minWidth: 18, textAlign: 'center',
+    fontSize: 11, color: 'var(--profile-accent)', margin: '0 3px', minWidth: 18, textAlign: 'center',
     fontWeight: 'bold', flexShrink: 0,
   },
   entryBtn: {
-    width: 22, height: 22, border: '1px solid rgba(72,128,190,0.42)', borderRadius: 5,
-    background: 'rgba(78,155,220,0.13)', color: '#7dd4f8', fontSize: 14, cursor: 'pointer',
+    width: 22, height: 22, border: '1px solid var(--profile-border-strong)', borderRadius: 5,
+    background: 'color-mix(in srgb, var(--profile-accent) 13%, transparent)', color: 'var(--profile-accent)', fontSize: 14, cursor: 'pointer',
     display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0,
     transition: 'background 0.12s, border-color 0.12s',
     lineHeight: 1, flexShrink: 0,
   },
   footer: {
-    padding: '14px 28px', borderTop: '1px solid rgba(72,128,190,0.28)',
+    padding: '14px 28px', borderTop: '1px solid var(--profile-border)',
     display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
-    background: 'linear-gradient(180deg, rgba(4, 7, 15, 0.70) 0%, rgba(3, 5, 12, 0.92) 100%)',
-    boxShadow: '0 -1px 0 rgba(72,128,190,0.14)',
+    background: 'linear-gradient(180deg, color-mix(in srgb, var(--profile-surface-strong) 70%, transparent), var(--profile-surface-muted))',
+    boxShadow: '0 -1px 0 var(--profile-border)',
   },
   startBtn: {
     padding: '11px 34px', borderRadius: 10,
-    border: '1px solid rgba(240, 189, 120, 0.65)',
-    background: 'linear-gradient(180deg, #c09040 0%, #8a5e10 50%, #6a4408 100%)',
-    color: '#fff8ea', fontSize: 13,
+    border: '1px solid var(--profile-border-strong)',
+    background: 'var(--profile-button)',
+    color: 'var(--profile-accent-deep)', fontSize: 13,
     cursor: 'pointer', letterSpacing: 2, fontFamily: 'Georgia, serif',
     textShadow: '0 1px 4px rgba(0,0,0,0.7)',
-    boxShadow: '0 2px 14px rgba(180, 120, 10, 0.38), inset 0 1px 0 rgba(255,255,255,0.14)',
+    boxShadow: '0 2px 14px color-mix(in srgb, var(--profile-accent) 38%, transparent), inset 0 1px 0 rgba(255,255,255,0.14)',
     textTransform: 'uppercase',
     transition: 'box-shadow 0.25s, transform 0.15s',
   },
   closeBtn: {
     padding: '10px 20px', borderRadius: 10,
-    border: '1px solid rgba(72,128,190,0.32)',
-    background: 'rgba(78,155,220,0.06)',
-    color: 'rgba(205,228,255,0.78)', fontSize: 12,
+    border: '1px solid var(--profile-border)',
+    background: 'color-mix(in srgb, var(--profile-accent) 6%, transparent)',
+    color: 'var(--profile-text-soft)', fontSize: 12,
     cursor: 'pointer', fontFamily: 'Georgia, serif',
     letterSpacing: 0.5, transition: 'background 0.15s, border-color 0.15s',
   },
   empty: {
     width: '100%', textAlign: 'center', marginTop: 48,
-    fontSize: 13, color: 'rgba(165,205,245,0.52)', fontStyle: 'italic',
+    fontSize: 13, color: 'var(--profile-text-muted)', fontStyle: 'italic',
   },
   nameInput: {
-    background: 'rgba(2, 5, 14, 0.82)',
-    border: '1px solid rgba(72,128,190,0.45)',
-    color: '#d8f0ff', fontSize: 12, padding: '6px 10px', borderRadius: 6,
+    background: 'var(--profile-surface-muted)',
+    border: '1px solid var(--profile-border-strong)',
+    color: 'var(--profile-text)', fontSize: 12, padding: '6px 10px', borderRadius: 6,
     fontFamily: 'Georgia, serif', outline: 'none', width: 180, boxSizing: 'border-box',
   },
   loadDropdownPanel: {
     position: 'absolute', top: '100%', left: 0, marginTop: 4, zIndex: 30,
     minWidth: 240, maxHeight: 320, overflowY: 'auto',
-    background: 'linear-gradient(180deg, rgba(8,12,22,0.98), rgba(5,8,16,0.98))',
-    border: '1px solid rgba(72,128,190,0.4)', borderRadius: 10,
+    background: 'linear-gradient(180deg, var(--profile-surface-strong), var(--profile-surface-muted))',
+    border: '1px solid var(--profile-border-strong)', borderRadius: 10,
     boxShadow: '0 12px 32px rgba(0,0,0,0.6)', padding: 6,
   },
   loadDeckRow: {
@@ -787,7 +787,7 @@ export default function DeckBuilder({ onClose }: Props) {
   }
 
   return (
-    <div className="ui-panel-intro" style={{ ...styles.overlay, ['--ui-accent' as any]: '240, 189, 120', ['--ui-accent-soft' as any]: '250, 224, 184' } as React.CSSProperties}>
+    <div className="ui-panel-intro deck-builder-screen" style={styles.overlay}>
       {isLocked && (
         <div style={{
           position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.92)', zIndex: 10,
@@ -953,11 +953,11 @@ export default function DeckBuilder({ onClose }: Props) {
           </section>
 
           <section aria-label="Spectrum curve" style={{ padding: '10px 10px 8px', borderRadius: 8, background: 'rgba(10,8,16,0.7)', border: '1px solid rgba(168,132,83,0.3)' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.6, color: '#d4ad5b', textTransform: 'uppercase' }}>Spectrum curve</div>
-            <div style={{ marginTop: 4, fontSize: 9, color: 'rgba(221,208,226,0.58)', fontStyle: 'italic' }}>Main deck cards by level</div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 8, fontSize: 8, color: 'rgba(221,208,226,0.66)' }}>
-              <span><i style={{ display: 'inline-block', width: 7, height: 7, borderRadius: 2, background: '#f0bd78', marginRight: 4 }} />Light</span>
-              <span><i style={{ display: 'inline-block', width: 7, height: 7, borderRadius: 2, background: '#9a84c9', marginRight: 4 }} />Dark</span>
+            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.6, color: warmTheme.accent, textTransform: 'uppercase' }}>Spectrum curve</div>
+            <div style={{ marginTop: 4, fontSize: 9, color: warmTheme.textMuted, fontStyle: 'italic' }}>Main deck cards by level</div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 8, fontSize: 8, color: warmTheme.textMuted }}>
+              <span><i style={{ display: 'inline-block', width: 7, height: 7, borderRadius: 2, background: warmTheme.accent, marginRight: 4 }} />Light</span>
+              <span><i style={{ display: 'inline-block', width: 7, height: 7, borderRadius: 2, background: warmTheme.accentSoft, marginRight: 4 }} />Dark</span>
             </div>
             <div className="deck-builder-spectrum-row">
               {deckStats.levelCounts.map((_, level) => {
@@ -965,12 +965,12 @@ export default function DeckBuilder({ onClose }: Props) {
                 const darkCount = deckStats.darkLevelCounts[level];
                 return (
                   <div key={level} title={`Spectrum Lv ${level}: ${lightCount} Light, ${darkCount} Dark`} style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', gap: 2 }}>
-                    <span style={{ display: 'flex', justifyContent: 'center', gap: 2, height: 8, fontSize: 6.5, color: 'rgba(236,228,255,0.76)' }}><span>{lightCount || ''}</span><span>{darkCount || ''}</span></span>
+                    <span style={{ display: 'flex', justifyContent: 'center', gap: 2, height: 8, fontSize: 6.5, color: warmTheme.textSoft }}><span>{lightCount || ''}</span><span>{darkCount || ''}</span></span>
                     <div style={{ width: '100%', display: 'flex', alignItems: 'flex-end', gap: 2, height: 31 }}>
-                      <div style={{ flex: 1, height: lightCount ? `${Math.max(3, lightCount / spectrumPeak * 30)}px` : 2, borderRadius: '2px 2px 0 0', background: lightCount ? '#f0bd78' : 'rgba(240,189,120,0.15)' }} />
-                      <div style={{ flex: 1, height: darkCount ? `${Math.max(3, darkCount / spectrumPeak * 30)}px` : 2, borderRadius: '2px 2px 0 0', background: darkCount ? '#9a84c9' : 'rgba(154,132,201,0.15)' }} />
+                      <div style={{ flex: 1, height: lightCount ? `${Math.max(3, lightCount / spectrumPeak * 30)}px` : 2, borderRadius: '2px 2px 0 0', background: lightCount ? warmTheme.accent : `color-mix(in srgb, ${warmTheme.accent} 15%, transparent)` }} />
+                      <div style={{ flex: 1, height: darkCount ? `${Math.max(3, darkCount / spectrumPeak * 30)}px` : 2, borderRadius: '2px 2px 0 0', background: darkCount ? warmTheme.accentSoft : `color-mix(in srgb, ${warmTheme.accentSoft} 15%, transparent)` }} />
                     </div>
-                    <span style={{ fontSize: 7.5, color: 'rgba(214,196,255,0.64)' }}>Lv {level}</span>
+                    <span style={{ fontSize: 7.5, color: warmTheme.textMuted }}>Lv {level}</span>
                   </div>
                 );
               })}
@@ -985,9 +985,9 @@ export default function DeckBuilder({ onClose }: Props) {
             {angelSection.length > 0 && (
               <section>
                 <div style={{ ...styles.sectionHeader, marginBottom: 10 }}>
-                  <div style={{ width: 4, height: 20, borderRadius: 2, background: getSectionColors()['Ain Soph Aur'] ?? '#58aada', boxShadow: `0 0 8px ${(getSectionColors()['Ain Soph Aur'] ?? '#58aada')}50`, flexShrink: 0 }} />
-                  <span style={{ ...styles.sectionLabel, color: getSectionColors()['Ain Soph Aur'] ?? '#58aada' }}>Ain Soph Aur (adds to Extra Deck)</span>
-                  <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, ${(getSectionColors()['Ain Soph Aur'] ?? '#58aada')}45, transparent)`, marginLeft: 4 }} />
+                  <div style={{ width: 4, height: 20, borderRadius: 2, background: getSectionColors()['Ain Soph Aur'], boxShadow: `0 0 8px ${getSectionColors()['Ain Soph Aur']}50`, flexShrink: 0 }} />
+                  <span style={{ ...styles.sectionLabel, color: getSectionColors()['Ain Soph Aur'] }}>Ain Soph Aur (adds to Extra Deck)</span>
+                  <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, ${getSectionColors()['Ain Soph Aur']}45, transparent)`, marginLeft: 4 }} />
                   <span style={styles.sectionCount}>{extraDeckList.length} / {EXTRA_DECK_SIZE} selected</span>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, ${CARD_LIBRARY_CARD_WIDTH}px)`, gap: '16px 10px', alignItems: 'start' }}>
@@ -996,7 +996,7 @@ export default function DeckBuilder({ onClose }: Props) {
               </section>
             )}
             {mainSections.map(section => {
-              const accent = getSectionColors()[section.label] ?? '#58aada';
+              const accent = getSectionColors()[section.label];
               return (
                 <section key={section.label}>
                   <div style={{ ...styles.sectionHeader, marginBottom: 10 }}>
@@ -1036,13 +1036,13 @@ export default function DeckBuilder({ onClose }: Props) {
                       owned={collection[entry.definitionId] ?? entry.copies}
                       className={getLiveCardShimmerClassName(def, entry.finish, 'front')}
                       surfaceStyle={{ ...styles.extraStripCard, ...getLiveCardFaceBackgroundStyle(def, entry.finish, 'front') }}
-                      border="1px solid rgba(112,200,144,0.45)"
+                      border={`1px solid ${warmTheme.borderStrong}`}
                       title={`${def.name} ×${entry.copies} — click to remove one`}
                       onClick={() => removeCard(entry.definitionId, entry.finish)}
                       finishLabel={getFinishLabel(def, entry.finish) === 'Holofoil' ? 'Holofoil' : null}
                       footerRight={`×${entry.copies} selected`}
                       cornerOverlay={entry.copies > 1 ? (
-                        <div style={{ position: 'absolute', zIndex: 2, bottom: 7, right: 6, fontSize: 9, fontWeight: 'bold', color: '#3a1800', background: '#f8d878', borderRadius: '50%', width: 21, height: 21, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{entry.copies}</div>
+                        <div style={{ position: 'absolute', zIndex: 2, bottom: 7, right: 6, fontSize: 9, fontWeight: 'bold', color: warmTheme.accentDeep, background: warmTheme.button, borderRadius: '50%', width: 21, height: 21, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{entry.copies}</div>
                       ) : undefined}
                     />
                   </div>
@@ -1077,22 +1077,22 @@ export default function DeckBuilder({ onClose }: Props) {
           ) : surface === 'deck' ? (
             <div style={{ flex: 1, overflowY: 'auto', padding: '10px 14px' }}>
               {deckList.length === 0 && (
-                <div style={{ fontSize: 12, color: 'rgba(232, 215, 191, 0.6)', textAlign: 'center', marginTop: 16 }}>
+                <div style={{ fontSize: 12, color: warmTheme.textMuted, textAlign: 'center', marginTop: 16 }}>
                   Click cards in the pool to add them.
                 </div>
               )}
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, margin: '4px 2px 12px', color: '#d4ad5b', fontSize: 13, fontWeight: 700, textTransform: 'uppercase' }}>
-                Main Deck <span style={{ color: '#77d7c7' }}>{totalCards}</span>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, margin: '4px 2px 12px', color: warmTheme.accent, fontSize: 13, fontWeight: 700, textTransform: 'uppercase' }}>
+                Main Deck <span style={{ color: warmTheme.accentSoft }}>{totalCards}</span>
               </div>
               {(['Light', 'Dark'] as const).map(type => {
                 const entries = mainDeckEntriesByType[type];
                 if (entries.length === 0) return null;
-                const accent = type === 'Light' ? '#f0bd78' : '#a894d2';
+                const accent = type === 'Light' ? warmTheme.accent : warmTheme.accentSoft;
                 return (
                   <section key={type} style={{ marginBottom: 14 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5, paddingBottom: 4, borderBottom: `1px solid ${accent}44`, color: accent, fontSize: 10, letterSpacing: 1.6, textTransform: 'uppercase' }}>
                       <span>{type}</span>
-                      <span style={{ marginLeft: 'auto', color: 'rgba(221,208,226,0.5)', fontSize: 9 }}>{entries.reduce((sum, entry) => sum + entry.copies, 0)} cards</span>
+                      <span style={{ marginLeft: 'auto', color: warmTheme.textMuted, fontSize: 9 }}>{entries.reduce((sum, entry) => sum + entry.copies, 0)} cards</span>
                     </div>
                     {entries.map(entry => {
                       const def = CardRegistry.get(entry.definitionId);
@@ -1106,7 +1106,7 @@ export default function DeckBuilder({ onClose }: Props) {
                           <div style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: rarityColorMain, boxShadow: `0 0 4px ${rarityColorMain}70` }} />
                           <div style={{ ...styles.entryName, cursor: 'pointer' }}>
                             <div>{def.name}{entry.finish === 'holo' ? ' ✦' : ''}</div>
-                            <div style={{ fontSize: 9, color: 'rgba(221,208,226,0.52)', fontWeight: 400 }}>Spectrum Lv {getCardSpectrumLevel(def)} · {type}</div>
+                            <div style={{ fontSize: 9, color: warmTheme.textMuted, fontWeight: 400 }}>Spectrum Lv {getCardSpectrumLevel(def)} · {type}</div>
                           </div>
                           <button className="menu-tactile-btn" style={styles.entryBtn} onClick={event => { event.stopPropagation(); removeCard(entry.definitionId, entry.finish); }}>−</button>
                           <div style={styles.entryCount}>×{entry.copies}</div>
@@ -1131,34 +1131,34 @@ export default function DeckBuilder({ onClose }: Props) {
               <div className="deck-builder-inspector-content">
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
                   <div style={{ minWidth: 0 }}>
-                    <h2 style={{ margin: '0 0 4px', color: '#f2d584', fontSize: 16, lineHeight: 1.2, textTransform: 'uppercase' }}>{resolvedPreview.card.name}</h2>
-                    <div style={{ color: '#b99ad9', fontSize: 11, fontStyle: 'italic' }}>
+                    <h2 style={{ margin: '0 0 4px', color: warmTheme.accent, fontSize: 16, lineHeight: 1.2, textTransform: 'uppercase' }}>{resolvedPreview.card.name}</h2>
+                    <div style={{ color: warmTheme.textMuted, fontSize: 11, fontStyle: 'italic' }}>
                       {getDisplayCardTypeLabel(resolvedPreview.card.type)} · {getCardSet(resolvedPreview.card.definitionId)}
                     </div>
                   </div>
-                  <span aria-live="polite" style={{ flexShrink: 0, maxWidth: 138, color: previewIsPinned ? '#77d7c7' : 'rgba(221,208,226,0.58)', fontSize: 10, lineHeight: 1.35, textAlign: 'right' }}>
+                  <span aria-live="polite" style={{ flexShrink: 0, maxWidth: 138, color: previewIsPinned ? warmTheme.success : warmTheme.textMuted, fontSize: 10, lineHeight: 1.35, textAlign: 'right' }}>
                     {previewIsPinned ? 'Pinned!' : 'Right-click a card to pin its stats here'}
                   </span>
                 </div>
                 <div style={{ marginTop: 10, marginBottom: 8, color: RARITY_COLORS_DB[resolvedPreview.card.rarity] ?? '#b9b1c1', fontSize: 10, letterSpacing: 1, textTransform: 'uppercase' }}>
                   {resolvedPreview.card.rarity} · Spectrum Lv {getCardSpectrumLevel(resolvedPreview.card)}
                 </div>
-                <CardRulesDigest card={resolvedPreview.card} variant="detail" labelColor="rgba(221,208,226,0.56)" textColor="rgba(245,236,224,0.9)" sectionBackground="rgba(255,255,255,0.025)" sectionBorder="rgba(200,155,72,0.18)" />
+                <CardRulesDigest card={resolvedPreview.card} variant="detail" labelColor={warmTheme.textMuted} textColor={warmTheme.text} sectionBackground={warmTheme.surfaceMuted} sectionBorder={warmTheme.border} />
               </div>
             </>
           ) : (
-            <div style={{ display: 'grid', placeItems: 'center', flex: 1, color: 'rgba(221,208,226,0.44)', fontSize: 12, fontStyle: 'italic' }}>No card selected</div>
+            <div style={{ display: 'grid', placeItems: 'center', flex: 1, color: warmTheme.textMuted, fontSize: 12, fontStyle: 'italic' }}>No card selected</div>
           )}
         </aside>
       </div>
 
       <div style={styles.footer}>
-        <div style={{ fontSize: 11, color: 'rgba(190,215,245,0.5)' }}>
+        <div style={{ fontSize: 11, color: warmTheme.textMuted }}>
           {activeDeck?.notes && activeDeck.notes.trim().length > 0 && surface !== 'analyze' && (
             <button
               className="menu-tactile-btn"
               onClick={() => setSurface('analyze')}
-              style={{ background: 'transparent', border: 'none', color: 'rgba(190,215,245,0.55)', cursor: 'pointer', fontFamily: 'Georgia, serif', fontSize: 11 }}
+              style={{ background: 'transparent', border: 'none', color: warmTheme.textSoft, cursor: 'pointer', fontFamily: 'Georgia, serif', fontSize: 11 }}
             >
               📝 This deck has notes — view in Analyze
             </button>

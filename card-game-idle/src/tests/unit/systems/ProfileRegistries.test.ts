@@ -25,7 +25,7 @@ import {
   resolveThemeId,
   applyEffectiveTheme,
 } from '@/data/profile/uiThemes';
-import { warmTheme, DEFAULT_WARM_PALETTE, resetUiPalette } from '@/ui/theme';
+import { warmTheme, DEFAULT_WARM_PALETTE, normalizeUiPalette, resetUiPalette } from '@/ui/theme';
 import type { ProgressState } from '@/types/game';
 import { CardRegistry } from '@/cards/CardRegistry';
 
@@ -328,6 +328,25 @@ describe('ui theme registry', () => {
     expect(warmTheme.text.length).toBeGreaterThan(0);
     resetUiPalette();
     expect(warmTheme.accent).toBe(DEFAULT_WARM_PALETTE.accent);
+  });
+
+  it('uses the ink-and-ivory global palette with blue-violet accents', () => {
+    expect(DEFAULT_WARM_PALETTE.appBackground).toContain('#090a10');
+    expect(DEFAULT_WARM_PALETTE.surface).toContain('13, 15, 24');
+    expect(DEFAULT_WARM_PALETTE.text).toBe('#f8faff');
+    expect(DEFAULT_WARM_PALETTE.accent).toBe('#61d8ff');
+    expect(DEFAULT_WARM_PALETTE.accentSoft).toBe('#b39aff');
+    expect(DEFAULT_WARM_PALETTE.accentDeep).toBe('#21113c');
+  });
+
+  it('normalizes profile preview palettes without mutating the shared palette', () => {
+    resetUiPalette();
+    const sharedPaletteBefore = { ...warmTheme };
+    const previewPalette = normalizeUiPalette({ ...DEFAULT_WARM_PALETTE, accent: '#abcdef' });
+
+    expect(previewPalette).not.toBe(warmTheme);
+    expect(previewPalette.accent).toBe('#abcdef');
+    expect(warmTheme).toEqual(sharedPaletteBefore);
   });
 
   it('keeps reward themes unlocked after requirements are no longer met once latched', () => {

@@ -17,6 +17,10 @@ const C = {
   buttonText: `var(--profile-button-text, ${warmTheme.text})`,
 } as const;
 
+const MAIN_MENU_CONTROL_IDS: KeybindActionId[] = [
+  'mainMenuCardStore', 'mainMenuDeckBuilder', 'mainMenuDailyCalendar', 'mainMenuChallenges', 'mainMenuBeginTurn',
+];
+
 /**
  * Settings section that lets the player rebind the handful of in-game
  * keyboard shortcuts. Captures KeyboardEvent.code values so the binding is
@@ -27,6 +31,7 @@ export default function ControlsSection() {
   const settings = useStore(selectSettings);
   const updateSettings = useStore(s => s.updateSettings);
   const [capturing, setCapturing] = useState<KeybindActionId | null>(null);
+  const [captureError, setCaptureError] = useState<string | null>(null);
 
   const bindings: Record<KeybindActionId, string> = {
     ...DEFAULT_CONTROL_BINDINGS,
@@ -43,10 +48,16 @@ export default function ControlsSection() {
     { id: 'activateAbility1', label: 'Materialized Ability — Slot 1', hint: 'Activate the ability equipped in slot 1.' },
     { id: 'activateAbility2', label: 'Materialized Ability — Slot 2', hint: 'Activate the ability equipped in slot 2.' },
     { id: 'activateAbility3', label: 'Materialized Ability — Slot 3', hint: 'Activate the ability equipped in slot 3.' },
+    { id: 'mainMenuCardStore', label: 'Main Menu: Card Store', hint: 'Open the Card Store; only active on the main menu.' },
+    { id: 'mainMenuDeckBuilder', label: 'Main Menu: Deck Builder', hint: 'Open the Deck Builder; only active on the main menu.' },
+    { id: 'mainMenuDailyCalendar', label: 'Main Menu: Calendar', hint: 'Open the Login Calendar; only active on the main menu.' },
+    { id: 'mainMenuChallenges', label: 'Main Menu: Challenges', hint: 'Open Challenges; only active on the main menu.' },
+    { id: 'mainMenuBeginTurn', label: 'Main Menu: Begin Turn', hint: 'Begin a turn; only active on the main menu.' },
   ];
 
   function beginCapture(id: KeybindActionId) {
     setCapturing(id);
+    setCaptureError(null);
     function onKey(e: KeyboardEvent) {
       if (e.code === 'Tab') return; // let focus management run
       e.preventDefault();
@@ -56,6 +67,16 @@ export default function ControlsSection() {
         cleanup();
         setCapturing(null);
         return;
+      }
+      if (MAIN_MENU_CONTROL_IDS.includes(id)) {
+        const conflictingId = MAIN_MENU_CONTROL_IDS.find(otherId => otherId !== id && bindings[otherId] === e.code);
+        if (conflictingId) {
+          const conflictLabel = actions.find(action => action.id === conflictingId)?.label ?? conflictingId;
+          setCaptureError(`${e.code} is already assigned to ${conflictLabel}.`);
+          cleanup();
+          setCapturing(null);
+          return;
+        }
       }
       updateSettings({
         controls: { ...bindings, [id]: e.code },
@@ -84,6 +105,7 @@ export default function ControlsSection() {
       }}>
         Controls
       </div>
+      {captureError && <div role="alert" style={{ marginBottom: 8, color: '#ff8a9a', fontSize: 11 }}>{captureError}</div>}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {actions.map(action => {
           const isCapturing = capturing === action.id;

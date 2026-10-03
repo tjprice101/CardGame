@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useStore, selectSettings, selectProfile, selectProgress } from '@/state/store';
-import { type UiPalette } from '@/ui/theme';
-import { DEFAULT_UI_THEME_ID, getEffectiveThemePalette, isThemeOscillating } from '@/data/profile/uiThemes';
+import { useMemo, useState } from 'react';
+import { useStore, selectSettings } from '@/state/store';
+import { warmTheme, type UiPalette } from '@/ui/theme';
 import { FONT_SIZE_OPTIONS, LANGUAGE_OPTIONS, t } from '@/ui/preferences';
+import { CardRegistry } from '@/cards/CardRegistry';
+import { getLiveCardFaceBackgroundStyle } from '@/ui/cardBackgrounds';
+import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import ControlsSection from '@/ui/settings/ControlsSection';
 import type { SettingsState } from '@/types/game';
 
@@ -16,26 +18,11 @@ interface Props {
 
 export default function SettingsPanel({ onClose }: Props) {
   const settings = useStore(selectSettings);
-  const profile = useStore(selectProfile);
-  const progress = useStore(selectProgress);
   const updateSettings = useStore(s => s.updateSettings);
-  const [themeNowMs, setThemeNowMs] = useState<number>(() => Date.now());
+  const previewCard = useMemo(() => CardRegistry.getAll().find(card => card.type === 'Light') ?? CardRegistry.getAll()[0], []);
+  const previewRules = previewCard ? getCardPreviewLines(previewCard, 2).join(' ') : 'Card rules preview';
 
-  useEffect(() => {
-    const themeId = profile.uiThemeId || DEFAULT_UI_THEME_ID;
-    if (!isThemeOscillating(themeId)) return;
-    const id = setInterval(() => setThemeNowMs(Date.now()), 180);
-    return () => clearInterval(id);
-  }, [profile.uiThemeId]);
-
-  const theme = useMemo<UiPalette>(() => {
-    return getEffectiveThemePalette(
-      profile.uiThemeId || DEFAULT_UI_THEME_ID,
-      profile.customUiTheme,
-      progress,
-      themeNowMs,
-    );
-  }, [profile.uiThemeId, profile.customUiTheme, progress, themeNowMs]);
+  const theme: UiPalette = warmTheme;
 
   const [draft, setDraft] = useState<Partial<SettingsState>>(() => ({ ...settings }));
   const patchDraft = (patch: Partial<SettingsState>) => setDraft(prev => ({ ...prev, ...patch }));
@@ -339,7 +326,8 @@ export default function SettingsPanel({ onClose }: Props) {
                         height: 66,
                         borderRadius: 7,
                         overflow: 'hidden',
-                        background: 'linear-gradient(160deg, #302747 0%, #1f2f49 50%, #28402e 100%)',
+                        backgroundColor: '#15121b',
+                        ...(previewCard ? getLiveCardFaceBackgroundStyle(previewCard, 'normal', 'front') : { background: 'linear-gradient(160deg, #302747 0%, #1f2f49 50%, #28402e 100%)' }),
                         boxShadow: `0 0 0 ${isActive ? `1.5px ${theme.accent}` : '1px rgba(0,0,0,0.28)'}`,
                         display: 'flex',
                         flexDirection: 'column',
@@ -347,14 +335,14 @@ export default function SettingsPanel({ onClose }: Props) {
                       }}>
                         {opt.showTop && (
                           <div style={{ background: 'rgba(240,228,210,0.93)', padding: '2px 3px' }}>
-                            <div style={{ fontSize: 4, color: '#555' }}>OPHANIM</div>
-                            <div style={{ fontSize: 5, fontWeight: 'bold', color: '#1a0e06' }}>Divine Light Shard</div>
+                            <div style={{ fontSize: 4, color: '#555' }}>{previewCard?.type.toUpperCase() ?? 'CARD'}</div>
+                            <div style={{ fontSize: 5, fontWeight: 'bold', color: '#1a0e06' }}>{previewCard?.name ?? 'Card preview'}</div>
                           </div>
                         )}
                         <div style={{ flex: 1 }} />
                         {opt.showBottom && (
                           <div style={{ background: 'rgba(234,220,200,0.92)', padding: '2px 3px' }}>
-                            <div style={{ fontSize: 4, color: '#2a1a0e' }}>Draw 2 cards. +800 Divine Light.</div>
+                            <div style={{ fontSize: 4, color: '#2a1a0e' }}>{previewRules}</div>
                           </div>
                         )}
                       </div>

@@ -14,7 +14,7 @@
 
 ## Retired content and current unlock rules
 - Wake Trials and Endless Gauntlet are removed. Do not add `onOpenWakeTrials`, `onOpenEndlessGauntlet`, `startWakeTrial`, `startEndlessGauntlet`, `recordGauntletRun`, `trial`/`gauntlet` boss kinds, `weeklyTrialCompletions`, or `gauntletBest` back into live code.
-- Main-menu gates use their live progression sources: 5 Infinite copies unlock Ascension, 5 Eternal copies unlock Infinitude, and opening 10 card packs unlocks Enigma. Locked destinations remain visible with their current requirement.
+- Main-menu gates use their live progression sources: 5 Eternal copies unlock Infinitude, opening 10 card packs unlocks Enigma, and the Forge opens after all current event bosses are defeated and a Key is spent. Keep locked destinations visible with their current requirement.
 - Enigma UI belongs in `EnigmaModal`; Daily and Weekly challenges belong in the visible Challenges surface. Do not render an `EnigmasPanel` inside the Challenges modal.
 - Neutrality design must be Ain/Soph-system-native. Avoid generic draw/chain templates when reworking Neutrality cards.
 
@@ -29,7 +29,7 @@
 - Every successful Ain Soph Aur summon grants +1 Limitless Light Stack as a universal rule; do not duplicate this on individual card faces.
 - Three materialized abilities can be equipped per deck and activated through Ability Amplification. Neutrality and Causality abilities share the same saved deck loadout slots.
 - Causality materialized abilities are implemented and must remain fully wired through definitions, purchase gates, deck loadouts, store activation, cooldown timestamps, icon assets, and tests. Base Causality abilities require every base Causality card; Eternal Causality abilities require any Causality Eternal; Infinite Causality abilities require any Causality Infinite.
-- Challenge economy targets approximately 52,500 base Divine Light across seven daily rotations and 100,000 base Divine Light across one weekly rotation. Collection Power scales the paid amount above the base target.
+- Challenge economy targets 8,625 base Divine Light per daily rotation (60,375 across seven) and 100,000 base Divine Light across one weekly rotation. Collection Power scales the paid amount above the base target.
 - Null Horizon and Axiomatic Reversal require any Neutrality Eternal card; Whiteout Domain and Infinite Accord require any Neutrality Infinite card. These are high-cost endgame abilities, and only three abilities may be equipped at once.
 - Eternal and Infinite Light cards require distinct, authored Soph-placement effects. Premium ASA cards may require exact named Light or Dark materials; Phantom Matrix always bypasses materials.
 - Neutrality endgame ability gates are Neutrality-specific: Null Horizon/Axiomatic Reversal require any Neutrality Eternal card, while Whiteout Domain/Infinite Accord require any Neutrality Infinite card. Causality has its own separate ability gates.
@@ -65,7 +65,8 @@
 - Causality endgame includes five Wake bosses/Eternals, five playable Causality Infinites with Causality-only recipes, and Rift of Causality with four materials. Preserve the category filters and recipe restriction.
 - Causality progression rewards include Causality titles/achievements, profile pictures, reward themes, and splash slots. Prompts live in `Midjourney Art/Causality Progression Rewards Prompts.md`.
 - Weekly challenges include two Super Weekly conversions after all four weekly rewards are claimed; both target deterministic Eternity's Wake bosses and complete independently on boss victory.
-- Daily login rewards use a persistent monthly calendar keyed to the current UTC date; streak rewards are separate. Card-born thresholds are 10, 25, 50, 125, 250, 625, 1,250, and 2,500 Card-light.
+- Daily login rewards use a persistent local-date monthly calendar; streak rewards are separate. Save v54 standardized accounts to Days 1–2 claimed and allows Day 3 on the next local day. Days 1/15/28 grant 2,000/5,000/15,000 Divine Light; Days 10/25 grant 1/2 Shards of Transcendence; Days 7/14/21 grant 3 Card-light to owned cards; remaining dates grant Aberrated Shards. Forge bonus rolls are on Days 10/25. The Forge wheel accrues one free spin per local day after unlock, spins accumulate, and its prize table uses only existing rewards. Streak milestones are Day 3 (+100 Aberrated Shards) and Day 14 (+2 Shards of Transcendence). Card-born thresholds are 10, 25, 50, 125, 250, 625, 1,250, and 2,500 Card-light.
+- Main Menu shows Progress, Collection, and Play together with a fixed Begin Turn primary action, clickable resource counters, selected background/quote, and a timed Forge/Causality event-banner carousel.
 - Causality ability tiers are ownership-gate based: the two `allCausalityBase` abilities are Foundational, the two `anyCausalityEternal` abilities are Eternal, and the two `anyCausalityInfinite` abilities are Infinite. Do not classify them by purchase cost.
 - The main menu uses the responsive Play / Collection / Progress Command Deck in `MainMenuHub.tsx`; preserve its contextual artwork, visible lock requirements, and complete destination coverage.
 - The Board panel and Card-born Stacks panel belong in the shared left-side HUD rail and must remain flow-positioned rather than independently absolutely positioned.

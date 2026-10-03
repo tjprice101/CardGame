@@ -44,8 +44,7 @@ const EternityBossCoopInviteModal = lazy(() => import('@/ui/eternitysWake/Eterni
 const ArenaShell = lazy(() => import('@/ui/hud/ArenaShell'));
 const ShatterInfiniteLightOverlay = lazy(() => import('@/ui/hud/ShatterInfiniteLightOverlay'));
 const AttackSequenceOverlay = lazy(() => import('@/ui/hud/AttackSequenceOverlay'));
-import { warmTheme } from '@/ui/theme';
-import { applyEffectiveTheme, DEFAULT_UI_THEME_ID, isThemeOscillating } from '@/data/profile/uiThemes';
+import { resetUiPalette, warmTheme } from '@/ui/theme';
 import { useStore, selectTurn, selectBossFight, selectBattleground, selectSettings, selectProgress } from '@/state/store';
 import { useFriendsStore } from '@/state/friendsStore';
 import { DEFAULT_CONTROL_BINDINGS } from '@/types/game';
@@ -218,7 +217,6 @@ export default function App() {
   // first boot of each app session; subsequent navigation cycles only between
   // menu and arena.
   const [scene, setScene] = useState<AppScene>('splash');
-  const [themeNowMs, setThemeNowMs] = useState<number>(() => Date.now());
   const turn = useStore(selectTurn);
   const bossFight = useStore(selectBossFight);
   const battleground = useStore(selectBattleground);
@@ -253,20 +251,9 @@ export default function App() {
   const socialUserId = useSocialStore(s => s.user?.id ?? null);
 
   useEffect(() => {
-    const themeId = progress.profile.uiThemeId || DEFAULT_UI_THEME_ID;
-    if (!isThemeOscillating(themeId)) return;
-    const id = setInterval(() => setThemeNowMs(Date.now()), 180);
-    return () => clearInterval(id);
-  }, [progress.profile.uiThemeId]);
-
-  useEffect(() => {
-    applyEffectiveTheme(
-      progress.profile.uiThemeId || DEFAULT_UI_THEME_ID,
-      progress.profile.customUiTheme ?? null,
-      progress,
-      themeNowMs,
-    );
-  }, [progress, themeNowMs]);
+    if (showPlayerInfo) return;
+    resetUiPalette();
+  }, [showPlayerInfo]);
 
   useEffect(() => {
     if (bossFight.mode !== 'active') return;
@@ -431,14 +418,11 @@ export default function App() {
     document.addEventListener('visibilitychange', onVisibility);
     return () => document.removeEventListener('visibilitychange', onVisibility);
   }, []);
-  const inActiveGame = turn.phase === 'mulligan' || turn.phase === 'playing' || bossFight.mode === 'active';
   const musicSuppressed = componentMusicSuppressed
     || windowHidden
-    || (showSettings && inActiveGame)
     || bossFight.mode === 'victory' || bossFight.mode === 'defeat'
     || gardenDungeon.phase === 'victory' || gardenDungeon.phase === 'defeat'
-    || battleground.mode === 'finished'
-    || showDailyReward;
+    || battleground.mode === 'finished';
   const effectiveMusicVolume = musicSuppressed ? 0 : (settings.musicVolume ?? 0.5);
 
   useEffect(() => {
@@ -704,6 +688,14 @@ export default function App() {
 
       if (isTyping) return;
 
+      if (showDailyReward && scene === 'menu' && e.code === 'KeyR' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const radioIsVisible = !hideRadioUi && !radioUiAutoHidden;
+        setHideRadioUi(radioIsVisible);
+        setRadioUiAutoHidden(false);
+        e.preventDefault();
+        return;
+      }
+
       const controls = { ...DEFAULT_CONTROL_BINDINGS, ...(settings.controls ?? {}) };
 
       // Raise Spectrum (default R) during an active turn; checked first so an old R radio binding can't shadow it mid-turn.
@@ -787,7 +779,7 @@ export default function App() {
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [showTutorial, showSettings, showDeckViewer, showDeckBuilder, showCardStore, showInfinitude, showEternitysWake, showPlayerInfo, showDailyReward, showQuests, showAchievements, showMastery, showEnigma, showCausalityEvent, showForge, showInventory, settings.controls]);
+  }, [showTutorial, showSettings, showDeckViewer, showDeckBuilder, showCardStore, showInfinitude, showEternitysWake, showPlayerInfo, showDailyReward, showQuests, showAchievements, showMastery, showEnigma, showCausalityEvent, showForge, showInventory, hideRadioUi, radioUiAutoHidden, scene, settings.controls]);
 
   useEffect(() => {
     if (!hasSeenSaveRef.current) {
@@ -1268,4 +1260,3 @@ export default function App() {
     </div>
   );
 }
-

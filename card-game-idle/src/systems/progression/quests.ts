@@ -68,7 +68,6 @@ const WEEKLY_QUEST_POOL: QuestTemplate[] = [
   { id: 'weekly-stacks-60', text: 'Spend 60 Limitless Light Stacks', kind: 'spend_light_stacks', goal: 60, shardReward: 65, divineLightReward: 25_000 },
   { id: 'weekly-divine-light-150000', text: 'Earn 150,000 Divine Light in one turn', kind: 'earn_divine_light_in_turn', goal: 150_000, shardReward: 80, divineLightReward: 25_000 },
   { id: 'weekly-bosses-3', text: 'Defeat 3 bosses', kind: 'win_boss', goal: 3, shardReward: 70, divineLightReward: 25_000 },
-  { id: 'weekly-null-raid-1', text: 'Clear 1 Null Raid', kind: 'clear_null_raid', goal: 1, shardReward: 90, divineLightReward: 25_000 },
   { id: 'weekly-packs-4', text: 'Open 4 card packs', kind: 'open_packs', goal: 4, shardReward: 55, divineLightReward: 25_000 },
 ];
 
@@ -257,7 +256,11 @@ export function refreshQuestRotation(state: QuestState, timestamp: number): Ques
     return changed ? hydrated : quests;
   };
   const hydratedDaily = hydrateRewards(state.daily);
-  const hydratedWeekly = hydrateRewards(state.weekly);
+  const hasRetiredWeeklyQuest = state.weekly.some(quest => quest.kind === 'clear_null_raid' || quest.templateId === 'weekly-null-raid-1');
+  const currentWeekly = hasRetiredWeeklyQuest
+    ? state.weekly.filter(quest => quest.kind !== 'clear_null_raid' && quest.templateId !== 'weekly-null-raid-1')
+    : state.weekly;
+  const hydratedWeekly = hydrateRewards(currentWeekly);
   let next: QuestState = hydratedDaily !== state.daily || hydratedWeekly !== state.weekly
     ? { ...state, daily: hydratedDaily, weekly: hydratedWeekly }
     : state;
@@ -274,6 +277,13 @@ export function refreshQuestRotation(state: QuestState, timestamp: number): Ques
       lastWeeklyRollWeek: weekIndex,
       superWeeklies: [firstBoss, secondBoss].filter((boss, index, list) => boss && list.findIndex(item => item?.id === boss.id) === index).map(boss => ({ weekIndex, bossId: boss!.id, active: false, completed: false })),
     };
+  } else if (hasRetiredWeeklyQuest) {
+    const needed = Math.max(0, WEEKLY_QUEST_COUNT - hydratedWeekly.length);
+    const retainedIds = new Set(hydratedWeekly.map(quest => quest.templateId));
+    const replacements = rollWeeklyQuests(weekIndex, state.weekly)
+      .filter(quest => !retainedIds.has(quest.templateId))
+      .slice(0, needed);
+    next = { ...next, weekly: [...hydratedWeekly, ...replacements] };
   }
   if ((!next.superWeeklies || next.superWeeklies.length === 0) && next.superWeekly && next.superWeekly.weekIndex === weekIndex) {
     next = { ...next, superWeeklies: [next.superWeekly] };

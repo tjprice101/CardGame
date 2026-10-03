@@ -20,10 +20,10 @@ const BODY_FONT    = uiTypography.body;
 
 export const SLOT_W       = 118;
 export const SLOT_H       = 168;
-export const CHERUBIM_W   = 104;
-export const CHERUBIM_H   = 148;
+export const SUPPORT_SLOT_W = 104;
+export const SUPPORT_SLOT_H = 148;
 export const FRONT_ROW_GAP = 'clamp(12px, 1.4vw, 18px)';
-export const BACK_ROW_GAP  = `calc(${FRONT_ROW_GAP} + ${SLOT_W - CHERUBIM_W}px)`;
+export const BACK_ROW_GAP  = `calc(${FRONT_ROW_GAP} + ${SLOT_W - SUPPORT_SLOT_W}px)`;
 
 const FM   = getCardFaceMetrics('board');
 const FMM  = getCardFaceMetrics('boardMini');
@@ -105,7 +105,7 @@ export function BackSlotCard({ slot }: { slot: BackSlot }) {
   if (!slot) {
     return (
       <div style={{
-        width: CHERUBIM_W, height: CHERUBIM_H,
+        width: SUPPORT_SLOT_W, height: SUPPORT_SLOT_H,
         borderRadius: 12,
         border: '1px dashed rgba(244,244,248,0.10)',
         background: 'rgba(5,5,7,0.12)',
@@ -122,7 +122,7 @@ export function BackSlotCard({ slot }: { slot: BackSlot }) {
     <div
       className={getLiveCardShimmerClassName(def, slot.finish, slot.faceState)}
       style={{
-        width: CHERUBIM_W, height: CHERUBIM_H,
+        width: SUPPORT_SLOT_W, height: SUPPORT_SLOT_H,
         borderRadius: 12,
         border: `1.5px solid ${elColor}55`,
         boxShadow: `0 0 12px ${elColor}20, 0 6px 16px rgba(0,0,0,0.45)`,

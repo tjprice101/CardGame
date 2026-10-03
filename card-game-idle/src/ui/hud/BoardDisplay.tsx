@@ -3,6 +3,7 @@ import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
 import { useStore, selectBoard, selectBossFight, selectDeck, selectGardenDungeon, selectCanEmbraceInfinite, selectProgress, selectTurn } from '@/state/store';
 import { useThemeVersion } from '@/ui/useThemeVersion';
 import { CardRegistry } from '@/cards/CardRegistry';
+import GameEmblem from '@/ui/components/GameEmblem';
 import {
   cardFacePalette,
   getAdaptiveDescriptionMetrics,
@@ -31,16 +32,16 @@ import type {
 } from '@/types/cards';
 
 const SLOT_W = 'clamp(138px, 11vw, 190px)';
-const CHERUBIM_W = 'clamp(122px, 9.4vw, 162px)';
+const SUPPORT_SLOT_W = 'clamp(122px, 9.4vw, 162px)';
 const FRONT_ROW_GAP = 'clamp(8px, 1vw, 18px)';
 const BACK_ROW_GAP = 'calc(clamp(8px, 1vw, 18px) + clamp(16px, 1.6vw, 28px))';
 const ROW_SEPARATION = 'clamp(6px, 0.9vh, 12px)';
 const FRONT_FACE_METRICS = getCardFaceMetrics('board');
-const CHERUBIM_FACE_METRICS = getCardFaceMetrics('boardMini');
+const SUPPORT_FACE_METRICS = getCardFaceMetrics('boardMini');
 const DISPLAY_FONT = uiTypography.display;
 const BODY_FONT = uiTypography.body;
 
-function renderPatienceBadge(stacks: number) {
+function renderSophChargeBadge(stacks: number) {
   return (
     <div style={{
       position: 'absolute',
@@ -60,7 +61,7 @@ function renderPatienceBadge(stacks: number) {
       pointerEvents: 'none',
       boxShadow: '0 2px 8px rgba(0,0,0,0.28)',
     }}>
-      {`✦ ${stacks}`}
+      {`Soph Charge ${stacks}`}
     </div>
   );
 }
@@ -112,20 +113,13 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
     forceRemoveBoardCard,
   } = useStore.getState();
 
-  // Seraphim/Cherubim/Angel are no longer registered card types; these flags stay
-  // false so the legacy empty-slot visuals and handlers below are dormant.
-  const hasSeraphimInHand = false;
-  const hasCherubimInHand = false;
   const canPlay = turn.phase === 'playing';
-  const pendingAngelSummon = false;
   const canShatterTheInfiniteLight = canPlay && !turn.shatterInfiniteLight && canActivateShatterTheInfiniteLight(board);
 
   const prevSlotsRef = useRef(board.frontSlots);
   const [lastPlacedInstanceId, setLastPlacedInstanceId] = useState<string | null>(null);
-  const [dragOverFront, setDragOverFront] = useState<number | null>(null);
   const [dragOverBack, setDragOverBack] = useState<number | null>(null);
   const [hoveredFrontSlot, setHoveredFrontSlot] = useState<number | null>(null);
-  const [attackPanelSlot, setAttackPanelSlot] = useState<number | null>(null);
   const [newActionSlot, setNewActionSlot] = useState<{ zone: 'front' | 'back'; index: 0 | 1 | 2 | 3 } | null>(null);
   const [removeActionSlot, setRemoveActionSlot] = useState<{ zone: 'front' | 'back'; index: 0 | 1 | 2 | 3 } | null>(null);
   const [asaSummonRequest, setAsaSummonRequest] = useState<{
@@ -183,20 +177,6 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
     }
   }, [board.frontSlots, board.backSlots]);
 
-  function handleFrontSlotClick(slotIndex: 0 | 1 | 2 | 3) {
-    const slot = board.frontSlots[slotIndex];
-    if (slot && canPlay) {
-      setAttackPanelSlot(prev => prev === slotIndex ? null : slotIndex);
-    }
-  }
-
-  function handleBackSlotClick(_backSlot: 0 | 1 | 2 | 3) {
-    // Back-row interaction is handled by the inline card overlays.
-  }
-
-  const selectedFront = attackPanelSlot !== null ? board.frontSlots[attackPanelSlot] : null;
-  const selectedDef = selectedFront ? CardRegistry.get(selectedFront.definitionId) : null;
-  const isAttackPanelOpen = canPlay && !!selectedFront && !!selectedDef;
 
   const getBoardFocusPalette = (element: string | undefined) => {
     if (element === 'Neutrality') {
@@ -279,10 +259,6 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
       </div>
     );
   };
-
-  useEffect(() => {
-    window.dispatchEvent(new CustomEvent('hr-attack-panel-open', { detail: isAttackPanelOpen }));
-  }, [isAttackPanelOpen]);
 
   const isSpecialBossMode = bossFight.mode === 'active' || gardenDungeon.phase === 'active';
 
@@ -367,7 +343,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
         </div>
       )}
 
-{/* Front row: 5 Seraphim/Angel slots */}
+{/* Front row: four summoned Ain Soph Aur slots */}
       <div style={{
         display: 'flex',
         gap: FRONT_ROW_GAP,
@@ -377,8 +353,6 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
         {board.frontSlots.map((slot, i) => {
           const slotIndex = i as 0 | 1 | 2 | 3;
           const isNewlyPlaced = slot?.instanceId === lastPlacedInstanceId;
-          const isDragTarget = dragOverFront === slotIndex && !slot && canPlay;
-
           if (slot?.type === 'AinSophAur') {
             const asaDef = CardRegistry.get(slot.definitionId) as AinSophAurDefinition | undefined;
             const isHovered = hoveredFrontSlot === slotIndex;
@@ -524,82 +498,20 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
             );
           }
 
-          // Empty front slot ? accepts Seraphim drops
-          const hasAction = canPlay && (hasSeraphimInHand || pendingAngelSummon);
-          const glowColor = isDragTarget
-            ? 'rgba(244,244,248,0.95)'
-            : pendingAngelSummon
-              ? 'rgba(232, 214, 255, 0.9)'
-              : hasSeraphimInHand ? 'rgba(244,244,248,0.65)' : 'rgba(244,244,248,0.2)';
           return (
-            <div
-              key={slotIndex}
-              style={{
-                width: SLOT_W, aspectRatio: '148 / 204',
-                border: isDragTarget ? '2px solid rgba(244,244,248,0.9)' : pendingAngelSummon ? '1px solid rgba(190, 138, 255, 0.8)' : `1px solid rgba(244,244,248,${hasSeraphimInHand ? '0.4' : '0.22'})`,
-                borderRadius: 12,
-                background: isDragTarget
-                  ? 'rgba(244,244,248,0.1)'
-                  : pendingAngelSummon
-                    ? 'linear-gradient(180deg, rgba(86, 46, 150, 0.18) 0%, rgba(24, 12, 42, 0.12) 100%)'
-                  : 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
-                backdropFilter: 'blur(3px)',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                cursor: hasAction ? 'pointer' : 'default', pointerEvents: 'auto',
-                fontFamily: BODY_FONT, transition: 'border-color 0.2s, background 0.2s, box-shadow 0.2s',
-                boxShadow: isDragTarget
-                  ? `0 0 0 2px rgba(255,215,0,0.45), 0 0 22px rgba(255,215,0,0.18)`
-                  : pendingAngelSummon
-                    ? '0 0 0 2px rgba(190, 138, 255, 0.28), 0 0 22px rgba(190, 138, 255, 0.18)'
-                  : hasSeraphimInHand
-                    ? `inset 0 1px 0 rgba(255,255,255,0.05), 0 0 14px rgba(255,215,0,0.06)`
-                    : 'inset 0 1px 0 rgba(255,255,255,0.04)',
-                position: 'relative',
-                overflow: 'hidden',
-              }}
-              onClick={() => handleFrontSlotClick(slotIndex)}
-              onDragOver={(e) => {
-                if (!canPlay || !e.dataTransfer.types.includes('application/x-pantheon-card')) return;
-                e.preventDefault();
-                e.dataTransfer.dropEffect = 'move';
-                setDragOverFront(slotIndex);
-              }}
-              onDragLeave={() => setDragOverFront(null)}
-              onDrop={(event) => {
-                const instanceId = event.dataTransfer.getData('application/x-pantheon-card');
-                if (instanceId) playCard(instanceId, (event.dataTransfer.getData('application/x-pantheon-side') || 'soph') as 'soph' | 'ain');
-                setDragOverFront(null);
-              }}
-            >
-              {/* Corner accent marks */}
-              <div style={{ position: 'absolute', top: 6, left: 6, width: 10, height: 10, borderTop: `1px solid ${glowColor}`, borderLeft: `1px solid ${glowColor}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
-              <div style={{ position: 'absolute', top: 6, right: 6, width: 10, height: 10, borderTop: `1px solid ${glowColor}`, borderRight: `1px solid ${glowColor}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
-              <div style={{ position: 'absolute', bottom: 6, left: 6, width: 10, height: 10, borderBottom: `1px solid ${glowColor}`, borderLeft: `1px solid ${glowColor}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
-              <div style={{ position: 'absolute', bottom: 6, right: 6, width: 10, height: 10, borderBottom: `1px solid ${glowColor}`, borderRight: `1px solid ${glowColor}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
-              {/* Orbital pulse rings 窶・two staggered concentric rings radiate outward
-                  to grab the eye when a Seraphim is in hand and this slot is playable. */}
-              {hasSeraphimInHand && (
-                <>
-                  <div style={{
-                    position: 'absolute', top: '50%', left: '50%',
-                    width: 56, height: 56, borderRadius: '50%',
-                    border: `1px solid ${glowColor}`,
-                    animation: 'orbitalPulse 2.4s ease-out infinite',
-                    pointerEvents: 'none',
-                  }} />
-                  <div style={{
-                    position: 'absolute', top: '50%', left: '50%',
-                    width: 56, height: 56, borderRadius: '50%',
-                    border: `1px solid ${glowColor}`,
-                    animation: 'orbitalPulse 2.4s ease-out 1.2s infinite',
-                    pointerEvents: 'none',
-                  }} />
-                </>
-              )}
-              <div style={{ fontSize: 20, color: glowColor, lineHeight: 1, opacity: hasSeraphimInHand ? 0.9 : 0.4, transition: 'opacity 0.2s, color 0.2s', animation: hasSeraphimInHand ? 'constellationGlimmer 3s ease-in-out infinite' : undefined }}>✦</div>
-              <div style={{ fontSize: 7, color: glowColor, marginTop: 7, letterSpacing: 1.8, textTransform: 'uppercase', textAlign: 'center', opacity: hasSeraphimInHand ? 0.85 : 0.4, transition: 'opacity 0.2s, color 0.2s' }}>
-                {pendingAngelSummon ? 'Choose Angel Slot' : isDragTarget ? 'Drop Seraphim' : hasSeraphimInHand ? 'Click or Drop' : 'Empty'}
-              </div>
+            <div key={slotIndex} aria-label="Empty Ain Soph Aur front slot" style={{
+              width: SLOT_W, aspectRatio: '148 / 204',
+              border: '1px solid rgba(244,244,248,0.22)',
+              borderRadius: 12,
+              background: 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
+              backdropFilter: 'blur(3px)',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8,
+              fontFamily: BODY_FONT,
+              position: 'relative',
+              overflow: 'hidden',
+            }}>
+              <GameEmblem id="deck-viewer" size={26} className="board-empty-slot-emblem" />
+              <span style={{ fontSize: 8, color: 'rgba(244,244,248,0.32)', letterSpacing: 1.8, textTransform: 'uppercase' }}>Empty</span>
             </div>
           );
         })}
@@ -638,7 +550,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
         <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, rgba(244,244,248,0.22), transparent)' }} />
       </div>
 
-      {/* Back row: 4 Cherubim slots, staggered between front slots */}
+      {/* Support row: four Light/Dark slots, staggered between front slots */}
       <div style={{
         display: 'flex',
         gap: BACK_ROW_GAP,
@@ -705,7 +617,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
                 key={backSlot}
                 className={getLiveCardShimmerClassName(mainDef, mainCard.finish, mainCard.faceState)}
                 style={{
-                  width: CHERUBIM_W, aspectRatio: '148 / 204',
+                  width: SUPPORT_SLOT_W, aspectRatio: '148 / 204',
                   ...getLiveCardFaceBackgroundStyle(mainDef, mainCard.finish, mainCard.faceState),
                   border: `1px solid ${isMaterialSelected ? 'rgba(120,220,140,0.95)' : isMaterialMode && canSelectAsMaterial ? 'rgba(255,255,255,0.95)' : isReadyToFlip ? 'rgba(255,224,140,0.9)' : 'rgba(160,160,200,0.4)'}`,
                   borderRadius: 12,
@@ -746,18 +658,18 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
                   <>
                     <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${mainElementColor}cc, ${mainElementColor}, ${mainElementColor}cc, transparent)`, pointerEvents: 'none', zIndex: 10 }} />
                     <div style={getCardNameRibbonStyle('boardMini')}>
-                      <div style={{ fontSize: CHERUBIM_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.2, textTransform: 'uppercase', textAlign: 'center' }}>
+                      <div style={{ fontSize: SUPPORT_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.2, textTransform: 'uppercase', textAlign: 'center' }}>
                         {getDisplayCardTypeLabel(mainDef?.type ?? mainCard.type)}
                       </div>
-                      <div style={{ fontSize: CHERUBIM_FACE_METRICS.nameSize + 1, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25, marginTop: 2 }}>
+                      <div style={{ fontSize: SUPPORT_FACE_METRICS.nameSize + 1, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25, marginTop: 2 }}>
                         {mainDef?.name ?? mainCard.definitionId}
                       </div>
                     </div>
                     <div style={getCardRulesPanelStyle('boardMini')}>
-                      <div style={{ fontSize: CHERUBIM_FACE_METRICS.descSize, color: ainCooldown <= 0 ? warmTheme.success : cardFacePalette.textMuted, letterSpacing: 0.4, textAlign: 'center', textTransform: 'uppercase' }}>
+                      <div style={{ fontSize: SUPPORT_FACE_METRICS.descSize, color: ainCooldown <= 0 ? warmTheme.success : cardFacePalette.textMuted, letterSpacing: 0.4, textAlign: 'center', textTransform: 'uppercase' }}>
                         Ain Attack: {mainDef?.type === 'Light' ? (ainCooldown <= 0 ? 'Ready' : 'Not Ready') : 'Not Ready'}
                       </div>
-                      <div style={{ fontSize: CHERUBIM_FACE_METRICS.descSize, color: sophCooldown <= 0 && turn.limitlessLightStacks >= sophCost ? warmTheme.success : cardFacePalette.textMuted, letterSpacing: 0.4, textAlign: 'center', textTransform: 'uppercase', marginTop: 2 }}>
+                      <div style={{ fontSize: SUPPORT_FACE_METRICS.descSize, color: sophCooldown <= 0 && turn.limitlessLightStacks >= sophCost ? warmTheme.success : cardFacePalette.textMuted, letterSpacing: 0.4, textAlign: 'center', textTransform: 'uppercase', marginTop: 2 }}>
                         Soph Attack: {mainDef?.type === 'Light' ? (sophCooldown > 0 ? 'Not Ready' : turn.limitlessLightStacks < sophCost ? 'No Stacks' : 'Ready') : 'Not Ready'}
                       </div>
                       <div style={{
@@ -776,7 +688,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
                     </div>
                   </>
                 )}
-                {charge > 0 && renderPatienceBadge(charge)}
+                {charge > 0 && renderSophChargeBadge(charge)}
                 {isMaterialMode && (
                   <div style={{
                     position: 'absolute', top: 6, right: 6, zIndex: 12, width: 16, height: 16, borderRadius: 4,
@@ -876,34 +788,28 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
             );
           }
 
-          // Empty back slot ? accepts Cherubim drops
-          const hasAction = canPlay && hasCherubimInHand;
-          const cherubimGlow = isDragTarget
-            ? 'rgba(200,160,255,0.95)'
-            : hasCherubimInHand ? 'rgba(200,160,255,0.6)' : 'rgba(200,160,255,0.18)';
+          // Empty support slots accept Main Deck Light/Dark cards.
+          const supportGlow = isDragTarget ? 'rgba(214,196,255,0.95)' : 'rgba(214,196,255,0.18)';
           return (
             <div
               key={backSlot}
               style={{
-                width: CHERUBIM_W, aspectRatio: '148 / 204',
-                border: isDragTarget ? '2px solid rgba(200,160,255,0.9)' : `1px solid rgba(200,160,255,${hasCherubimInHand ? '0.48' : '0.28'})`,
+                width: SUPPORT_SLOT_W, aspectRatio: '148 / 204',
+                border: isDragTarget ? '2px solid rgba(214,196,255,0.9)' : '1px solid rgba(214,196,255,0.28)',
                 borderRadius: 12,
                 background: isDragTarget
-                  ? 'rgba(160,120,255,0.12)'
-                  : 'linear-gradient(180deg, rgba(200,160,255,0.1) 0%, rgba(200,160,255,0.04) 100%)',
+                  ? 'rgba(160,140,220,0.12)'
+                  : 'linear-gradient(180deg, rgba(214,196,255,0.1) 0%, rgba(200,160,255,0.04) 100%)',
                 backdropFilter: 'blur(3px)',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                cursor: hasAction ? 'pointer' : 'default', pointerEvents: 'auto',
-                fontFamily: BODY_FONT, transition: 'border-color 0.2s, background 0.2s, box-shadow 0.2s',
+                gap: 6, cursor: isDragTarget ? 'copy' : 'default', pointerEvents: 'auto',
+                fontFamily: BODY_FONT, color: supportGlow, transition: 'border-color 0.2s, background 0.2s, box-shadow 0.2s',
                 boxShadow: isDragTarget
-                  ? `0 0 0 2px rgba(200,160,255,0.45), 0 0 22px rgba(200,160,255,0.18)`
-                  : hasCherubimInHand
-                    ? 'inset 0 1px 0 rgba(255,255,255,0.06), 0 0 14px rgba(200,160,255,0.08)'
-                    : 'inset 0 1px 0 rgba(255,255,255,0.03)',
+                  ? '0 0 0 2px rgba(214,196,255,0.35), 0 0 22px rgba(214,196,255,0.18)'
+                  : 'inset 0 1px 0 rgba(255,255,255,0.03)',
                 position: 'relative',
                 overflow: 'hidden',
               }}
-              onClick={() => handleBackSlotClick(backSlot)}
               onDragOver={(e) => {
                 if (!canPlay || !e.dataTransfer.types.includes('application/x-pantheon-card')) return;
                 e.preventDefault();
@@ -918,13 +824,13 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
               }}
             >
               {/* Corner accent marks */}
-              <div style={{ position: 'absolute', top: 5, left: 5, width: 8, height: 8, borderTop: `1px solid ${cherubimGlow}`, borderLeft: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
-              <div style={{ position: 'absolute', top: 5, right: 5, width: 8, height: 8, borderTop: `1px solid ${cherubimGlow}`, borderRight: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
-              <div style={{ position: 'absolute', bottom: 5, left: 5, width: 8, height: 8, borderBottom: `1px solid ${cherubimGlow}`, borderLeft: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
-              <div style={{ position: 'absolute', bottom: 5, right: 5, width: 8, height: 8, borderBottom: `1px solid ${cherubimGlow}`, borderRight: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
-              <div style={{ fontSize: 15, color: cherubimGlow, lineHeight: 1, opacity: hasCherubimInHand ? 0.85 : 0.38, transition: 'opacity 0.2s, color 0.2s', animation: hasCherubimInHand ? 'constellationGlimmer 3.5s ease-in-out infinite' : undefined }}>✦</div>
-              <div style={{ fontSize: 6, color: cherubimGlow, marginTop: 5, letterSpacing: 1.5, textTransform: 'uppercase', opacity: hasCherubimInHand ? 0.8 : 0.38, transition: 'opacity 0.2s, color 0.2s' }}>
-                {isDragTarget ? 'Drop Cherubim' : hasCherubimInHand ? 'Click or Drop' : 'Empty'}
+              <div style={{ position: 'absolute', top: 5, left: 5, width: 8, height: 8, borderTop: `1px solid ${supportGlow}`, borderLeft: `1px solid ${supportGlow}`, borderRadius: 1, pointerEvents: 'none' }} />
+              <div style={{ position: 'absolute', top: 5, right: 5, width: 8, height: 8, borderTop: `1px solid ${supportGlow}`, borderRight: `1px solid ${supportGlow}`, borderRadius: 1, pointerEvents: 'none' }} />
+              <div style={{ position: 'absolute', bottom: 5, left: 5, width: 8, height: 8, borderBottom: `1px solid ${supportGlow}`, borderLeft: `1px solid ${supportGlow}`, borderRadius: 1, pointerEvents: 'none' }} />
+              <div style={{ position: 'absolute', bottom: 5, right: 5, width: 8, height: 8, borderBottom: `1px solid ${supportGlow}`, borderRight: `1px solid ${supportGlow}`, borderRadius: 1, pointerEvents: 'none' }} />
+              <GameEmblem id="cards" size={24} />
+              <div style={{ fontSize: 7, color: supportGlow, marginTop: 2, letterSpacing: 1.5, textTransform: 'uppercase' }}>
+                {isDragTarget ? 'Place as Soph or Ain' : 'Empty'}
               </div>
             </div>
           );

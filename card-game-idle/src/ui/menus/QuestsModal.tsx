@@ -12,32 +12,39 @@ import {
   type QuestInstance,
 } from '@/systems/progression/quests';
 import { computeGlobalResonanceScore } from '@/systems/progression/cardMastery';
-import { uiTypography } from '@/ui/theme';
+import { uiTypography, warmTheme } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
 
 interface Props { onClose: () => void; }
 type Cadence = 'daily' | 'weekly';
 
-const CADENCE_THEME: Record<Cadence, {
-  label: string; tag: string; accent: string; accentSoft: string; glow: string;
-  chipBg: string; chipBorder: string; fillFrom: string; fillTo: string;
-  cardTop: string; cardBottom: string; border: string; borderActive: string; headerTint: string;
-}> = {
-  daily: {
-    label: 'Daily Challenges', tag: 'RESETS EACH DAY', accent: '#f0a24a', accentSoft: '#ffd18a',
-    glow: 'rgba(240,162,74,0.32)', chipBg: 'rgba(240,162,74,0.12)', chipBorder: 'rgba(255,209,138,0.55)',
-    fillFrom: '#f0a24a', fillTo: '#ffd88f', cardTop: 'rgba(58,32,18,0.90)', cardBottom: 'rgba(30,18,10,0.94)',
-    border: 'rgba(240,162,74,0.32)', borderActive: 'rgba(255,209,138,0.75)',
-    headerTint: 'radial-gradient(ellipse 55% 40% at 20% 0%, rgba(240,162,74,0.22) 0%, transparent 60%)',
-  },
-  weekly: {
-    label: 'Weekly Challenges', tag: 'RESETS EACH WEEK', accent: '#7cb0f0', accentSoft: '#b0d1ff',
-    glow: 'rgba(124,176,240,0.32)', chipBg: 'rgba(124,176,240,0.12)', chipBorder: 'rgba(176,209,255,0.55)',
-    fillFrom: '#7cb0f0', fillTo: '#c4dcff', cardTop: 'rgba(24,36,60,0.90)', cardBottom: 'rgba(14,22,40,0.94)',
-    border: 'rgba(124,176,240,0.32)', borderActive: 'rgba(176,209,255,0.75)',
-    headerTint: 'radial-gradient(ellipse 55% 40% at 80% 0%, rgba(124,176,240,0.22) 0%, transparent 60%)',
-  },
-};
+function getCadenceTheme(cadence: Cadence) {
+  const accent = cadence === 'daily' ? warmTheme.accent : warmTheme.accentSoft;
+  const accentSoft = cadence === 'daily' ? warmTheme.accentSoft : warmTheme.textSoft;
+  const accentGlow = `color-mix(in srgb, ${accent} 34%, transparent)`;
+  const border = `color-mix(in srgb, ${accent} 34%, transparent)`;
+  const borderActive = `color-mix(in srgb, ${accentSoft} 75%, transparent)`;
+  const chipBg = `color-mix(in srgb, ${accent} 13%, transparent)`;
+  const chipBorder = `color-mix(in srgb, ${accentSoft} 55%, transparent)`;
+  const headerPosition = cadence === 'daily' ? '20%' : '80%';
+  return {
+    label: cadence === 'daily' ? 'Daily Challenges' : 'Weekly Challenges',
+    tag: cadence === 'daily' ? 'RESETS EACH DAY' : 'RESETS EACH WEEK',
+    accent,
+    accentSoft,
+    glow: accentGlow,
+    chipBg,
+    chipBorder,
+    fillFrom: accent,
+    fillTo: accentSoft,
+    cardTop: warmTheme.surfaceStrong,
+    cardBottom: warmTheme.surfaceMuted,
+    border,
+    borderActive,
+    headerTint: `radial-gradient(ellipse 55% 40% at ${headerPosition} 0%, ${chipBg} 0%, transparent 60%)`,
+  };
+}
 
 const KIND_LABEL: Record<string, string> = {
   play_cards: 'Play cards', play_light: 'Play Light', play_dark: 'Play Dark',
@@ -45,11 +52,11 @@ const KIND_LABEL: Record<string, string> = {
   activate_ain_attack: 'Ain Attack', activate_soph_attack: 'Soph Attack',
   activate_dark: 'Dark activation', bridge_ain_soph_aur: 'Bridge attack',
   spend_light_stacks: 'Spend Light Stacks', earn_divine_light_in_turn: 'Earn Divine Light',
-  open_packs: 'Open packs', win_boss: 'Defeat bosses', clear_null_raid: 'Clear Null Raid',
+  open_packs: 'Open packs', win_boss: 'Defeat bosses',
 };
 
 function QuestCard({ quest, cadence, resonanceScore, onClaim }: { quest: QuestInstance; cadence: Cadence; resonanceScore: number; onClaim: () => void }) {
-  const theme = CADENCE_THEME[cadence];
+  const theme = getCadenceTheme(cadence);
   const complete = isQuestComplete(quest);
   const progressPct = Math.min(100, Math.round((quest.progress / Math.max(1, quest.goal)) * 100));
   const claimable = complete && !quest.claimed;
@@ -75,10 +82,10 @@ function QuestCard({ quest, cadence, resonanceScore, onClaim }: { quest: QuestIn
           <div style={{ color: theme.accentSoft, fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 2.4, textTransform: 'uppercase' }}>
             {KIND_LABEL[quest.kind] ?? quest.kind.replaceAll('_', ' ')}
           </div>
-          <div style={{ color: '#f8f0e2', fontFamily: uiTypography.display, fontSize: 18, marginTop: 3, lineHeight: 1.2 }}>{quest.text}</div>
+          <div style={{ color: warmTheme.text, fontFamily: uiTypography.display, fontSize: 18, marginTop: 3, lineHeight: 1.2 }}>{quest.text}</div>
         </div>
         <div style={{ color: theme.accentSoft, fontFamily: uiTypography.display, fontSize: 20, whiteSpace: 'nowrap', textShadow: `0 0 12px ${theme.glow}` }}>
-          {quest.progress}<span style={{ color: 'rgba(240,230,210,0.45)', fontSize: 15 }}>/{quest.goal}</span>
+          {quest.progress}<span style={{ color: warmTheme.textFaint, fontSize: 15 }}>/{quest.goal}</span>
         </div>
       </div>
       <div style={{ position: 'relative', marginTop: 14, height: 8, borderRadius: 999, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden' }}>
@@ -92,7 +99,7 @@ function QuestCard({ quest, cadence, resonanceScore, onClaim }: { quest: QuestIn
         </span>
         <button onClick={onClaim} disabled={!claimable} style={{
           fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.6, textTransform: 'uppercase', padding: '7px 16px', borderRadius: 8, cursor: claimable ? 'pointer' : 'default',
-          color: quest.claimed ? 'rgba(240,230,210,0.55)' : claimable ? '#12070a' : 'rgba(240,230,210,0.72)',
+          color: quest.claimed ? warmTheme.textMuted : claimable ? warmTheme.accentDeep : warmTheme.textSoft,
           background: quest.claimed ? 'rgba(255,255,255,0.06)' : claimable ? `linear-gradient(180deg, ${theme.accentSoft} 0%, ${theme.accent} 100%)` : 'rgba(255,255,255,0.05)',
           border: `1px solid ${quest.claimed ? 'rgba(255,255,255,0.14)' : claimable ? theme.borderActive : 'rgba(255,255,255,0.12)'}`,
           boxShadow: claimable ? `0 6px 16px ${theme.glow}` : 'none',
@@ -103,7 +110,7 @@ function QuestCard({ quest, cadence, resonanceScore, onClaim }: { quest: QuestIn
 }
 
 function ChallengeColumn({ cadence, quests, resonanceScore, onClaim }: { cadence: Cadence; quests: QuestInstance[]; resonanceScore: number; onClaim: (id: string) => void }) {
-  const theme = CADENCE_THEME[cadence];
+  const theme = getCadenceTheme(cadence);
   const completedCount = quests.filter(q => isQuestComplete(q)).length;
   return (
     <section style={{ position: 'relative', display: 'flex', flexDirection: 'column', minHeight: 0, maxHeight: 'min(720px, calc(100vh - 190px))', padding: '20px 14px 18px 20px', borderRadius: 18, border: `1px solid ${theme.border}`, background: `${theme.headerTint}, linear-gradient(180deg, rgba(10,12,22,0.65) 0%, rgba(8,10,18,0.55) 100%)` }}>
@@ -111,20 +118,21 @@ function ChallengeColumn({ cadence, quests, resonanceScore, onClaim }: { cadence
         <div><div style={{ color: theme.accentSoft, fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 2.8, textTransform: 'uppercase' }}>{theme.tag}</div><h2 style={{ margin: '4px 0 0', color: '#fff2dc', fontFamily: uiTypography.display, fontSize: 22, letterSpacing: 1, textShadow: `0 0 14px ${theme.glow}` }}>{theme.label}</h2></div>
             <div style={{ color: theme.accentSoft, fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 2 }}>{completedCount}/{quests.length} READY</div>
       </header>
-      <div className="ornate-scroll" style={{ flex: 1, display: 'grid', gap: 12, minHeight: 0, overflowY: 'auto', paddingRight: 6, paddingBottom: 4 }}>{quests.length === 0 ? <div style={{ color: 'rgba(240,230,210,0.55)', fontStyle: 'italic', padding: '18px 4px' }}>No challenges available right now.</div> : quests.map(quest => <QuestCard key={quest.id} quest={quest} cadence={cadence} resonanceScore={resonanceScore} onClaim={() => onClaim(quest.id)} />)}</div>
+      <div className="ornate-scroll" style={{ flex: 1, display: 'grid', gap: 12, minHeight: 0, overflowY: 'auto', paddingRight: 6, paddingBottom: 4 }}>{quests.length === 0 ? <div style={{ color: warmTheme.textMuted, fontStyle: 'italic', padding: '18px 4px' }}>No challenges available right now.</div> : quests.map(quest => <QuestCard key={quest.id} quest={quest} cadence={cadence} resonanceScore={resonanceScore} onClaim={() => onClaim(quest.id)} />)}</div>
     </section>
   );
 }
 
 function ResetTimer({ cadence, now }: { cadence: Cadence; now: number }) {
-  const theme = CADENCE_THEME[cadence];
+  const theme = getCadenceTheme(cadence);
   const resetAt = cadence === 'daily' ? getNextDailyResetAt(now) : getNextWeeklyResetAt(now);
-  return <div style={{ marginTop: 5, color: 'rgba(240,230,210,0.58)', fontSize: 10, letterSpacing: 1.1, fontFamily: uiTypography.display }}>
+  return <div style={{ marginTop: 5, color: warmTheme.textMuted, fontSize: 10, letterSpacing: 1.1, fontFamily: uiTypography.display }}>
     NEXT RESET <span style={{ color: theme.accentSoft }}>{formatQuestCountdown(resetAt - now)}</span>
   </div>;
 }
 
 export default function QuestsModal({ onClose }: Props) {
+  useThemeVersion();
   const [now, setNow] = useState(() => Date.now());
   const progress = useStore(selectProgress);
   const claimQuest = useStore(s => s.claimQuest);
@@ -146,16 +154,16 @@ export default function QuestsModal({ onClose }: Props) {
   }, []);
 
   return (
-    <div onClick={onClose} role="dialog" aria-modal="true" className="ui-panel-intro" style={{ position: 'absolute', inset: 0, zIndex: 50, overflowY: 'auto', padding: '32px 28px 60px', background: 'radial-gradient(circle at 20% -10%, rgba(240,162,74,0.14), transparent 45%), radial-gradient(circle at 80% -10%, rgba(124,176,240,0.14), transparent 45%), linear-gradient(180deg, #10121e 0%, #0a0c14 100%)', color: '#f8f0de', fontFamily: uiTypography.body }}>
+    <div onClick={onClose} role="dialog" aria-modal="true" className="ui-panel-intro" style={{ position: 'absolute', inset: 0, zIndex: 50, overflowY: 'auto', padding: '32px 28px 60px', background: `radial-gradient(circle at 20% -10%, color-mix(in srgb, ${warmTheme.accent} 14%, transparent), transparent 45%), radial-gradient(circle at 80% -10%, color-mix(in srgb, ${warmTheme.accentSoft} 14%, transparent), transparent 45%), ${warmTheme.appBackground}`, color: warmTheme.text, fontFamily: uiTypography.body }}>
       <div onClick={event => event.stopPropagation()} style={{ maxWidth: 1100, margin: '0 auto' }}>
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', border: '1px solid rgba(240,209,138,0.34)', borderRadius: 16, padding: '22px 24px', marginBottom: 24, backgroundImage: 'linear-gradient(90deg, rgba(16,11,24,0.96), rgba(24,18,34,0.80), rgba(16,12,22,0.35)), url("' + import.meta.env.BASE_URL + 'assets/menu-banners/challenges.png")', backgroundPosition: 'right center', backgroundSize: 'cover', boxShadow: '0 10px 30px rgba(0,0,0,0.30), inset 0 -1px 0 rgba(255,216,143,0.18)' }}>
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', border: `1px solid ${warmTheme.borderStrong}`, borderRadius: 16, padding: '22px 24px', marginBottom: 24, backgroundImage: 'linear-gradient(90deg, rgba(8,9,15,0.96), rgba(12,14,24,0.80), rgba(10,12,20,0.35)), url("' + import.meta.env.BASE_URL + 'assets/menu-banners/challenges.png")', backgroundPosition: 'right center', backgroundSize: 'cover', boxShadow: `0 10px 30px rgba(0,0,0,0.30), inset 0 -1px 0 color-mix(in srgb, ${warmTheme.accentSoft} 18%, transparent)` }}>
           <div>
-            <div style={{ color: '#f0a24a', fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 3 }}>✦ DAILY & WEEKLY OBJECTIVES</div>
-            <h1 style={{ margin: '8px 0 4px', color: '#fff0d1', fontFamily: uiTypography.display, fontSize: 34, letterSpacing: 1.5 }}>Challenges</h1>
-            <div style={{ color: 'rgba(240,230,210,0.72)', fontSize: 13 }}>Complete daily and weekly challenges for Divine Light and Aberrated Shards. Base rewards target approximately 60,000 Divine Light from daily challenges across seven days and 100,000 from weekly challenges.</div>
-            {readyCount > 0 && <div style={{ display: 'inline-block', marginTop: 12, padding: '5px 12px', borderRadius: 999, fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.6, color: '#12070a', background: 'linear-gradient(180deg, #ffd88f 0%, #f0a24a 100%)', border: '1px solid rgba(255,209,138,0.7)', boxShadow: '0 6px 14px rgba(240,162,74,0.35)' }}>{readyCount} REWARD{readyCount === 1 ? '' : 'S'} READY</div>}
+            <div style={{ color: warmTheme.accent, fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 3 }}>✦ DAILY & WEEKLY OBJECTIVES</div>
+            <h1 style={{ margin: '8px 0 4px', color: warmTheme.text, fontFamily: uiTypography.display, fontSize: 34, letterSpacing: 1.5 }}>Challenges</h1>
+            <div style={{ color: warmTheme.textMuted, fontSize: 13 }}>Complete daily and weekly challenges for Divine Light and Aberrated Shards. Base rewards target approximately 60,000 Divine Light from daily challenges across seven days and 100,000 from weekly challenges.</div>
+            {readyCount > 0 && <div style={{ display: 'inline-block', marginTop: 12, padding: '5px 12px', borderRadius: 999, fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.6, color: warmTheme.accentDeep, background: `linear-gradient(180deg, ${warmTheme.accentSoft} 0%, ${warmTheme.accent} 100%)`, border: `1px solid ${warmTheme.borderStrong}`, boxShadow: `0 6px 14px color-mix(in srgb, ${warmTheme.accent} 35%, transparent)` }}>{readyCount} REWARD{readyCount === 1 ? '' : 'S'} READY</div>}
           </div>
-          <button onClick={onClose} aria-label="Close Challenges" style={{ width: 42, height: 42, borderRadius: '50%', border: '1px solid rgba(240,209,138,0.4)', background: 'rgba(240,162,74,0.08)', color: '#f8f0de', fontSize: 18, cursor: 'pointer', fontFamily: uiTypography.display }}>✕</button>
+          <button onClick={onClose} aria-label="Close Challenges" style={{ width: 42, height: 42, borderRadius: '50%', border: `1px solid ${warmTheme.borderStrong}`, background: `color-mix(in srgb, ${warmTheme.accent} 8%, transparent)`, color: warmTheme.text, fontSize: 18, cursor: 'pointer', fontFamily: uiTypography.display }}>✕</button>
         </header>
         <div style={{ display: 'grid', gap: 24, gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))' }}>
           <div>
@@ -168,17 +176,17 @@ export default function QuestsModal({ onClose }: Props) {
           </div>
         </div>
         {superWeeklies.length > 0 && (
-          <section style={{ marginTop: 24, padding: 20, borderRadius: 18, border: '1px solid rgba(255,205,100,0.58)', background: 'radial-gradient(circle at 85% 0%, rgba(255,170,60,0.22), transparent 48%), linear-gradient(145deg, rgba(46,25,12,0.96), rgba(18,12,10,0.98))', boxShadow: '0 0 26px rgba(255,170,60,0.16)' }}>
-            <div style={{ color: '#ffd88f', fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 2.8, textTransform: 'uppercase' }}>SUPER WEEKLY CHALLENGE</div>
-            <h2 style={{ margin: '6px 0 5px', color: '#fff1cf', fontFamily: uiTypography.display, fontSize: 24 }}>Two Boss Objectives</h2>
-            <div style={{ color: 'rgba(255,235,200,0.74)', fontSize: 13, lineHeight: 1.5 }}>Complete and claim every weekly challenge, then consume the rotation to unlock two high-stakes Eternity&apos;s Wake boss objectives.</div>
+          <section style={{ marginTop: 24, padding: 20, borderRadius: 18, border: `1px solid ${warmTheme.borderStrong}`, background: `radial-gradient(circle at 85% 0%, color-mix(in srgb, ${warmTheme.accentSoft} 22%, transparent), transparent 48%), linear-gradient(145deg, ${warmTheme.surfaceStrong}, ${warmTheme.surfaceMuted})`, boxShadow: `0 0 26px color-mix(in srgb, ${warmTheme.accentSoft} 16%, transparent)` }}>
+            <div style={{ color: warmTheme.accentSoft, fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 2.8, textTransform: 'uppercase' }}>SUPER WEEKLY CHALLENGE</div>
+            <h2 style={{ margin: '6px 0 5px', color: warmTheme.text, fontFamily: uiTypography.display, fontSize: 24 }}>Two Boss Objectives</h2>
+            <div style={{ color: warmTheme.textMuted, fontSize: 13, lineHeight: 1.5 }}>Complete and claim every weekly challenge, then consume the rotation to unlock two high-stakes Eternity&apos;s Wake boss objectives.</div>
             <div style={{ display: 'grid', gap: 8, marginTop: 12 }}>{superWeeklies.map(challenge => {
               const boss = BOSS_DEFINITIONS.find(entry => entry.id === challenge.bossId);
-              return <div key={challenge.bossId} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,216,143,0.22)', background: 'rgba(0,0,0,0.18)', color: '#ffe8b0', fontFamily: uiTypography.display, fontSize: 12 }}>{boss?.name ?? challenge.bossId} <span style={{ color: 'rgba(255,235,200,0.58)', marginLeft: 8 }}>{challenge.completed ? 'Completed' : challenge.active ? 'Active' : 'Locked'}</span></div>;
+              return <div key={challenge.bossId} style={{ padding: '8px 10px', borderRadius: 8, border: `1px solid ${warmTheme.border}`, background: warmTheme.surfaceMuted, color: warmTheme.textSoft, fontFamily: uiTypography.display, fontSize: 12 }}>{boss?.name ?? challenge.bossId} <span style={{ color: warmTheme.textMuted, marginLeft: 8 }}>{challenge.completed ? 'Completed' : challenge.active ? 'Active' : 'Locked'}</span></div>;
             })}</div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, marginTop: 16, flexWrap: 'wrap' }}>
-              <span style={{ color: '#ffd88f', fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.2 }}>{superWeeklies.every(challenge => challenge.completed) ? 'COMPLETED' : superWeeklies.some(challenge => challenge.active) ? 'ACTIVE · CHALLENGE THE BOSSES' : superReady ? 'READY TO ACTIVATE' : 'CLAIM ALL WEEKLY REWARDS FIRST'}</span>
-              {!superWeeklies.some(challenge => challenge.active || challenge.completed) && <button onClick={() => activateSuperWeekly()} disabled={!superReady} style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid rgba(255,216,143,0.7)', background: superReady ? 'linear-gradient(180deg, #ffd88f, #e18d35)' : 'rgba(255,255,255,0.08)', color: superReady ? '#241208' : 'rgba(255,235,200,0.45)', cursor: superReady ? 'pointer' : 'not-allowed', fontFamily: uiTypography.display, letterSpacing: 1.1, textTransform: 'uppercase' }}>Consume Weekly Challenges</button>}
+              <span style={{ color: superWeeklies.every(challenge => challenge.completed) ? warmTheme.success : warmTheme.accent, fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.2 }}>{superWeeklies.every(challenge => challenge.completed) ? 'COMPLETED' : superWeeklies.some(challenge => challenge.active) ? 'ACTIVE · CHALLENGE THE BOSSES' : superReady ? 'READY TO ACTIVATE' : 'CLAIM ALL WEEKLY REWARDS FIRST'}</span>
+              {!superWeeklies.some(challenge => challenge.active || challenge.completed) && <button onClick={() => activateSuperWeekly()} disabled={!superReady} style={{ padding: '8px 16px', borderRadius: 8, border: `1px solid ${warmTheme.borderStrong}`, background: superReady ? warmTheme.button : warmTheme.surfaceMuted, color: superReady ? warmTheme.accentDeep : warmTheme.textMuted, cursor: superReady ? 'pointer' : 'not-allowed', fontFamily: uiTypography.display, letterSpacing: 1.1, textTransform: 'uppercase' }}>Consume Weekly Challenges</button>}
             </div>
           </section>
         )}

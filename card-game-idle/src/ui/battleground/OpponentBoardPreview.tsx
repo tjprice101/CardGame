@@ -1,7 +1,7 @@
 ﻿/**
  * OpponentBoardPreview - read-only board display for the opponent in a
- * Battleground match. Renders their front slots (Seraphim / Angel) and
- * back slots (Cherubim) using the same card-face pipeline as the live board.
+ * Battleground match. Renders their front Ain Soph Aur slots and Light/Dark
+ * support slots using the same card-face pipeline as the live board.
  *
  * The whole display is rotated 180 degrees so it faces the player head-to-head.
  */
@@ -13,7 +13,7 @@ import {
   FRONT_ROW_GAP,
   BACK_ROW_GAP,
   SLOT_W,
-  CHERUBIM_W,
+  SUPPORT_SLOT_W,
 } from './_BoardSlotCard';
 
 const DISPLAY_FONT = uiTypography.display;
@@ -50,7 +50,7 @@ export default function OpponentBoardPreview({ board, handSize, handEmpty }: Pro
       boxSizing: 'border-box',
     }}>
 
-      {/* Front row (Seraphim / Angel) - rendered FIRST so it ends up at the
+      {/* Front row (Ain Soph Aur) - rendered FIRST so it ends up at the
           BOTTOM after rotate(180deg), directly facing the player's front row. */}
       <div style={{
         display: 'flex',
@@ -61,13 +61,13 @@ export default function OpponentBoardPreview({ board, handSize, handEmpty }: Pro
         {frontSlots.map((slot, i) => <FrontSlotCard key={i} slot={slot} />)}
       </div>
 
-      {/* Back row (Cherubim) */}
+      {/* Support row (Light / Dark) */}
       <div style={{
         display: 'flex',
         gap: BACK_ROW_GAP,
         alignItems: 'flex-end',
         justifyContent: 'center',
-        paddingInline: `calc((${SLOT_W}px - ${CHERUBIM_W}px) / 2)`,
+        paddingInline: `calc((${SLOT_W}px - ${SUPPORT_SLOT_W}px) / 2)`,
       }}>
         {backSlots.map((slot, i) => <BackSlotCard key={i} slot={slot} />)}
       </div>

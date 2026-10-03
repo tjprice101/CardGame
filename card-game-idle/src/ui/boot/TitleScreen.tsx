@@ -278,7 +278,7 @@ export default function TitleScreen({ onAdvance }: { onAdvance: () => void }) {
         </div>
 
         {/* Main wordmark */}
-        <div style={{
+        <div className="ui-title-glow" style={{
           fontFamily: uiTypography.display,
           fontSize: 'clamp(46px, 8vw, 108px)',
           letterSpacing: 10,

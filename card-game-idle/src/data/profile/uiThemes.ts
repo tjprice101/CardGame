@@ -493,8 +493,8 @@ function buildRewardThemes(): UiThemeDefinition[] {
 const CORE_UI_THEMES: UiThemeDefinition[] = [
   {
     id: DEFAULT_UI_THEME_ID,
-    name: 'Warm Hearth',
-    description: 'Soft amber and parchment tones with cozy contrast.',
+    name: 'Pantheon Default',
+    description: 'Midnight surfaces with luminous cyan and violet accents.',
     palette: WARM_DEFAULT,
     group: 'core',
     isUnlocked: () => true,

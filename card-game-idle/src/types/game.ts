@@ -491,7 +491,12 @@ export type KeybindActionId =
   | 'activateAbility1'
   | 'activateAbility2'
   | 'activateAbility3'
-  | 'raiseSpectrum';
+  | 'raiseSpectrum'
+  | 'mainMenuCardStore'
+  | 'mainMenuDeckBuilder'
+  | 'mainMenuDailyCalendar'
+  | 'mainMenuChallenges'
+  | 'mainMenuBeginTurn';
 
 /** Default keyboard control bindings (KeyboardEvent.code values). */
 export const DEFAULT_CONTROL_BINDINGS: Record<KeybindActionId, string> = {
@@ -504,6 +509,11 @@ export const DEFAULT_CONTROL_BINDINGS: Record<KeybindActionId, string> = {
   activateAbility2: 'Digit2',
   activateAbility3: 'Digit3',
   raiseSpectrum: 'KeyR',
+  mainMenuCardStore: 'KeyS',
+  mainMenuDeckBuilder: 'KeyB',
+  mainMenuDailyCalendar: 'KeyC',
+  mainMenuChallenges: 'KeyQ',
+  mainMenuBeginTurn: 'Enter',
 };
 
 export type UiLanguage = 'en' | 'es' | 'fr';

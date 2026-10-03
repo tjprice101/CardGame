@@ -26,8 +26,10 @@ Garden material progress includes the Neutrality currencies plus `seedOfCausalit
 - Bump the save version only after transforms complete.
 - v49 initializes `progress.ownedAbilities` for saves created before Ability Materialization.
 - v50 initializes and sanitizes Garden material currencies and clears interrupted Garden runtime encounters. Garden now includes Neutrality and Causality material fields.
+- v54 standardizes the Login Calendar to claimed local Days 1–2 and locks the current local day so Day 3 becomes available the following local day. The normalization marker prevents repeat resets.
+- v55 initializes accumulated Forge wheel spins and gives previously Forge-unlocked accounts one launch spin. Unspent daily spins accumulate after unlock.
 - Test old fixtures and current fixtures.
 
 ## Progress Snapshots
 
-Some runs restore pre-run progress snapshots, especially boss, trial, and raid flows. If gameplay can complete Enigma steps during such a run, capture Enigma progress before restoring and merge completion flags afterward.
+Some runs restore pre-run progress snapshots, especially boss and Garden encounter flows. If gameplay can complete Enigma steps during such a run, capture Enigma progress before restoring and merge completion flags afterward.

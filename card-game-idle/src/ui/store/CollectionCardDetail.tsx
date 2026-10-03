@@ -7,9 +7,11 @@ import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { getCardFinishLabel, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import { warmTheme } from '@/ui/theme';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
+import type { CardDefinition } from '@/types/cards';
+import type { LegacyCosmeticCard } from '@/data/cards/eternalCards';
 
 interface Props {
-  card: ReturnType<(typeof import('@/cards/CardRegistry'))['CardRegistry']['getAll']>[number];
+  card: CardDefinition | LegacyCosmeticCard;
   finish: 'normal' | 'holo';
   owned: number;
   onClose: () => void;
@@ -38,12 +40,16 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
   const toggleFavoriteCard = useStore(s => s.toggleFavoriteCard);
   const [favoriteFeedback, setFavoriteFeedback] = useState<string | null>(null);
 
+  const isLegacyInfinite = !('type' in card);
+  const displayCard = isLegacyInfinite
+    ? { ...card, type: 'Light' } as unknown as CardDefinition
+    : card;
   const isFavorite = favoriteCollection[`${card.definitionId}:${finish}`] ?? false;
   const isRevealed = owned > 0;
   const packs = findPacksForCard(card.definitionId);
   const elementColor = getCardSetColor(card.definitionId);
   const rarityColor = RARITY_COLORS[card.rarity] ?? '#888';
-  const finishLabel = isHoloOnlyCard(card) ? 'Intrinsic Foil' : getCardFinishLabel(finish);
+  const finishLabel = isLegacyInfinite || isHoloOnlyCard(card) ? 'Intrinsic Foil' : getCardFinishLabel(finish);
   const flavorObtain = card.rarity === 'Infinite'
     ? 'Crafted through Infinitude recipes.'
     : card.rarity === 'Eternal'
@@ -111,11 +117,11 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
           }}
         >
           <div
-            className={isRevealed ? getLiveCardShimmerClassName(card, finish, 'front') : undefined}
+            className={isRevealed ? getLiveCardShimmerClassName(displayCard, finish, 'front') : undefined}
             style={{
               width: '100%',
               aspectRatio: '148 / 204',
-              ...(isRevealed ? getLiveCardFaceBackgroundStyle(card, finish, 'front') : getCardBackBackgroundStyle(card, { dimmed: false })),
+              ...(isRevealed ? getLiveCardFaceBackgroundStyle(displayCard, finish, 'front') : getCardBackBackgroundStyle(displayCard, { dimmed: false })),
               backgroundColor: warmTheme.surfaceStrong,
               borderRadius: 14,
               position: 'relative',
@@ -192,7 +198,7 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
                 Card Type
               </div>
               <div style={{ fontSize: 14, color: '#ead9c0', fontWeight: 500 }}>
-                {getDisplayCardTypeLabel(card.type)}
+                {isLegacyInfinite ? 'Archived Infinite' : getDisplayCardTypeLabel(card.type)}
               </div>
             </div>
             <div>
@@ -245,9 +251,13 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
             <div style={{ fontSize: 10, color: '#aaa', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
               Card Rules
             </div>
-            {isRevealed ? (
+            {isRevealed && isLegacyInfinite ? (
+              <div style={{ fontSize: 12, lineHeight: 1.5, color: 'rgba(234, 217, 192, 0.92)', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, padding: '10px 12px' }}>
+                Archived Infinite collection record. This legacy card is not playable in the current card registry.
+              </div>
+            ) : isRevealed ? (
               <CardRulesDigest
-                card={card}
+                card={displayCard}
                 variant="detail"
                 labelColor="rgba(234, 217, 192, 0.52)"
                 textColor="rgba(234, 217, 192, 0.92)"

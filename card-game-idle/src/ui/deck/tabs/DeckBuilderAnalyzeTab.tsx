@@ -81,17 +81,16 @@ export default function DeckBuilderAnalyzeTab({ deckList, extraDeckList, totalCa
   useEffect(() => { setDraft(currentNotes); }, [currentNotes]);
 
   const sections = useMemo(() => {
-    const seraphim: CardRow[] = [];
-    const cherubim: CardRow[] = [];
-    const ophanim: CardRow[] = [];
-    const angels: CardRow[] = [];
+    const lightCards: CardRow[] = [];
+    const darkCards: CardRow[] = [];
+    const extraDeckCards: CardRow[] = [];
 
     for (const entry of deckList) {
       const def = CardRegistry.get(entry.definitionId);
       if (!def) continue;
-      const target = def.type === 'Light' ? seraphim
-        : def.type === 'Dark' ? cherubim
-        : ophanim;
+      const target = def.type === 'Light' ? lightCards
+        : def.type === 'Dark' ? darkCards
+        : extraDeckCards;
       const existing = target.find(e => e.name === def.name && e.finish === entry.finish);
       if (existing) existing.count += entry.copies;
       else target.push({ name: def.name, rarity: def.rarity, count: entry.copies, finish: entry.finish });
@@ -100,12 +99,12 @@ export default function DeckBuilderAnalyzeTab({ deckList, extraDeckList, totalCa
     for (const entry of extraDeckList) {
       const def = CardRegistry.get(entry.definitionId);
       if (!def) continue;
-      const existing = angels.find(e => e.name === def.name && e.finish === entry.finish);
+      const existing = extraDeckCards.find(e => e.name === def.name && e.finish === entry.finish);
       if (existing) existing.count += 1;
-      else angels.push({ name: def.name, rarity: def.rarity, count: 1, finish: entry.finish });
+      else extraDeckCards.push({ name: def.name, rarity: def.rarity, count: 1, finish: entry.finish });
     }
 
-    return { seraphim, cherubim, ophanim, angels };
+    return { lightCards, darkCards, extraDeckCards };
   }, [deckList, extraDeckList]);
 
   if (totalCards === 0 && extraDeckList.length === 0 && !deckId) {
@@ -219,9 +218,9 @@ export default function DeckBuilderAnalyzeTab({ deckList, extraDeckList, totalCa
         </div>
       )}
 
-      {renderSection('Light', sections.seraphim, '#f0bd78')}
-      {renderSection('Dark', sections.cherubim, warmTheme.cherubim)}
-      {renderSection('Extra Deck (Ain Soph Aur)', sections.angels, '#70c890')}
+      {renderSection('Light', sections.lightCards, '#f0bd78')}
+      {renderSection('Dark', sections.darkCards, warmTheme.cherubim)}
+      {renderSection('Extra Deck (Ain Soph Aur)', sections.extraDeckCards, '#70c890')}
 
       {/* Notes — expandable, one click away */}
       <div style={{ marginTop: 8, borderTop: '1px solid rgba(72,128,190,0.18)', paddingTop: 12 }}>
