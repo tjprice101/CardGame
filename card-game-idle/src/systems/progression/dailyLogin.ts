@@ -1,10 +1,10 @@
 import type { ProgressState } from '@/types/game';
-import { CardRegistry } from '@/cards/CardRegistry';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 export type MonthlyLoginReward =
   | { kind: 'shards'; amount: number; label: string }
+  | { kind: 'divine_light'; amount: number; label: string }
   | { kind: 'transcendent_shards'; amount: 1 | 2; label: string }
   | { kind: 'card'; definitionId: string; amount: number; holo: boolean; label: string }
   | { kind: 'mastery_all_owned'; amount: number; label: string };
@@ -30,24 +30,19 @@ export function getNextLocalDayResetAt(timestamp: number): number {
   return nextDay.getTime();
 }
 
-const baseCardIds = () => CardRegistry.getAll()
-  .filter(card => ['Common', 'Rare', 'Epic', 'Legendary'].includes(card.rarity) && !card.definitionId.includes('causality'))
-  .map(card => card.definitionId);
-
-export function monthlyRewardForDay(day: number, timestamp: number = Date.now()): MonthlyLoginReward {
-  const cards = baseCardIds();
+export function monthlyRewardForDay(day: number, _timestamp: number = Date.now()): MonthlyLoginReward {
   if (day === 10) {
     return { kind: 'transcendent_shards', amount: 1, label: '+1 Shard of Transcendence' };
   }
   if (day === 25) {
     return { kind: 'transcendent_shards', amount: 2, label: '+2 Shards of Transcendence' };
   }
+  if (day === 1 || day === 15 || day === 28) {
+    const amount = day === 1 ? 2_000 : day === 15 ? 5_000 : 15_000;
+    return { kind: 'divine_light', amount, label: `+${amount.toLocaleString()} Divine Light` };
+  }
   if (day % 7 === 0) {
     return { kind: 'mastery_all_owned', amount: 3, label: '+3 Card-light to every owned card' };
-  }
-  if (day === 1 || day === 15 || day === 28) {
-    const definitionId = cards[(day * 17 + new Date(timestamp).getMonth()) % Math.max(1, cards.length)] ?? 'light-neutrality-1';
-    return { kind: 'card', definitionId, amount: day === 28 ? 2 : 1, holo: day === 28, label: `${day === 28 ? 'Holofoil ' : ''}base card ×${day === 28 ? 2 : 1}` };
   }
   return { kind: 'shards', amount: 20 + day * 5, label: `+${20 + day * 5} Aberrated Shards` };
 }

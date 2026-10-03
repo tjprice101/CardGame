@@ -1,7 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { getMonitorUiScale } from '@/ui/preferences';
 
 const handPath = join(process.cwd(), 'src/ui/hud/HandDisplay.tsx');
 const boardPath = join(process.cwd(), 'src/ui/hud/BoardDisplay.tsx');
@@ -21,12 +20,6 @@ const previewPaths = [
 ];
 
 describe('live card face rendering', () => {
-  it('scales the game surface to monitor dimensions without shrinking standard layouts', () => {
-    expect(getMonitorUiScale(1366, 768)).toBeCloseTo(1.2387, 3);
-    expect(getMonitorUiScale(1024, 600)).toBe(1);
-    expect(getMonitorUiScale(3840, 2160)).toBe(1.24);
-  });
-
   it('uses the same composed art and shimmer helpers in hand and on board', () => {
     const handSource = readFileSync(handPath, 'utf8');
     const boardSource = readFileSync(boardPath, 'utf8');
@@ -113,7 +106,6 @@ describe('live card face rendering', () => {
 
   it('surfaces current deck stats in the manuscript header', () => {
     const deckBuilderSource = readFileSync(deckBuilderPath, 'utf8');
-    const appSource = readFileSync(join(process.cwd(), 'src/app/App.tsx'), 'utf8');
     const forgeSource = readFileSync(join(process.cwd(), 'src/ui/forge/ForgeOfTranscendence.tsx'), 'utf8');
 
     expect(deckBuilderSource).toContain('The Deck Manuscript · {deckSetName} deck');
@@ -133,11 +125,48 @@ describe('live card face rendering', () => {
     expect(deckBuilderSource).toContain('deckStats.levelCounts.map');
     expect(deckBuilderSource).toContain("return 'Neutrality'");
     expect(deckBuilderSource).not.toContain('Card hover tooltip');
-    expect(appSource).toContain('appRoot.style.zoom = String(scale)');
-    expect(appSource).toContain('getMonitorUiScale(window.screen.availWidth');
     expect(forgeSource).toContain('Before the First Shuffle · The Lore of the Card-born World');
     expect(forgeSource).toContain('Vol. 1: Before the First Shuffle');
     expect(forgeSource).not.toContain('Beyond All Sets · Vol. 1');
+  });
+
+  it('keeps all main-menu sections visible with fixed Begin Turn and live claim badges', () => {
+    const menuSource = readFileSync(join(process.cwd(), 'src/ui/menu/MainMenuHub.tsx'), 'utf8');
+    const emblemSource = readFileSync(join(process.cwd(), 'src/ui/components/GameEmblem.tsx'), 'utf8');
+
+    expect(menuSource).toContain('main-menu-progress-grid');
+    expect(menuSource).toContain('main-menu-collection-grid');
+    expect(menuSource).toContain('main-menu-play-grid');
+    expect(menuSource).toContain('main-menu-begin-turn');
+    expect(menuSource).toContain('refreshQuestRotation({');
+    expect(menuSource).toContain('claimableQuestCount');
+    expect(menuSource).toContain('.filter(quest => !quest.claimed && isQuestComplete(quest)).length');
+    expect(menuSource).toContain('badgeFor(claimableQuestCount)');
+    expect(menuSource).toContain('claimableAchievementCount');
+    expect(menuSource).toContain('claimableEnigmaCount');
+    expect(menuSource).toContain('onClick={props.onCardStore}');
+    expect(menuSource).toContain('setShowDivineLightReference(true)');
+    expect(menuSource).toContain('<GameEmblem id={action.id} size={28} />');
+    expect(menuSource).toContain("const playActions = ['garden', 'eternitys-wake']");
+    expect(menuSource).toContain('Previous event banner');
+    expect(menuSource).toContain('Next event banner');
+    expect(menuSource).toContain('main-menu-quote');
+    expect(menuSource).toContain("background: 'transparent'");
+    expect(emblemSource).toContain("case 'daily-calendar':");
+    expect(emblemSource).toContain("case 'achievements':");
+    expect(menuSource).not.toContain('role="tablist" aria-label="Main menu sections"');
+  });
+
+  it('keeps full Forge wheel prize names out of narrow slices and in a keyed legend', () => {
+    const calendarSource = readFileSync(join(process.cwd(), 'src/ui/profile/DailyRewardModal.tsx'), 'utf8');
+
+    expect(calendarSource).toContain('{segment.index}');
+    expect(calendarSource).toContain('login-calendar-next login-wheel-prize-row');
+    expect(calendarSource).toContain('<strong>{prize.label}</strong>');
+    expect(calendarSource).toContain('assets/resource-icons/divine-light.png');
+    expect(calendarSource).toContain('assets/resource-icons/aberrated-shards.png');
+    expect(calendarSource).toContain('assets/forge/shards-of-transcendence.png');
+    expect(calendarSource).not.toContain('wheelLabel(segment.prize)');
   });
 
   it('uses hover outlines and brightness instead of upward movement', () => {

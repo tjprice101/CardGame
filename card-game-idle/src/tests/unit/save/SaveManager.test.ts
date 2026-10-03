@@ -179,6 +179,19 @@ describe('SaveManager integrity', () => {
       const reloaded = migratedManager.loadWithStatus()!;
       expect(reloaded.state.progress.dailyLogin.monthlyClaimedDays).toEqual([1, 2, 3]);
     });
+
+    it('grants one launch spin to existing accounts that already unlocked the Forge', () => {
+      const storage = memStorage();
+      const legacyState = makeState();
+      legacyState.progress.forgeOfTranscendenceUnlocked = true;
+      delete legacyState.progress.forgeWheelSpins;
+      delete legacyState.progress.forgeWheelLastAccruedDayIndex;
+      storage.write(JSON.stringify({ version: 54, data: LZString.compressToUTF16(JSON.stringify(legacyState)) }));
+
+      const loaded = new SaveManager(() => makeState(), storage).loadWithStatus()!;
+      expect(loaded.state.progress.forgeWheelSpins).toBe(1);
+      expect(loaded.state.progress.forgeWheelLastAccruedDayIndex).toBe(getLocalDayIndex(Date.now()));
+    });
   });
 
   describe('export / import', () => {

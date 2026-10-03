@@ -383,6 +383,10 @@ export interface ProgressState {
   forgeKeyRewardClaimed?: boolean;
   /** Forge of Transcendence — permanent, one-time-ever unlock flag set when the player spends a Key to open the Forge. Save v53. */
   forgeOfTranscendenceUnlocked?: boolean;
+  /** Free Forge wheel spins accrued but not yet spent. Save v55. */
+  forgeWheelSpins?: number;
+  /** Local day index through which Forge wheel spins have accrued. Save v55. */
+  forgeWheelLastAccruedDayIndex?: number;
   /** Event-boss HP snapshots frozen per cycle. category → {cycleId,hp}. */
   eventBossHpSnapshots?: Record<string, EventBossHpSnapshot>;
   /** Battleground of the Card-born lifetime stats. Save v20. */
@@ -448,6 +452,8 @@ export interface DailyLoginState {
   monthlyClaimedDays?: number[];
   /** One-time normalization marker for the Day 2 calendar reset. */
   calendarNormalizationVersion?: number;
+  /** Streak-reward milestones already claimed. */
+  claimedStreakMilestones?: number[];
 }
 
 export interface SettingsState {

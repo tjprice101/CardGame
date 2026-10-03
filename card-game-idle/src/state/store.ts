@@ -100,7 +100,7 @@ import {
   type NeutralityTutorialTier,
 } from '@/data/trialDecks';
 import { TRANSCENDENT_SHOP_IDS, TRANSCENDENT_ANGEL_IDS } from '@/data/ascension/transcendentCards';
-import { FORGE_CALENDAR_BONUS_DAYS, FORGE_CARD_SHARD_COST, FORGE_EVENT_BOSS_IDS, hasBeatenAllForgeEventBosses, rollShardOfTranscendence } from '@/data/forge/forgeDefinitions';
+import { FORGE_CALENDAR_BONUS_DAYS, FORGE_CARD_SHARD_COST, FORGE_EVENT_BOSS_IDS, FORGE_STREAK_MILESTONES, FORGE_WHEEL_PRIZES, FORGE_WHEEL_TOTAL_WEIGHT, hasBeatenAllForgeEventBosses, rollShardOfTranscendence } from '@/data/forge/forgeDefinitions';
 
 import { DEFAULT_MAIN_MENU_BACKGROUND_ID } from '@/data/profile/mainMenuBackgrounds';
 import { ABILITY_REGISTRY, getAbilityMaterialCost, meetsAbilityOwnershipGate } from '@/data/abilities/abilityDefinitions';
@@ -258,6 +258,7 @@ const defaultProgress: ProgressState = {
     monthlyTrackKey: getMonthlyTrackKey(Date.now()),
     monthlyClaimedDays: [1, 2],
     calendarNormalizationVersion: 1,
+    claimedStreakMilestones: [],
   },
   quests: { daily: [], weekly: [], lastDailyRollDay: -1, lastWeeklyRollWeek: -1 },
   enigmas: { activeEnigmaId: null, instances: {} },
@@ -286,6 +287,8 @@ const defaultProgress: ProgressState = {
   forgeKeyAwarded: {},
   forgeKeyRewardClaimed: false,
   forgeOfTranscendenceUnlocked: false,
+  forgeWheelSpins: 0,
+  forgeWheelLastAccruedDayIndex: getLocalDayIndex(Date.now()),
   eventBossHpSnapshots: {},
   battlegroundStats: { wins: 0, losses: 0, bestScore: 0, totalMatches: 0, claimedMilestones: [], dailyMatchTimestamps: [] },
   socialStats: {
@@ -502,6 +505,8 @@ interface StoreActions {
   openForgeOfTranscendence: () => boolean;
   /** Claim the single final reward for clearing every Forge event boss. */
   claimForgeKeyReward: () => boolean;
+  claimDailyStreakMilestone: (day: 3 | 14) => boolean;
+  spinForgeWheel: () => { prize: typeof FORGE_WHEEL_PRIZES[number]; amount: number } | null;
   /** Debug shortcut: marks every Forge event boss as defeated without fighting them. */
   debugMarkForgeBossesDefeated: () => void;
   /** Spend Shards of Transcendence to acquire 1 copy of a Forge gallery card. Requires the Forge to be open. */
@@ -3736,6 +3741,8 @@ export const useStore = create<Store>()(
       set(s => {
         s.progress.keysOfTranscendence = (s.progress.keysOfTranscendence ?? 0) - 1;
         s.progress.forgeOfTranscendenceUnlocked = true;
+        s.progress.forgeWheelSpins = (s.progress.forgeWheelSpins ?? 0) + 1;
+        s.progress.forgeWheelLastAccruedDayIndex = getLocalDayIndex(Date.now());
         pushRewardToast(s, 'The Forge of Transcendence has opened.');
       });
       return true;
@@ -3752,6 +3759,64 @@ export const useStore = create<Store>()(
         pushRewardToast(s, 'Key of Transcendence claimed.');
       });
       return true;
+    },
+
+    claimDailyStreakMilestone: (day) => {
+      const milestone = FORGE_STREAK_MILESTONES.find(entry => entry.day === day);
+      const state = get();
+      if (!milestone || state.progress.dailyLogin.streak < day || state.progress.dailyLogin.claimedStreakMilestones?.includes(day)) return false;
+      set(s => {
+        const claimed = s.progress.dailyLogin.claimedStreakMilestones ?? [];
+        if (claimed.includes(day) || s.progress.dailyLogin.streak < day) return;
+        s.progress.dailyLogin.claimedStreakMilestones = [...claimed, day];
+        if (milestone.kind === 'aberrated_shards') s.progress.aberratedShards += milestone.amount;
+        else s.progress.shardsOfTranscendence = (s.progress.shardsOfTranscendence ?? 0) + milestone.amount;
+        pushRewardToast(s, `Streak reward claimed: ${milestone.label}`);
+      });
+      return true;
+    },
+
+    spinForgeWheel: () => {
+      if (!get().progress.forgeOfTranscendenceUnlocked) return null;
+      let result: { prize: typeof FORGE_WHEEL_PRIZES[number]; amount: number } | null = null;
+      set(s => {
+        const progress = s.progress;
+        if (!progress.forgeOfTranscendenceUnlocked) return;
+        const today = getLocalDayIndex(Date.now());
+        const lastAccruedDay = progress.forgeWheelLastAccruedDayIndex;
+        const elapsedDays = typeof lastAccruedDay === 'number' ? Math.max(0, today - lastAccruedDay) : 1;
+        progress.forgeWheelSpins = (progress.forgeWheelSpins ?? 0) + elapsedDays;
+        progress.forgeWheelLastAccruedDayIndex = today;
+        if ((progress.forgeWheelSpins ?? 0) < 1) return;
+
+        let roll = Math.random() * FORGE_WHEEL_TOTAL_WEIGHT;
+        let prize = FORGE_WHEEL_PRIZES[FORGE_WHEEL_PRIZES.length - 1];
+        for (const candidate of FORGE_WHEEL_PRIZES) {
+          roll -= candidate.weight;
+          if (roll < 0) {
+            prize = candidate;
+            break;
+          }
+        }
+        progress.forgeWheelSpins -= 1;
+
+        let amount: number = prize.amount;
+        if (prize.kind === 'aberrated_shards') progress.aberratedShards += amount;
+        else if (prize.kind === 'card_light_all') {
+          for (const definitionId of Object.keys(progress.collection)) {
+            if ((progress.collection[definitionId] ?? 0) > 0) {
+              progress.cardPlayCounts[definitionId] = (progress.cardPlayCounts[definitionId] ?? 0) + amount;
+            }
+          }
+        } else if (prize.kind === 'shards_of_transcendence') {
+          progress.shardsOfTranscendence = (progress.shardsOfTranscendence ?? 0) + amount;
+        } else {
+          amount = grantPersistentDivineLight(s, amount);
+        }
+        result = { prize, amount };
+        pushRewardToast(s, `Forge wheel: ${prize.kind === 'card_light_all' ? prize.label : `+${amount.toLocaleString()} ${prize.label.slice(1).replace(/^\d[\d,]*\s*/, '')}`}`);
+      });
+      return result;
     },
 
     debugMarkForgeBossesDefeated: () => {
@@ -3826,6 +3891,7 @@ export const useStore = create<Store>()(
           s.progress.dailyLogin.monthlyClaimedDays = claimed;
           const reward = evalResult.monthlyReward;
           if (reward?.kind === 'shards') s.progress.aberratedShards += reward.amount;
+          if (reward?.kind === 'divine_light') grantPersistentDivineLight(s, reward.amount);
           if (reward?.kind === 'transcendent_shards') {
             s.progress.shardsOfTranscendence = (s.progress.shardsOfTranscendence ?? 0) + reward.amount;
           }
@@ -5230,6 +5296,12 @@ export const useStore = create<Store>()(
           dailyLogin['monthlyClaimedDays'] = [1, 2];
           dailyLogin['calendarNormalizationVersion'] = 1;
         }
+        const todayLocal = getLocalDayIndex(Date.now());
+        if (typeof op['forgeWheelSpins'] !== 'number' || (op['forgeWheelSpins'] as number) < 0) {
+          op['forgeWheelSpins'] = op['forgeOfTranscendenceUnlocked'] === true ? 1 : 0;
+        }
+        if (typeof op['forgeWheelLastAccruedDayIndex'] !== 'number') op['forgeWheelLastAccruedDayIndex'] = todayLocal;
+        if (!Array.isArray(dailyLogin['claimedStreakMilestones'])) dailyLogin['claimedStreakMilestones'] = [];
         if (!op['ownedAbilities'] || typeof op['ownedAbilities'] !== 'object') op['ownedAbilities'] = {};
         for (const currency of ['nullifiedLattice', 'nullSearedLight', 'nullifiedOblivionMatter', 'seedOfCausality', 'causalBloom', 'shatteredCausalTranscript', 'heartOfCausality'] as const) {
           if (typeof op[currency] !== 'number' || !Number.isFinite(op[currency]) || op[currency] < 0) op[currency] = 0;

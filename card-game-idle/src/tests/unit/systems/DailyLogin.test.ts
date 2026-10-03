@@ -99,6 +99,12 @@ describe('dailyLogin.monthlyRewardForDay', () => {
     expect(transcendentShardRewards.map(reward => reward.amount)).toEqual([1, 2]);
     expect(FORGE_CALENDAR_BONUS_DAYS).toEqual([10, 25]);
   });
+
+  it('uses existing Divine Light currency instead of Base Cards on the three special dates', () => {
+    expect(monthlyRewardForDay(1)).toMatchObject({ kind: 'divine_light', amount: 2_000 });
+    expect(monthlyRewardForDay(15)).toMatchObject({ kind: 'divine_light', amount: 5_000 });
+    expect(monthlyRewardForDay(28)).toMatchObject({ kind: 'divine_light', amount: 15_000 });
+  });
 });
 
 describe('dailyLogin.evaluateDailyLogin', () => {

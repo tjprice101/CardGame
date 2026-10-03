@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 54;
+export const CURRENT_VERSION = 55;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -1100,6 +1100,22 @@ const migrations: Record<number, Migration> = {
     if (typeof dailyLogin['streak'] !== 'number') dailyLogin['streak'] = 0;
     if (typeof dailyLogin['totalClaims'] !== 'number') dailyLogin['totalClaims'] = 0;
     dailyLogin['calendarNormalizationVersion'] = 1;
+    return data;
+  },
+  55: (data) => {
+    const progress = data.progress as unknown as Record<string, unknown> | undefined;
+    if (!progress) return data;
+    const now = new Date();
+    const today = Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / (24 * 60 * 60 * 1000));
+    const forgeUnlocked = progress['forgeOfTranscendenceUnlocked'] === true;
+    if (typeof progress['forgeWheelSpins'] !== 'number' || progress['forgeWheelSpins'] < 0) {
+      progress['forgeWheelSpins'] = forgeUnlocked ? 1 : 0;
+    }
+    if (typeof progress['forgeWheelLastAccruedDayIndex'] !== 'number') {
+      progress['forgeWheelLastAccruedDayIndex'] = today;
+    }
+    const dailyLogin = progress['dailyLogin'] as Record<string, unknown> | undefined;
+    if (dailyLogin && !Array.isArray(dailyLogin['claimedStreakMilestones'])) dailyLogin['claimedStreakMilestones'] = [];
     return data;
   },
 };

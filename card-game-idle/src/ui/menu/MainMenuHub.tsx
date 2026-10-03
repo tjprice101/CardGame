@@ -14,7 +14,13 @@ import {
   type MainMenuBackgroundEntry,
 } from '@/data/profile/mainMenuBackgrounds';
 import { formatCountdown, getCausalityEventCountdown, CAUSALITY_EVENT_ENDS_LABEL } from '@/ui/eventCausality/eventTimer';
-import { FORGE_EVENT_BOSS_IDS, hasBeatenAllForgeEventBosses } from '@/data/forge/forgeDefinitions';
+import { FORGE_EVENT_BOSS_IDS, FORGE_STREAK_MILESTONES, hasBeatenAllForgeEventBosses } from '@/data/forge/forgeDefinitions';
+import { summarizeAchievements } from '@/systems/progression/achievements';
+import { evaluateDailyLogin } from '@/systems/progression/dailyLogin';
+import { listEnigmaDefinitions } from '@/systems/progression/EnigmaSystem';
+import { isQuestComplete, refreshQuestRotation } from '@/systems/progression/quests';
+import DivineLightAcquisitionScreen from '@/ui/hud/DivineLightAcquisitionScreen';
+import GameEmblem from '@/ui/components/GameEmblem';
 import { t } from '@/ui/preferences';
 
 interface MainMenuHubProps {
@@ -57,6 +63,7 @@ interface MenuAction {
   onClick?: () => void;
   disabled?: boolean;
   status?: string;
+  badge?: { label: string; tone?: 'alert' | 'info' | 'gold' };
   tone?: 'primary' | 'cream' | 'cream-dim';
 }
 
@@ -130,7 +137,7 @@ function TileButton(props: {
   art?: string;
   badge?: { label: string; tone?: 'alert' | 'info' | 'gold' };
   /** Optional icon glyph */
-  icon?: string;
+  icon?: React.ReactNode;
   selected?: boolean;
   onPreview?: () => void;
 }) {
@@ -310,7 +317,7 @@ function TileButton(props: {
 }
 
 /** Small icon-button used in the top-left utility strip. */
-function IconStripButton(props: { glyph: string; ariaLabel: string; onClick?: () => void; dot?: boolean; theme: UiPalette }) {
+function IconStripButton(props: { glyph: React.ReactNode; ariaLabel: string; onClick?: () => void; dot?: boolean; theme: UiPalette }) {
   return (
     <button
       className="menu-tactile-btn"
@@ -322,7 +329,7 @@ function IconStripButton(props: { glyph: string; ariaLabel: string; onClick?: ()
         borderRadius: 8,
         border: `1px solid ${props.theme.border}`,
         background: props.theme.surfaceStrong,
-        fontSize: 16,
+        display: 'grid', placeItems: 'center',
         color: props.theme.accentSoft,
         cursor: 'pointer',
         backdropFilter: 'blur(4px)',
@@ -342,16 +349,32 @@ function IconStripButton(props: { glyph: string; ariaLabel: string; onClick?: ()
   );
 }
 
+function ProgressActionTile({ action, theme }: { action: MenuAction; theme: UiPalette }) {
+  return (
+    <button
+      type="button"
+      className="menu-tactile-btn main-menu-progress-tile"
+      onClick={action.onClick}
+      disabled={action.disabled}
+      title={`${action.label}${action.status ? ` · ${action.status}` : ''}`}
+      aria-label={`${action.label}${action.badge ? `, ${action.badge.label} available` : ''}`}
+    >
+      <span className="main-menu-progress-hex" style={{ borderColor: theme.accent, color: theme.accentSoft, background: theme.surfaceMuted }}><GameEmblem id={action.id} size={28} /></span>
+      <span className="main-menu-progress-label">{action.label}</span>
+      {action.badge && <span className="main-menu-live-badge" aria-hidden="true">{action.badge.label}</span>}
+    </button>
+  );
+}
+
 /** A resource counter pill in the top-right ribbon. */
-function ResourcePill(props: { glyph: string; label: string; value: string; tone?: 'gold' | 'crimson' | 'cool'; theme: UiPalette }) {
+function ResourcePill(props: { glyph: React.ReactNode; label: string; value: string; tone?: 'gold' | 'crimson' | 'cool'; theme: UiPalette; onClick?: () => void }) {
   const t = props.tone ?? 'gold';
   const colors = t === 'crimson'
     ? { glyph: props.theme.danger, glow: props.theme.danger }
     : t === 'cool'
       ? { glyph: props.theme.accentSoft, glow: props.theme.accentSoft }
       : { glyph: props.theme.accent, glow: props.theme.accent };
-  return (
-    <div style={{
+  const style: React.CSSProperties = {
       display: 'flex', alignItems: 'center', gap: 8,
       padding: '6px 12px 6px 8px',
       borderRadius: 999,
@@ -361,7 +384,10 @@ function ResourcePill(props: { glyph: string; label: string; value: string; tone
       fontFamily: uiTypography.body,
       color: props.theme.text,
       letterSpacing: 0.6,
-    }}>
+      cursor: props.onClick ? 'pointer' : 'default',
+      textAlign: 'left',
+    };
+  const contents = <>
       <span style={{
         width: 22, height: 22, borderRadius: 5,
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -373,8 +399,11 @@ function ResourcePill(props: { glyph: string; label: string; value: string; tone
         <span style={{ fontFamily: uiTypography.display, fontSize: 13, letterSpacing: 1, lineHeight: 1 }}>{props.value}</span>
         <span style={{ fontFamily: uiTypography.body, fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', opacity: 0.55, lineHeight: 1 }}>{props.label}</span>
       </span>
-    </div>
-  );
+      {props.onClick && <span aria-hidden style={{ width: 20, height: 20, display: 'grid', placeItems: 'center', borderRadius: '50%', background: 'rgba(125,92,192,0.28)', color: props.theme.accentSoft, fontSize: 14, fontWeight: 700 }}>+</span>}
+    </>;
+  return props.onClick
+    ? <button type="button" className="menu-tactile-btn" onClick={props.onClick} title={`Open ${props.label}`} style={style}>{contents}</button>
+    : <div style={style}>{contents}</div>;
 }
 
 /**
@@ -430,8 +459,8 @@ export default function MainMenuHub(props: MainMenuHubProps) {
   const forgeLocked = !forgeUnlocked && !forgeAllBossesCleared;
 
   const [mounted, setMounted] = useState(false);
-  const [activeSection, setActiveSection] = useState<MenuSection>(props.initialSection ?? 'play');
-  const [focusedActionId, setFocusedActionId] = useState('begin-turn');
+  const [showDivineLightReference, setShowDivineLightReference] = useState(false);
+  const [eventSlide, setEventSlide] = useState(0);
   const [themeNowMs, setThemeNowMs] = useState<number>(() => Date.now());
   const [eventNowMs, setEventNowMs] = useState<number>(() => Date.now());
   const [menuBackgroundChoices, setMenuBackgroundChoices] = useState<MainMenuBackgroundEntry[]>([getDefaultMainMenuBackground()]);
@@ -494,6 +523,29 @@ export default function MainMenuHub(props: MainMenuHubProps) {
   const divineLight = Math.floor(progress.divineLight ?? 0);
   const cards = ownedCardCopies;
   const eventCountdown = formatCountdown(getCausalityEventCountdown(eventNowMs));
+  const refreshedQuests = useMemo(() => refreshQuestRotation({
+    daily: progress.quests.daily.map(quest => ({ ...quest })),
+    weekly: progress.quests.weekly.map(quest => ({ ...quest })),
+    lastDailyRollDay: progress.quests.lastDailyRollDay,
+    lastWeeklyRollWeek: progress.quests.lastWeeklyRollWeek,
+    superWeekly: progress.quests.superWeekly ? { ...progress.quests.superWeekly } : undefined,
+    superWeeklies: progress.quests.superWeeklies?.map(challenge => ({ ...challenge })),
+  }, eventNowMs), [progress.quests, eventNowMs]);
+  const claimableQuestCount = [...refreshedQuests.daily, ...refreshedQuests.weekly]
+    .filter(quest => !quest.claimed && isQuestComplete(quest)).length;
+  const achievementSummary = summarizeAchievements(progress);
+  const claimableAchievementCount = Math.max(0, achievementSummary.unlocked - achievementSummary.claimed);
+  const claimableEnigmaCount = listEnigmaDefinitions().filter(definition => {
+    const instance = progress.enigmas.instances[definition.id];
+    return !!instance && instance.status !== 'locked' && instance.status !== 'completed'
+      && definition.steps.slice(0, -1).every((_, index) => instance.stepsComplete[index]);
+  }).length;
+  const dailyLoginEvaluation = evaluateDailyLogin(progress);
+  const claimableStreakMilestones = FORGE_STREAK_MILESTONES.filter(milestone =>
+    (progress.dailyLogin.streak ?? 0) >= milestone.day && !progress.dailyLogin.claimedStreakMilestones?.includes(milestone.day),
+  ).length;
+  const calendarBadgeCount = Number(dailyLoginEvaluation.monthlyReward !== undefined) + claimableStreakMilestones;
+  const badgeFor = (count: number): MenuAction['badge'] => count > 0 ? { label: String(count), tone: 'alert' } : undefined;
 
   const menuSections: Record<MenuSection, MenuAction[]> = {
     play: [
@@ -553,11 +605,13 @@ export default function MainMenuHub(props: MainMenuHubProps) {
       {
         id: 'challenges', label: 'Challenges', eyebrow: 'Daily & Weekly', icon: '✓',
         caption: 'Complete rotating objectives for Divine Light and Shards.', status: 'Live objectives',
+        badge: badgeFor(claimableQuestCount),
         art: MAIN_MENU_BANNER_ART.challenges, onClick: props.onQuests,
       },
       {
         id: 'achievements', label: 'Achievements', eyebrow: 'Milestones', icon: '◆',
         caption: 'Review permanent milestones and claim earned rewards.', status: 'Account progression',
+        badge: badgeFor(claimableAchievementCount),
         art: MAIN_MENU_BANNER_ART.achievements, onClick: props.onAchievements,
       },
       {
@@ -568,12 +622,14 @@ export default function MainMenuHub(props: MainMenuHubProps) {
       {
         id: 'daily-calendar', label: 'Login Calendar', eyebrow: 'Monthly Rewards', icon: '▦',
         caption: 'Review every monthly reward and claim the next available day.', status: 'Open calendar',
+        badge: badgeFor(calendarBadgeCount),
         art: MAIN_MENU_BANNER_ART.cardMastery, onClick: props.onDailyCalendar,
       },
       {
         id: 'enigma', label: 'Enigma', eyebrow: 'Hidden Manuscripts', icon: '◈',
         caption: 'Discover manuscripts and complete their concealed trials.',
         status: enigmaLocked ? `Open card packs · ${totalPacksOpened}/10` : 'Manuscripts available',
+        badge: badgeFor(claimableEnigmaCount),
         art: MAIN_MENU_BANNER_ART.enigma, onClick: props.onEnigma, disabled: enigmaLocked,
       },
       {
@@ -588,13 +644,12 @@ export default function MainMenuHub(props: MainMenuHubProps) {
       },
     ],
   };
-  const sectionActions = menuSections[activeSection];
-  const focusedAction = sectionActions.find(action => action.id === focusedActionId) ?? sectionActions[0];
-
-  const selectSection = (section: MenuSection) => {
-    setActiveSection(section);
-    setFocusedActionId(menuSections[section][0].id);
-  };
+  const progressActions = menuSections.progress;
+  const collectionActions = menuSections.collection;
+  const beginTurnAction = menuSections.play.find(action => action.id === 'begin-turn')!;
+  const playActions = ['garden', 'eternitys-wake']
+    .map(id => menuSections.play.find(action => action.id === id))
+    .filter((action): action is MenuAction => !!action);
 
   return (
     <div
@@ -623,7 +678,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
       }}>
         {/* Left: utility icon strip */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <IconStripButton glyph="⚙" ariaLabel="Settings" onClick={props.onSettings} theme={uiTheme} />
+          <IconStripButton glyph={<GameEmblem id="settings" size={21} />} ariaLabel="Settings" onClick={props.onSettings} theme={uiTheme} />
         </div>
         {/* Right: resource pills + clock */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -633,25 +688,25 @@ export default function MainMenuHub(props: MainMenuHubProps) {
           }}>
             Pantheon
           </div>
-          <ResourcePill glyph="◇" label="Cards" value={cards.toLocaleString()} tone="cool" theme={uiTheme} />
-          <ResourcePill glyph="✦" label="Shards" value={shards.toLocaleString()} tone="crimson" theme={uiTheme} />
-          <ResourcePill glyph="⬡" label="Divine Light" value={divineLight.toLocaleString()} tone="gold" theme={uiTheme} />
+          <ResourcePill glyph={<GameEmblem id="cards" size={19} />} label="Cards" value={cards.toLocaleString()} tone="cool" theme={uiTheme} onClick={props.onCardStore} />
+          <ResourcePill glyph={<GameEmblem id="aberrated-shards" size={19} />} label="Shards" value={shards.toLocaleString()} tone="crimson" theme={uiTheme} onClick={props.onCardStore} />
+          <ResourcePill glyph={<GameEmblem id="divine-light" size={19} />} label="Divine Light" value={divineLight.toLocaleString()} tone="gold" theme={uiTheme} onClick={() => setShowDivineLightReference(true)} />
         </div>
       </div>
 
       {/* ───────── Left: identity card ───────── */}
       <div className="main-menu-identity" style={{
         position: 'absolute',
-        left: 'clamp(20px, 3vw, 56px)',
-        top: '82px',
+        left: 'clamp(40px, 7vw, 104px)',
+        top: 'clamp(220px, 32vh, 260px)',
         transform: 'none',
         width: 'min(360px, 32vw)',
-        display: 'flex', flexDirection: 'column', gap: 14,
+        display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8,
       }}>
         {/* Level halo + name */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{
-            width: 96, height: 96,
+            width: 84, height: 84,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             borderRadius: '50%',
             border: `2px solid ${uiTheme.borderStrong}`,
@@ -696,31 +751,9 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             </div>
           </div>
         </div>
-        {/* Voiced line bubble */}
-        <button
-          onClick={props.onPlayerInfo}
-          className="menu-tactile-btn"
-          style={{
-            textAlign: 'left',
-            padding: '12px 16px',
-            borderRadius: 4,
-            border: `1px solid ${uiTheme.border}`,
-            background: uiTheme.surfaceMuted,
-            backdropFilter: 'blur(4px)',
-            color: uiTheme.textSoft,
-            fontFamily: uiTypography.body,
-            fontSize: 13,
-            fontStyle: 'italic',
-            letterSpacing: 0.4,
-            lineHeight: 1.45,
-            cursor: 'pointer',
-            boxShadow: uiTheme.shadow,
-          }}
-          title="Open Player Information"
-        >
+        <button className="menu-tactile-btn main-menu-quote" onClick={props.onPlayerInfo} title="Open Player Information">
           “{dailyLine}”
         </button>
-
       </div>
 
       {/* ───────── Bottom-left: news / event banners ───────── */}
@@ -729,19 +762,20 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         left: 'clamp(20px, 3vw, 56px)',
         bottom: 'clamp(22px, 3vh, 38px)',
         display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 10,
-        maxWidth: 'min(900px, 68vw)',
+        maxWidth: 'min(520px, 40vw)',
+        width: 'min(520px, 40vw)',
       }}>
         {/* Forge of Transcendence — matches the Causality banner's size/dimensions. */}
-        {props.onForgeOfTranscendence && (
+        {props.onForgeOfTranscendence && eventSlide === 0 && (
           <button
             className="menu-tactile-btn"
             onClick={props.onForgeOfTranscendence}
             disabled={forgeLocked}
             style={{
               position: 'relative',
-              width: 374,
-              minHeight: 190,
-              padding: '22px 29px 26px',
+              width: 'min(460px, 40vw)',
+              minHeight: 280,
+              padding: '24px 30px 28px',
               borderRadius: 14,
               border: '1px solid rgba(210,180,255,0.55)',
               backgroundImage: `linear-gradient(90deg, rgba(20,10,36,0.92) 0%, rgba(20,10,36,0.7) 62%, rgba(20,10,36,0.22) 100%), url("${MAIN_MENU_BANNER_ART.forgeOfTranscendence}")`,
@@ -778,15 +812,15 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             </div>
           </button>
         )}
-        {props.onEventCausality && (
+        {props.onEventCausality && eventSlide === 1 && (
           <button
             className="menu-tactile-btn causality-event-shimmer"
             onClick={props.onEventCausality}
             style={{
               position: 'relative',
-              width: 374,
-              minHeight: 190,
-              padding: '22px 29px 26px',
+              width: 'min(460px, 40vw)',
+              minHeight: 280,
+              padding: '24px 30px 28px',
               borderRadius: 14,
               border: '1px solid rgba(138, 221, 255, 0.72)',
               backgroundImage: `linear-gradient(90deg, rgba(8,14,36,0.96) 0%, rgba(8,14,36,0.78) 62%, rgba(8,14,36,0.28) 100%), url("${MAIN_MENU_BANNER_ART.causalityEvent}")`,
@@ -825,66 +859,60 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             }}>NEW ▶</div>
           </button>
         )}
+        {props.onForgeOfTranscendence && props.onEventCausality && (
+          <div className="main-menu-event-carousel-controls" aria-label="Event banners">
+            <button type="button" aria-label="Previous event banner" onClick={() => setEventSlide(current => (current + 1) % 2)}>‹</button>
+            <span aria-live="polite">{eventSlide + 1} / 2</span>
+            <button type="button" aria-label="Next event banner" onClick={() => setEventSlide(current => (current + 1) % 2)}>›</button>
+          </div>
+        )}
       </div>
 
       {/* ───────── Right: focused command deck ───────── */}
       <div className="main-menu-command-deck" style={{
         position: 'absolute',
-        right: 'clamp(20px, 3vw, 56px)',
-        top: '82px',
-        bottom: 'clamp(22px, 3vh, 38px)',
-        width: 'min(650px, 52vw)',
-        display: 'flex', flexDirection: 'column', gap: 12,
-        padding: 14, boxSizing: 'border-box',
-        border: `1px solid ${uiTheme.border}`, borderRadius: 8,
-        background: `linear-gradient(155deg, ${uiTheme.surfaceStrong} 0%, ${uiTheme.surfaceMuted} 100%)`,
-        backdropFilter: 'blur(16px) saturate(1.12)',
-        WebkitBackdropFilter: 'blur(16px) saturate(1.12)',
-        boxShadow: '0 24px 70px rgba(0,0,0,0.52), inset 0 1px 0 rgba(255,255,255,0.14)',
+        right: 'clamp(80px, 7vw, 104px)',
+        top: 'clamp(96px, 13vh, 104px)',
+        bottom: 'clamp(6px, 1vh, 10px)',
+        width: 'min(500px, 36vw)',
+        display: 'flex', flexDirection: 'column', gap: 0,
+        padding: 0, boxSizing: 'border-box',
+        border: 'none', borderRadius: 0,
+        background: 'transparent',
+        backdropFilter: 'none',
+        WebkitBackdropFilter: 'none',
+        boxShadow: 'none',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-          <div>
-            <div style={{ color: uiTheme.textMuted, fontSize: 9, letterSpacing: 2.8, textTransform: 'uppercase' }}>Pantheon Navigation</div>
-            <div style={{ color: uiTheme.text, fontFamily: uiTypography.display, fontSize: 19, letterSpacing: 1.2, marginTop: 3 }}>Command Deck</div>
-          </div>
-          <div role="tablist" aria-label="Main menu sections" style={{ display: 'flex', gap: 4, padding: 3, border: `1px solid ${uiTheme.border}`, background: 'rgba(0,0,0,0.2)', borderRadius: 7 }}>
-            {([['play', 'Play'], ['collection', 'Collection'], ['progress', 'Progress']] as const).map(([section, label]) => (
-              <button key={section} role="tab" aria-selected={activeSection === section} className="menu-tactile-btn" onClick={() => selectSection(section)} style={{
-                padding: '7px 12px', borderRadius: 5,
-                border: activeSection === section ? `1px solid ${uiTheme.borderStrong}` : '1px solid transparent',
-                background: activeSection === section ? uiTheme.button : 'transparent',
-                color: activeSection === section ? '#fff' : uiTheme.textMuted,
-                fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 1.1, cursor: 'pointer',
-              }}>{label}</button>
-            ))}
-          </div>
-        </div>
-
-        <button key={focusedAction.id} className="menu-tactile-btn main-menu-feature" onClick={focusedAction.onClick} disabled={focusedAction.disabled} style={{
-          position: 'relative', minHeight: 'clamp(150px, 24vh, 210px)', overflow: 'hidden',
-          borderRadius: 7, border: `1px solid ${uiTheme.borderStrong}`,
-          backgroundImage: `linear-gradient(90deg, rgba(5,7,14,0.96) 0%, rgba(5,7,14,0.78) 48%, rgba(5,7,14,0.22) 100%), linear-gradient(180deg, transparent 52%, rgba(3,4,9,0.9) 100%), url("${focusedAction.art}")`,
-          backgroundSize: 'cover', backgroundPosition: 'center', color: '#fff', textAlign: 'left',
-          padding: '20px 22px', cursor: focusedAction.disabled ? 'not-allowed' : 'pointer', opacity: focusedAction.disabled ? 0.68 : 1,
-          boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.08), 0 14px 34px rgba(0,0,0,0.45)',
-        }}>
-          <div style={{ position: 'relative', zIndex: 1, width: '58%', minWidth: 240, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-            <div style={{ fontSize: 9, color: uiTheme.accentSoft, letterSpacing: 2.4, textTransform: 'uppercase' }}>{focusedAction.eyebrow}</div>
-            <div style={{ fontFamily: uiTypography.display, fontSize: 27, letterSpacing: 1.2, lineHeight: 1.05, marginTop: 7, textShadow: '0 3px 18px rgba(0,0,0,0.9)' }}>{focusedAction.label}</div>
-            <div style={{ fontSize: 11, lineHeight: 1.5, color: 'rgba(255,255,255,0.78)', marginTop: 8 }}>{focusedAction.caption}</div>
-            <div style={{ marginTop: 14, padding: '5px 9px', borderLeft: `2px solid ${uiTheme.accentSoft}`, background: 'rgba(0,0,0,0.38)', color: focusedAction.disabled ? 'rgba(255,255,255,0.58)' : uiTheme.accentSoft, fontSize: 10, letterSpacing: 0.7 }}>
-              {focusedAction.disabled ? 'LOCKED · ' : ''}{focusedAction.status}
+        <div className="main-menu-command-content">
+          <section className="main-menu-group">
+            <h2>Progress</h2>
+            <div className="main-menu-progress-grid">
+              {progressActions.map(action => <ProgressActionTile key={action.id} action={action} theme={uiTheme} />)}
             </div>
-          </div>
-          <span aria-hidden style={{ position: 'absolute', right: 18, bottom: 14, fontSize: 22, color: 'rgba(255,255,255,0.75)' }}>{focusedAction.disabled ? '◇' : '→'}</span>
-        </button>
-
-        <div className="main-menu-action-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8, overflowY: 'auto', paddingRight: 2 }}>
-          {sectionActions.map(action => (
-            <TileButton key={action.id} theme={uiTheme} label={action.label} caption={action.status} icon={action.icon} tone={action.tone ?? 'cream-dim'} size="small" onClick={action.onClick} disabled={action.disabled} selected={focusedAction.id === action.id} onPreview={() => setFocusedActionId(action.id)} />
-          ))}
+          </section>
+          <section className="main-menu-group">
+            <h2>Collection</h2>
+            <div className="main-menu-collection-grid">
+              {collectionActions.map(action => <TileButton key={action.id} theme={uiTheme} label={action.label} caption={action.status} icon={<GameEmblem id={action.id} size={18} />} tone={action.tone ?? 'cream-dim'} size="small" onClick={action.onClick} disabled={action.disabled} badge={action.badge} />)}
+            </div>
+          </section>
+          <section className="main-menu-group main-menu-play-group">
+            <h2>Play</h2>
+            <div className="main-menu-play-grid">
+              <div className="main-menu-play-links">
+                {playActions.map(action => <TileButton key={action.id} theme={uiTheme} label={action.label} caption={action.status} icon={<GameEmblem id={action.id} size={18} />} tone={action.tone ?? 'cream-dim'} size="small" onClick={action.onClick} disabled={action.disabled} badge={action.badge} />)}
+              </div>
+              <button type="button" className="menu-tactile-btn main-menu-begin-turn" onClick={beginTurnAction.onClick} disabled={beginTurnAction.disabled}>
+                <span>Active deck · Enter</span>
+                <strong>Begin Turn <i aria-hidden="true">→</i></strong>
+                <small>{beginTurnAction.status}</small>
+              </button>
+            </div>
+          </section>
         </div>
       </div>
+
+      {showDivineLightReference && <div className="main-menu-reference-overlay"><DivineLightAcquisitionScreen onClose={() => setShowDivineLightReference(false)} /></div>}
     </div>
   );
 }

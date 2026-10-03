@@ -139,3 +139,20 @@ export function formatShardDropChance(variantMultiplier = 1): string {
  * (only once the Forge is open) — about 1-2 days across a 30-day cycle.
  */
 export const FORGE_CALENDAR_BONUS_DAYS: readonly number[] = [10, 25];
+
+export const FORGE_STREAK_MILESTONES = [
+  { day: 3, kind: 'aberrated_shards', amount: 100, label: '+100 Aberrated Shards' },
+  { day: 14, kind: 'shards_of_transcendence', amount: 2, label: '+2 Shards of Transcendence' },
+] as const;
+
+export const FORGE_WHEEL_PRIZES = [
+  { id: 'aberrated-50', kind: 'aberrated_shards', amount: 50, weight: 20, label: '+50 Aberrated Shards', color: '#287c78' },
+  { id: 'card-light-3', kind: 'card_light_all', amount: 3, weight: 14, label: '+3 Card-light to owned cards', color: '#a88536' },
+  { id: 'aberrated-100', kind: 'aberrated_shards', amount: 100, weight: 16, label: '+100 Aberrated Shards', color: '#1f5a5a' },
+  { id: 'aberrated-150', kind: 'aberrated_shards', amount: 150, weight: 10, label: '+150 Aberrated Shards', color: '#326f70' },
+  { id: 'transcendence-shard-1', kind: 'shards_of_transcendence', amount: 1, weight: 8, label: '+1 Shard of Transcendence', color: '#62448e' },
+  { id: 'aberrated-500', kind: 'aberrated_shards', amount: 500, weight: 5, label: '+500 Aberrated Shards', color: '#275f68' },
+  { id: 'divine-light-1725', kind: 'divine_light', amount: 1_725, weight: 9, label: '+1,725 Divine Light', color: '#b8862c' },
+] as const;
+
+export const FORGE_WHEEL_TOTAL_WEIGHT = FORGE_WHEEL_PRIZES.reduce((total, prize) => total + prize.weight, 0);

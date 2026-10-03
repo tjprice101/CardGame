@@ -49,7 +49,7 @@ import { applyEffectiveTheme, DEFAULT_UI_THEME_ID, isThemeOscillating } from '@/
 import { useStore, selectTurn, selectBossFight, selectBattleground, selectSettings, selectProgress } from '@/state/store';
 import { useFriendsStore } from '@/state/friendsStore';
 import { DEFAULT_CONTROL_BINDINGS } from '@/types/game';
-import { getFontScale, getMonitorUiScale, setUiPreferences } from '@/ui/preferences';
+import { getFontScale, setUiPreferences } from '@/ui/preferences';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
 import { evaluateDailyLogin } from '@/systems/progression/dailyLogin';
 import { TITLE_BADGES } from '@/data/profile/titleBadges';
@@ -418,20 +418,6 @@ export default function App() {
       cardThemePacks: settings.cardThemePacks,
     });
   }, [settings.language, settings.fontSizePreset, settings.cardArtDisplay, settings.cardThemePacks, settings.reducedMotion, settings.compactMode]);
-
-  useEffect(() => {
-    const appRoot = document.getElementById('root');
-    if (!appRoot) return;
-    const updateMonitorScale = () => {
-      const scale = getMonitorUiScale(window.screen.availWidth || window.innerWidth, window.screen.availHeight || window.innerHeight);
-      appRoot.style.zoom = String(scale);
-      appRoot.style.width = `${100 / scale}%`;
-      appRoot.style.height = `${100 / scale}%`;
-    };
-    updateMonitorScale();
-    window.addEventListener('resize', updateMonitorScale);
-    return () => window.removeEventListener('resize', updateMonitorScale);
-  }, []);
 
   // ── Music ────────────────────────────────────────────────────────────
   // Volume slider drives the master music gain in real time. A value of 0
@@ -1205,7 +1191,7 @@ export default function App() {
       {/* Daily login reward modal — z-index above other menus so it sits on top */}
       {showDailyReward && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 45, pointerEvents: 'auto' }}>
-          <Suspense fallback={null}><DailyRewardModal onClose={() => setShowDailyReward(false)} /></Suspense>
+          <Suspense fallback={null}><DailyRewardModal onClose={() => setShowDailyReward(false)} onOpenForge={() => { setShowDailyReward(false); setShowForge(true); }} /></Suspense>
         </div>
       )}
 
