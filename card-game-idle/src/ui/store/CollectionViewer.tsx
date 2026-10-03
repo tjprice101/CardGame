@@ -5,7 +5,6 @@ import { useStore } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { infiniteCards as legacyInfiniteCards } from '@/data/cards/infiniteCards';
 import type { LegacyCosmeticCard } from '@/data/cards/eternalCards';
-import { SET_ACCENT } from '@/data/elements';
 import { PACK_DEFINITIONS, STORE_PACK_ORDER } from '@/data/packs/packDefinitions';
 import { getCardFinishKey, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import {
@@ -16,6 +15,8 @@ import {
 import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import { CARD_COLLECTION_TILE_HEIGHT, CARD_COLLECTION_TILE_STEP, CARD_COLLECTION_TILE_WIDTH } from '@/ui/cardTileMetrics';
 import { uiTypography, warmTheme } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
+import './CollectionViewer.css';
 import VirtualizedList from '@/ui/components/VirtualizedList';
 import { getEverCollectionCount, getEverHoloCount, getEverInfiniteCount } from '@/systems/progression/ownershipHistory';
 import CollectionCardDetail from './CollectionCardDetail';
@@ -27,8 +28,6 @@ const RARITY_COLORS: Record<string, string> = {
 const RARITY_ORDER: Record<string, number> = {
   Common: 0, Rare: 1, Epic: 2, Legendary: 3, Enigmatic: 4, Transcendent: 5, Eternal: 6, Infinite: 7,
 };
-
-const INFINITE_TYPE_ORDER = ['Light', 'Dark', 'AinSophAur'] as const;
 
 function getCardSet(definitionId: string): 'Neutrality' | 'Causality' {
   // Only Causality cards are explicitly namespaced; every other card (including
@@ -68,6 +67,7 @@ interface CollectionVirtualRow {
 }
 
 export default function CollectionViewer({ onClose }: Props) {
+  useThemeVersion();
   const [selectedCard, setSelectedCard] = useState<SelectedCard | null>(null);
   const progress = useStore(s => s.progress);
   const favoriteCollection = useStore(s => s.progress.favoriteCollection);
@@ -215,16 +215,12 @@ export default function CollectionViewer({ onClose }: Props) {
     () => filtered.filter(entry => entry.card.rarity !== 'Infinite'),
     [filtered],
   );
-  const infiniteSections = useMemo(() => INFINITE_TYPE_ORDER
-    .map(typeLabel => ({
-      typeLabel,
-      entries: filtered.filter(entry => entry.card.rarity === 'Infinite' && 'type' in entry.card && entry.card.type === typeLabel),
+  const infiniteSections = useMemo(() => elements.filter(setLabel => setLabel !== 'All')
+    .map(setLabel => ({
+      setLabel,
+      entries: filtered.filter(entry => entry.card.rarity === 'Infinite' && getCardSet(entry.card.definitionId) === setLabel),
     }))
-    .filter(section => section.entries.length > 0), [filtered]);
-  const legacyInfiniteEntries = useMemo(
-    () => filtered.filter(entry => entry.legacyInfinite),
-    [filtered],
-  );
+    .filter(section => section.entries.length > 0), [elements, filtered]);
 
   const totalOwned = useMemo(() => allCards.filter(card => card.owned > 0).length, [allCards]);
   const totalCards = allCards.length;
@@ -253,7 +249,7 @@ export default function CollectionViewer({ onClose }: Props) {
 
     pushCardRows(standardFiltered, 'standard');
 
-    if (infiniteSections.length > 0 || legacyInfiniteEntries.length > 0) {
+    if (infiniteSections.length > 0) {
       rows.push({
         key: 'infinite-heading',
         kind: 'heading',
@@ -263,26 +259,16 @@ export default function CollectionViewer({ onClose }: Props) {
 
       infiniteSections.forEach((section) => {
         rows.push({
-          key: `${section.typeLabel}-label`,
+          key: `${section.setLabel}-label`,
           kind: 'subheading',
           height: 28,
-          label: section.typeLabel,
+          label: section.setLabel,
         });
-        pushCardRows(section.entries, `infinite-${section.typeLabel}`);
+        pushCardRows(section.entries, `infinite-${section.setLabel}`);
       });
-    }
-
-    if (legacyInfiniteEntries.length > 0) {
-      rows.push({
-        key: 'infinite-archive-label',
-        kind: 'subheading',
-        height: 28,
-        label: 'Neutrality',
-      });
-      pushCardRows(legacyInfiniteEntries, 'infinite-archive');
     }
     return rows;
-  }, [filtered, gridColumns, infiniteSections, legacyInfiniteEntries, sortMode, standardFiltered]);
+  }, [filtered, gridColumns, infiniteSections, sortMode, standardFiltered]);
 
   const renderCardEntry = (entry: CollectionVariantEntry) => {
     const { card, finish, owned } = entry;
@@ -307,6 +293,14 @@ export default function CollectionViewer({ onClose }: Props) {
       <div
         key={entry.key}
         className={shimmerClassName}
+        role="button"
+        tabIndex={0}
+        onKeyDown={event => {
+          if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
+            event.preventDefault();
+            setSelectedCard({ card, finish, owned });
+          }
+        }}
         onClick={() => setSelectedCard({ card, finish, owned })}
         style={{
           width: CARD_COLLECTION_TILE_WIDTH,
@@ -353,8 +347,7 @@ export default function CollectionViewer({ onClose }: Props) {
             fontWeight: 700,
             letterSpacing: 1.2,
             background: 'linear-gradient(135deg, #ff6b35, #f7b733)',
-            color: '#fff',
-            textShadow: '0 1px 1px rgba(0,0,0,0.4)',
+            color: '#171009',
             boxShadow: '0 0 8px rgba(247, 183, 51, 0.6)',
             animation: 'newBadgePulse 1.6s ease-in-out infinite',
             pointerEvents: 'none',
@@ -362,6 +355,8 @@ export default function CollectionViewer({ onClose }: Props) {
         )}
         {owned > 0 && (
           <button
+            aria-label={favoriteCollection[entry.key] ? 'Unfavorite card' : 'Favorite card'}
+            aria-pressed={Boolean(favoriteCollection[entry.key])}
             onClick={(event) => {
               event.stopPropagation();
               toggleFavoriteCard(card.definitionId, finish);
@@ -411,71 +406,65 @@ export default function CollectionViewer({ onClose }: Props) {
           onClose={() => setSelectedCard(null)}
         />
       )}
-    <div style={{
+    <div className="collection-screen" style={{
       position: 'absolute',
       inset: 0,
-      background: 'radial-gradient(circle at 18% 10%, rgba(236, 192, 128, 0.14) 0%, rgba(236, 192, 128, 0) 38%), linear-gradient(180deg, #0c0f15 0%, #10151e 100%)',
+      background: 'var(--profile-app-background)',
       zIndex: 60,
       display: 'flex',
       flexDirection: 'column',
-      fontFamily: 'Georgia, serif',
-      color: '#c8dff2',
+      fontFamily: uiTypography.body,
+      color: 'var(--profile-text)',
       pointerEvents: 'auto',
     }}>
       {/* Header */}
-      <div style={{
+      <div className="ui-artwork-header collection-header" style={{
         padding: '16px 24px', borderBottom: `1px solid ${warmTheme.border}`,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
         background: `linear-gradient(90deg, rgba(4,8,18,0.96) 0%, rgba(8,12,24,0.82) 60%, rgba(8,12,24,0.42) 100%), url("${import.meta.env.BASE_URL}assets/menu-banners/updated/collection-archive.png") right center / cover`,
         boxShadow: '0 8px 28px rgba(0,0,0,0.34), inset 0 -1px 0 rgba(244,207,107,0.12)',
       }}>
-        <div>
-          <div style={{ fontSize: 20, fontWeight: 'bold', color: '#58aada', letterSpacing: 2 }}>
-            <><span style={{ display: 'block', color: '#f4cf6b', fontFamily: uiTypography.display, fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 5 }}>THE CARD ARCHIVE</span>Collection</>
+        <div data-ui-artwork-copy>
+          <div className="ui-title-glow collection-title">
+            Collection
           </div>
-          <div style={{ fontSize: 11, color: 'rgba(190,215,245,0.72)', marginTop: 3 }}>
+          <div style={{ fontSize: 12, color: 'rgba(244,244,248,0.92)', marginTop: 6 }}>
             {totalOwned} / {totalCards} unique cards discovered
             {isFilteringActive && (
-              <span style={{ marginLeft: 10, color: '#58aada' }}>
+              <span style={{ marginLeft: 10 }}>
                 · Showing {visibleOwned} / {visibleTotal}
               </span>
             )}
           </div>
         </div>
         <button
+          className="menu-tactile-btn collection-close"
           onClick={onClose}
           style={{
-            background: 'rgba(5,18,36,0.85)', border: `1px solid rgba(100,140,188,0.28)`,
-            color: '#c8dff2', borderRadius: 10, padding: '6px 16px',
+            background: 'var(--profile-button)', border: '1px solid var(--profile-border-strong)',
+            color: 'var(--profile-button-text)', borderRadius: 10, padding: '8px 16px',
             fontSize: 12, cursor: 'pointer', fontFamily: 'Georgia, serif',
           }}
         >
-          Close
+          <span className="ui-button-title">Close</span>
         </button>
       </div>
 
       {/* Element filter tabs */}
-      <div style={{
+      <div className="collection-set-tabs" role="group" aria-label="Card set" style={{
         display: 'flex', gap: 6, padding: '12px 24px', flexShrink: 0,
         borderBottom: `1px solid ${warmTheme.border}`,
-        background: 'rgba(9, 14, 20, 0.3)',
+        background: 'var(--profile-surface)',
       }}>
         {elements.map(el => {
           const isActive = activeElement === el;
-          const color = el === 'All' ? '#FFD700' : (el === 'Causality' ? '#d66a52' : SET_ACCENT);
           const setName = el;
           return (
             <button
+              className={`collection-filter${isActive ? ' is-active' : ''}`}
+              aria-pressed={isActive}
               key={el}
               onClick={() => setActiveElement(el)}
-              style={{
-                padding: '5px 14px', borderRadius: 5, fontSize: 11, cursor: 'pointer',
-                fontFamily: 'Georgia, serif', letterSpacing: 1,
-                background: isActive ? `rgba(${hexToRgb(color)},0.18)` : 'rgba(5,18,36,0.82)',
-                border: isActive ? `1px solid ${color}` : `1px solid rgba(100,140,188,0.28)`,
-                color: isActive ? color : '#c8dff2',
-                transition: 'all 0.15s',
-              }}
             >
               {setName}
             </button>
@@ -484,87 +473,72 @@ export default function CollectionViewer({ onClose }: Props) {
       </div>
 
       {/* Search + ownership + rarity filters */}
-      <div style={{
+      <div className="collection-toolbar" style={{
         display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap',
         padding: '10px 24px', flexShrink: 0,
         borderBottom: `1px solid ${warmTheme.border}`,
-        background: 'rgba(9, 14, 20, 0.22)',
+        background: 'var(--profile-surface-muted)',
       }}>
         <input
+          aria-label="Search collection"
           type="text"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           placeholder="Search by name, type, rarity…"
           style={{
             flex: '1 1 220px', minWidth: 180, maxWidth: 320,
-            padding: '6px 10px', fontSize: 12, fontFamily: 'Georgia, serif',
-            background: 'rgba(5,12,28,0.80)',
-            border: `1px solid rgba(100,140,188,0.28)`,
-            borderRadius: 6, color: '#c8dff2', outline: 'none',
+            padding: '9px 12px', fontSize: 13, fontFamily: uiTypography.body,
+            background: 'var(--profile-surface-strong)',
+            border: '1px solid var(--profile-border)',
+            borderRadius: 8, color: 'var(--profile-text)',
           }}
         />
         {searchText && (
           <button
+            className="collection-filter"
             onClick={() => setSearchText('')}
-            style={{
-              padding: '5px 10px', fontSize: 11, cursor: 'pointer',
-              background: 'transparent', color: '#7bbde8',
-              border: `1px solid ${warmTheme.border}`, borderRadius: 5,
-              fontFamily: 'Georgia, serif',
-            }}
           >Clear</button>
         )}
 
-        <div style={{ display: 'flex', gap: 4, marginLeft: 6 }}>
+        <div role="group" aria-label="Ownership" style={{ display: 'flex', gap: 4, marginLeft: 6 }}>
           {(['all', 'owned', 'missing'] as const).map(opt => {
             const isActive = ownedFilter === opt;
             const label = opt === 'all' ? 'All' : opt === 'owned' ? 'Owned' : 'Missing';
             return (
               <button
+                className={`collection-filter${isActive ? ' is-active' : ''}`}
+                aria-pressed={isActive}
                 key={opt}
                 onClick={() => setOwnedFilter(opt)}
-                style={{
-                  padding: '5px 12px', borderRadius: 5, fontSize: 11, cursor: 'pointer',
-                  fontFamily: 'Georgia, serif', letterSpacing: 0.8,
-                  background: isActive ? 'rgba(58,142,200,0.18)' : 'rgba(5,18,36,0.82)',
-                  border: isActive ? '1px solid rgba(62,112,168,0.70)' : `1px solid rgba(100,140,188,0.28)`,
-                  color: isActive ? '#58aada' : '#c8dff2',
-                }}
               >{label}</button>
             );
           })}
         </div>
 
-        <div style={{ display: 'flex', gap: 4, marginLeft: 6, flexWrap: 'wrap' }}>
+        <div role="group" aria-label="Rarity" style={{ display: 'flex', gap: 4, marginLeft: 6, flexWrap: 'wrap' }}>
           {(['All', 'Common', 'Rare', 'Epic', 'Legendary', 'Eternal', 'Infinite', 'Enigmatic', 'Transcendent'] as const).map(r => {
             const isActive = rarityFilter === r;
-            const color = r === 'All' ? '#FFD700' : (RARITY_COLORS[r] ?? '#aaa');
             return (
               <button
+                className={`collection-filter${isActive ? ' is-active' : ''}`}
+                aria-pressed={isActive}
                 key={r}
                 onClick={() => setRarityFilter(r)}
-                style={{
-                  padding: '5px 10px', borderRadius: 5, fontSize: 11, cursor: 'pointer',
-                  fontFamily: 'Georgia, serif', letterSpacing: 0.8,
-                  background: isActive ? `rgba(${hexToRgb(color)},0.20)` : 'rgba(5,18,36,0.82)',
-                  border: isActive ? `1px solid ${color}` : `1px solid rgba(100,140,188,0.28)`,
-                  color: isActive ? color : '#c8dff2',
-                }}
               >{r}</button>
             );
           })}
         </div>
 
-        <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto', fontSize: 11, color: 'rgba(190,215,245,0.60)', fontFamily: 'Georgia, serif' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto', fontSize: 12, color: 'var(--profile-text-muted)', fontFamily: uiTypography.body }}>
           Sort:
           <select
             value={sortMode}
             onChange={(e) => setSortMode(e.target.value as typeof sortMode)}
             style={{
-              padding: '4px 8px', fontSize: 11, fontFamily: 'Georgia, serif',
-              background: 'rgba(5,18,36,0.85)', color: '#c8dff2',
-              border: `1px solid rgba(100,140,188,0.28)`, borderRadius: 5,
-              cursor: 'pointer', outline: 'none',
+              padding: '8px 10px', fontSize: 12, fontFamily: uiTypography.body,
+              background: 'var(--profile-surface-strong)', color: 'var(--profile-text)',
+              border: '1px solid var(--profile-border)', borderRadius: 8,
+              cursor: 'pointer',
             }}
           >
             <option value="set">Set order</option>
@@ -585,7 +559,7 @@ export default function CollectionViewer({ onClose }: Props) {
             alignItems: 'center',
             justifyContent: 'center',
             padding: '20px 24px',
-            color: 'rgba(190,215,245,0.72)',
+            color: 'var(--profile-text-muted)',
             fontStyle: 'italic',
             pointerEvents: 'none',
             zIndex: 1,
@@ -605,14 +579,13 @@ export default function CollectionViewer({ onClose }: Props) {
           renderItem={(row) => {
             if (row.kind === 'heading') {
               return (
-                <div style={{
+                <div role="heading" aria-level={2} style={{
                   padding: '0 24px',
                   fontSize: 12,
                   fontWeight: 'bold',
                   letterSpacing: 2,
                   textTransform: 'uppercase',
-                  color: '#dfe5ff',
-                  textShadow: '0 0 16px rgba(220, 224, 255, 0.35)',
+                  color: 'var(--profile-text)',
                   paddingTop: standardFiltered.length > 0 ? 18 : 0,
                 }}>
                   {row.label}
@@ -622,12 +595,12 @@ export default function CollectionViewer({ onClose }: Props) {
 
             if (row.kind === 'subheading') {
               return (
-                <div style={{
+                <div role="heading" aria-level={3} style={{
                   padding: '10px 24px 2px',
                   fontSize: 10,
                   letterSpacing: 1.8,
                   textTransform: 'uppercase',
-                  color: 'rgba(223, 229, 255, 0.82)',
+                  color: 'var(--profile-text-muted)',
                 }}>
                   {row.label}
                 </div>

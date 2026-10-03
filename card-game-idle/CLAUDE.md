@@ -31,6 +31,20 @@ This file is the AI-facing project brief. Read it before making design, balance,
 
 ## Latest Iteration Status
 
+### Current UI, Cosmetics, And Art Briefs
+
+- Ordinary screens use neutral white/black surfaces by appearance mode with player-colored accents, outlines, glows, and readable heading/button-title gradients. `theme.ts` separates stored source swatches from display surfaces. Four swatches hold for 60 seconds and fade for three; reduced motion switches without fading on the same 63-second cadence. Keep artwork, card finishes, special experiences, and semantic status/rarity colors distinct.
+- Player Information uses a responsive ceremonial identity/workspace layout. Name/bio limits are 24/200; bio/theme are explicitly saved; five signature slots, social tools, portable saves, and wipe safeguards remain. Palette selection is in Player Information; Light/Dark Mode shares the persistent Settings value.
+- Collection keeps its original filtering, favorites, ownership history, card art/foil, and virtualization. Infinite sections group by Neutrality/Causality. Card Store is not named Celestial Archive. Item/resource PNGs have feathered alpha cutouts; do not restore opaque rectangles.
+- Achievements has 19 presentation subcategories under Gameplay, Collection, Battles, Progression, Social, and Cosmetics, with search and claim-status filtering. `achievementCategories.ts` is independent of reward groups and saved IDs; organization must never change payouts.
+- Cosmetics > Custom Backgrounds has eleven achievements: seven Forge backgrounds and four set Crown Splash rewards. `crownBackgroundRewards.ts` shares the crowns' existing theme unlock/history predicates and preserves slot IDs. Neutrality Infinite has no live registered definitions; never unlock it through vacuous empty-set completion. Historical theme unlocks are honored.
+- Seven Forge background cosmetics have installed PNGs in `src/assets/main-menu-backgrounds/`. The shared `customMainMenuBackgrounds.ts` registry links each canonical art stem to its achievement. Existing unlock/claim fields preserve earned rewards; profile selection and main-menu resolution enforce availability and gates. Missing-art state is conditional, not the current status of all seven images.
+- `../Midjourney Art/Custom Main Menu Backgrounds.md` contains their revised subject-first Splotched Ink/Forge prompts and unchanged requirement/filename map. Palette is white/black/pink-scarlet, not Intensity gold.
+- `../Midjourney Art/Intensity Set Prompts.md` replaces the old Pyroabyss art document with a proposed 29-card white/black/gold volcanic set and Last Seam mythology. Level 0-5 counts are 4/4/3/3/2/3 plus five Eternal and five Infinity concepts. No live cards, pack, recipes, boss roster, or save IDs were registered by these art edits. Keep proposals out of in-game feature lists.
+- Codex progression/profile/background instructions are updated; use shared registries for reward names/requirements rather than duplicating stale copy. Current Wake categories remain Neutrality/Causality.
+
+### Earlier Gameplay Iterations
+
 This iteration focused on state consistency, usability, and math correctness around the Causality / Limitless Cosmos loop and the endgame Shatter finisher.
 
 - `Limitless Cosmos` is the current Causality turn-scoped resource. Causality cards are designed as a repeatable, beneficial loop: generate Cosmos, convert or bank it, and spend it to amplify utility or Divine Light gain without creating dead or punitive branches.

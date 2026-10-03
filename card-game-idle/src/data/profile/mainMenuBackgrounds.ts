@@ -1,6 +1,13 @@
 import { isThemeUnlocked } from '@/data/profile/uiThemes';
 import { UI_THEMES } from '@/data/profile/uiThemes';
 import type { ProgressState } from '@/types/game';
+import { CROWN_BACKGROUND_REWARDS, isCrownBackgroundUnlocked } from './crownBackgroundRewards';
+import {
+  CUSTOM_MAIN_MENU_BACKGROUND_REWARDS,
+  findCustomBackgroundReward,
+  getBundledCustomBackgroundArt,
+  isCustomBackgroundRewardUnlocked,
+} from './customMainMenuBackgrounds';
 
 export interface MainMenuBackgroundEntry {
   id: string;
@@ -10,6 +17,8 @@ export interface MainMenuBackgroundEntry {
   description: string;
   unlockThemeId?: string;
   unlockHint?: string;
+  unlockAchievementId?: string;
+  rarity?: 'Eternal' | 'Infinite' | 'Transcendent';
 }
 
 export const DEFAULT_MAIN_MENU_BACKGROUND_ID = 'main-menu-bg-default';
@@ -64,6 +73,7 @@ function inferRewardThemeUnlock(name: string): { themeId?: string; hint?: string
 
   const setRule = [
     { slug: 'neutrality', label: 'Neutrality', aliases: ['neutrality'] },
+    { slug: 'causality', label: 'Causality', aliases: ['causality'] },
     { slug: 'infinite-cards', label: 'Infinite Cards', aliases: ['infinite cards'] },
   ].find((r) => r.aliases.some((alias) => lower.includes(alias)));
 
@@ -114,6 +124,8 @@ function buildRewardBackgroundSlots(): MainMenuBackgroundEntry[] {
       description: 'Reward splash slot. Import matching art to customize this background.',
       unlockThemeId: theme.id,
       unlockHint: theme.unlockHint,
+      unlockAchievementId: CROWN_BACKGROUND_REWARDS.find(reward => reward.themeId === theme.id)?.achievementId,
+      rarity: CROWN_BACKGROUND_REWARDS.find(reward => reward.themeId === theme.id)?.rarity,
     }));
 }
 
@@ -126,7 +138,17 @@ export async function loadMainMenuBackgroundEntries(forceRefresh = false): Promi
 
   cachedPromise = (async () => {
     const rewardSlots = buildRewardBackgroundSlots();
-    const entries: MainMenuBackgroundEntry[] = [DEFAULT_ENTRY, ...rewardSlots];
+    const customSlots: MainMenuBackgroundEntry[] = CUSTOM_MAIN_MENU_BACKGROUND_REWARDS.map(reward => ({
+      id: reward.id,
+      name: reward.name,
+      imageUrl: getBundledCustomBackgroundArt(reward) ?? '',
+      source: 'builtin',
+      description: reward.description,
+      unlockAchievementId: reward.achievementId,
+      unlockHint: reward.requirement,
+      rarity: reward.rarity,
+    }));
+    const entries: MainMenuBackgroundEntry[] = [DEFAULT_ENTRY, ...rewardSlots, ...customSlots];
 
     if (!window.pantheonAssets?.listMainMenuBackgrounds) {
       return entries;
@@ -137,6 +159,11 @@ export async function loadMainMenuBackgroundEntries(forceRefresh = false): Promi
       const normalized = workspaceEntries
         .filter((e) => typeof e?.id === 'string' && typeof e?.url === 'string')
         .map((e) => {
+          const customReward = findCustomBackgroundReward(e.name || e.id);
+          const customSlot = customReward ? customSlots.find(slot => slot.id === customReward.id) : undefined;
+          if (customSlot) {
+            return { ...customSlot, imageUrl: e.url, source: 'workspace' as const };
+          }
           const name = normalizeWorkspaceName(e.name || e.id);
           const inferred = inferRewardThemeUnlock(name);
           const slotMatch = inferred.themeId
@@ -152,6 +179,8 @@ export async function loadMainMenuBackgroundEntries(forceRefresh = false): Promi
               : 'Imported splash art.',
             unlockThemeId: inferred.themeId,
             unlockHint: inferred.hint,
+            unlockAchievementId: slotMatch?.unlockAchievementId,
+            rarity: slotMatch?.rarity,
           };
         })
         .sort((a, b) => a.name.localeCompare(b.name));
@@ -159,8 +188,9 @@ export async function loadMainMenuBackgroundEntries(forceRefresh = false): Promi
       const byId = new Map(entries.map((entry) => [entry.id, entry]));
       for (const imported of normalized) byId.set(imported.id, imported);
       return [...byId.values()];
-    } catch {
-      return entries;
+    } catch (error) {
+      cachedPromise = null;
+      throw new Error('Unable to load imported main menu backgrounds.', { cause: error });
     }
   })();
 
@@ -170,15 +200,27 @@ export async function loadMainMenuBackgroundEntries(forceRefresh = false): Promi
 export function resolveMainMenuBackground(
   selectedId: string | null | undefined,
   entries: MainMenuBackgroundEntry[],
+  progress?: ProgressState,
 ): MainMenuBackgroundEntry {
-  if (!entries.length) return DEFAULT_ENTRY;
-  if (!selectedId) return entries.find((e) => e.id === DEFAULT_MAIN_MENU_BACKGROUND_ID) ?? entries[0];
-  return entries.find((e) => e.id === selectedId)
-    ?? entries.find((e) => e.id === DEFAULT_MAIN_MENU_BACKGROUND_ID)
-    ?? entries[0];
+  const available = entries.filter(entry => isMainMenuBackgroundAvailable(entry)
+    && (!progress || isMainMenuBackgroundUnlocked(entry, progress)));
+  if (!available.length) return DEFAULT_ENTRY;
+  return available.find(entry => entry.id === selectedId)
+    ?? available.find(entry => entry.id === DEFAULT_MAIN_MENU_BACKGROUND_ID)
+    ?? available[0];
+}
+
+export function isMainMenuBackgroundAvailable(entry: MainMenuBackgroundEntry): boolean {
+  return entry.imageUrl.length > 0;
 }
 
 export function isMainMenuBackgroundUnlocked(entry: MainMenuBackgroundEntry, progress: ProgressState): boolean {
+  if (entry.unlockAchievementId) {
+    const crown = CROWN_BACKGROUND_REWARDS.find(reward => reward.achievementId === entry.unlockAchievementId);
+    if (crown) return isCrownBackgroundUnlocked(crown, progress);
+    const reward = CUSTOM_MAIN_MENU_BACKGROUND_REWARDS.find(candidate => candidate.achievementId === entry.unlockAchievementId);
+    return !!reward && isCustomBackgroundRewardUnlocked(reward, progress);
+  }
   if (!entry.unlockThemeId) return true;
   return isThemeUnlocked(entry.unlockThemeId, progress);
 }

@@ -1,10 +1,14 @@
-import { useState } from 'react';
-import { uiTypography, warmTheme } from '@/ui/theme';
+import { useLayoutEffect, useRef, useState } from 'react';
+import { uiTypography } from '@/ui/theme';
 import { useThemeVersion } from '@/ui/useThemeVersion';
 import { RARITY_TIERS, CARD_BORN_TIERS, TUTORIAL_SECTIONS } from '@/data/tutorialContent';
 import { AIN_SOPH_AUR_SUMMON_STACK_REWARD, SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
 import { MASTERY_TIERS } from '@/systems/progression/cardMastery';
 import { ABILITY_DEFINITIONS } from '@/data/abilities/abilityDefinitions';
+import { CUSTOM_MAIN_MENU_BACKGROUND_REWARDS } from '@/data/profile/customMainMenuBackgrounds';
+import { CROWN_BACKGROUND_REWARDS } from '@/data/profile/crownBackgroundRewards';
+import { ACHIEVEMENT_CATEGORIES } from '@/systems/progression/achievementCategories';
+import './TutorialModal.css';
 
 interface Props {
   onClose: () => void;
@@ -40,8 +44,7 @@ const cardStyle: React.CSSProperties = {
   background: PALETTE.panel,
   border: `1px solid ${PALETTE.borderSoft}`,
   borderRadius: 12,
-  padding: '12px 14px',
-  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.45), 0 4px 10px rgba(0,0,0,0.07)',
+  padding: '20px 24px',
 };
 
 const cardAltStyle: React.CSSProperties = {
@@ -49,19 +52,9 @@ const cardAltStyle: React.CSSProperties = {
   background: PALETTE.panelAlt,
 };
 
-const sectionHeadingStyle: React.CSSProperties = {
-  fontSize: 11,
-  letterSpacing: 1.4,
-  textTransform: 'uppercase',
-  color: PALETTE.inkDeep,
-  fontWeight: 700,
-  fontFamily: DISPLAY_FONT,
-  marginBottom: 6,
-};
-
 const bodyTextStyle: React.CSSProperties = {
-  fontSize: 12.5,
-  lineHeight: 1.6,
+  fontSize: 16,
+  lineHeight: 1.7,
   color: PALETTE.ink,
   fontFamily: BODY_FONT,
 };
@@ -83,43 +76,27 @@ function Tag({ children }: { children: React.ReactNode }) {
   return <span style={inlineTagStyle}>{children}</span>;
 }
 
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return <h2 className="codex-block-heading">{children}</h2>;
+}
+
 function ListItem({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 5 }}>
-      <div style={{
-        flexShrink: 0,
-        minWidth: 80,
-        fontSize: 11.5,
-        fontWeight: 700,
-        color: PALETTE.inkDeep,
-        fontFamily: DISPLAY_FONT,
-        letterSpacing: 0.4,
-        paddingTop: 1,
-      }}>
+    <div className="codex-entry">
+      <div className="codex-entry-label">
         {label}
       </div>
-      <div style={{ ...bodyTextStyle, flex: 1 }}>{children}</div>
+      <div className="codex-entry-copy">{children}</div>
     </div>
   );
 }
 
 function NumberedStep({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 10 }}>
-      <div style={{
-        flexShrink: 0,
-        width: 26, height: 26, borderRadius: '50%',
-        background: 'linear-gradient(180deg, var(--profile-accent-soft) 0%, var(--profile-accent) 100%)',
-        border: `1px solid ${PALETTE.border}`,
-        color: PALETTE.inkDeep,
-        fontWeight: 700,
-        fontFamily: DISPLAY_FONT,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 13,
-        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.5)',
-      }}>{n}</div>
+    <div className="codex-step">
+      <div className="codex-step-number">{n}</div>
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 12.5, fontWeight: 700, color: PALETTE.inkDeep, fontFamily: DISPLAY_FONT, marginBottom: 2 }}>
+        <div className="codex-step-title">
           {title}
         </div>
         <div style={bodyTextStyle}>{children}</div>
@@ -134,7 +111,7 @@ function OverviewBody() {
   return (
     <>
       <div style={cardStyle}>
-        <div style={sectionHeadingStyle}>The Loop</div>
+        <SectionHeading>The Loop</SectionHeading>
         <div style={bodyTextStyle}>
           Play cards to build your board and earn <Tag>Divine Light</Tag> through card effects and attacks. Other
           rewards come from quests, encounters, bosses, and login rewards. Spend Divine Light on base packs and
@@ -142,16 +119,16 @@ function OverviewBody() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 10 }}>
+      <div className="codex-card-grid">
         <div style={cardAltStyle}>
-          <div style={sectionHeadingStyle}>Currencies</div>
+          <SectionHeading>Currencies</SectionHeading>
           <ListItem label="Divine Light">Main currency. Card effects and attacks can earn it; Collection Power scales those gains. Spend it on packs and eligible abilities.</ListItem>
           <ListItem label="Aberrated Shards">Event currency earned from bosses, logins, achievements, and milestones. Spend it on event packs and other event rewards.</ListItem>
           <ListItem label="Card-light Shards">Created by refining eligible duplicate cards. Spend them 1:1 to add Card-light to a chosen card.</ListItem>
           <ListItem label="Shards of Transcendence">Used to acquire Forge cards and materialize Transcendent abilities. Calendar rewards can grant them directly; some bonus drops require the Forge to be open.</ListItem>
         </div>
         <div style={cardAltStyle}>
-          <div style={sectionHeadingStyle}>Game Modes</div>
+          <SectionHeading>Game Modes</SectionHeading>
           <ListItem label="Main">The core deck loop &mdash; play turns, open packs, expand the collection.</ListItem>
           <ListItem label="Wake">Eternity's Wake is a timed boss encounter. Divine Light earned during the fight damages the boss; victories can award its signature Eternal card.</ListItem>
           <ListItem label="Garden">Garden of Cards is a sequence of timed encounters. Each dungeon awards its own materials; finish the expedition to complete the run.</ListItem>
@@ -161,7 +138,7 @@ function OverviewBody() {
       </div>
 
       <div style={{ ...cardStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Attack Orbit Sequences</div>
+        <SectionHeading>Attack Orbit Sequences</SectionHeading>
         <ListItem label="Ain / Soph">The attacking card appears in a central orbit field. Move the cursor in a complete, consistent circle around the center target to build revolution-only payout.</ListItem>
         <ListItem label="Bridge the Light">Bridge uses the same central orbit language while its Ain Soph Aur constellation remains part of the presentation. Complete revolutions are the scoring input.</ListItem>
         <ListItem label="Orbit scoring">Ain, Soph, and Bridge attacks do not use clickable stars. Straight lines, jitter, direction reversals, and random movement do not score; Shatter uses a separate star-click window.</ListItem>
@@ -169,7 +146,7 @@ function OverviewBody() {
       </div>
 
       <div style={{ ...cardStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Quick Keys</div>
+        <SectionHeading>Quick Keys</SectionHeading>
         <div style={bodyTextStyle}>
           <Tag>?</Tag> opens this tutorial. <Tag>Esc</Tag> closes the topmost menu. <Tag>E</Tag> swaps your
           hand view with your Extra Deck (read-only preview). Click any deck or discard pile counter to inspect
@@ -184,7 +161,7 @@ function TurnFlowBody() {
   return (
     <>
       <div style={cardStyle}>
-        <div style={sectionHeadingStyle}>A Single Turn</div>
+        <SectionHeading>A Single Turn</SectionHeading>
         <NumberedStep n={1} title="Begin Turn">
           Press <Tag>Begin Turn</Tag> to draw a fresh hand and begin at Spectrum Level 0. Your board and turn-scoped
           resources start fresh.
@@ -207,7 +184,7 @@ function TurnFlowBody() {
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Timing Tips</div>
+        <SectionHeading>Timing Tips</SectionHeading>
         <ListItem label="Charge Soph">Each card played adds charge to every face-down Soph card. At 2 charge, flip it to gain stacks or sacrifice it for stacks.</ListItem>
         <ListItem label="Attack timing">Attack and persistent Dark-card cooldowns decrease as you play cards. Ability cooldowns use seconds instead.</ListItem>
         <ListItem label="Raise Spectrum">Spend Limitless Light Stacks and sacrifice a hand card to unlock higher-level cards. Keep enough low-level cards to build your turn.</ListItem>
@@ -220,8 +197,8 @@ function BoardBody() {
   return (
     <>
       <div style={cardStyle}>
-        <div style={sectionHeadingStyle}>Board Layout</div>
-        <pre style={{
+        <SectionHeading>Board Layout</SectionHeading>
+        <pre className="codex-board-diagram" style={{
           margin: 0,
           lineHeight: 1.5,
           color: PALETTE.inkDeep,
@@ -243,14 +220,14 @@ function BoardBody() {
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Card Types</div>
+        <SectionHeading>Card Types</SectionHeading>
         <ListItem label="Light">Main Deck cards with two attacks, Ain and Soph. Both are used while the card is face-up on its Ain side; its text defines costs and scaling.</ListItem>
         <ListItem label="Dark">Main Deck utility cards. Place one as Ain to activate its effect; card text shows any cost, cooldown, or repeat-use rule.</ListItem>
         <ListItem label="Ain Soph Aur">Extra Deck summons. Select back-row cards that satisfy the summon requirements, then place the summon in the front row. They cannot be searched from the Main Deck or salvaged from discard.</ListItem>
       </div>
 
       <div style={{ ...cardStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Click Reference</div>
+        <SectionHeading>Click Reference</SectionHeading>
         <ListItem label="Hand">Left-click places a main-deck card face-down on its Soph side. Right-click places it face-up on its Ain side.</ListItem>
         <ListItem label="Soph card">At {SOPH_FLIP_CHARGE_REQUIRED}+ charge, choose Flip to Ain or sacrifice it to convert part of the stored charge into Limitless Light Stacks.</ListItem>
         <ListItem label="Ain card">Click to choose its attack or utility action when ready.</ListItem>
@@ -265,7 +242,7 @@ function AttacksBody() {
   return (
     <>
       <div style={cardStyle}>
-        <div style={sectionHeadingStyle}>How Attacks Fire</div>
+        <SectionHeading>How Attacks Fire</SectionHeading>
         <div style={bodyTextStyle}>
           Each attack shows its base Divine Light, cooldown, and card-specific scaling. Ain, Soph, and Bridge attacks
           launch an orbit sequence: move the cursor in sustained circles around the center to increase the payout.
@@ -273,14 +250,14 @@ function AttacksBody() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 10 }}>
+      <div className="codex-card-grid">
         <div style={cardAltStyle}>
-          <div style={sectionHeadingStyle}>Light Attacks</div>
+          <SectionHeading>Light Attacks</SectionHeading>
           <ListItem label="Ain Attack">Does not spend Limitless Light Stacks. Any stack or Collection Power scaling is defined by that card.</ListItem>
           <ListItem label="Soph Attack">May spend stacks as shown on the card. Its scaling uses the stack pool from before payment.</ListItem>
         </div>
         <div style={cardAltStyle}>
-          <div style={sectionHeadingStyle}>Ain Soph Aur</div>
+          <SectionHeading>Ain Soph Aur</SectionHeading>
           <ListItem label="Summon">On summon, every Ain Soph Aur grants +{AIN_SOPH_AUR_SUMMON_STACK_REWARD} Limitless Light Stack.</ListItem>
           <ListItem label="Bridge">Each summon has one Bridge the Light attack with its own base, scaling, cooldown, and optional stack cost.</ListItem>
           <ListItem label="Scaling and cost">Each card specifies its scaling inputs, which may include Collection Power, Light Stacks, or front-row count. Stack costs are paid separately from the values used for scaling.</ListItem>
@@ -288,7 +265,7 @@ function AttacksBody() {
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Payment Modals</div>
+        <SectionHeading>Payment Modals</SectionHeading>
         <div style={bodyTextStyle}>
           When an attack or effect requires a discard or sacrifice, a selection modal appears. The game does
           not auto-pick &mdash; you choose exactly which cards to spend.
@@ -296,7 +273,7 @@ function AttacksBody() {
       </div>
 
       <div style={{ ...cardStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Shatter the Infinite Light</div>
+        <SectionHeading>Shatter the Infinite Light</SectionHeading>
         <div style={bodyTextStyle}>
           Fill all four front-row slots with Ain Soph Aur and all four back-row slots with Light or Dark cards
           flipped to Ain to unlock this finisher. After a fade to black, a 10-second window opens with glowing
@@ -314,7 +291,7 @@ function LightStacksBody() {
   return (
     <>
       <div style={cardStyle}>
-        <div style={sectionHeadingStyle}>Light Stack Runtime</div>
+        <SectionHeading>Light Stack Runtime</SectionHeading>
         <div style={bodyTextStyle}>
           Limitless Light Stacks are a shared, turn-scoped resource. Flipping a charged Soph card is a main source;
           card effects and Ain Soph Aur summons can also change the total.
@@ -322,7 +299,7 @@ function LightStacksBody() {
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Accumulation Rules</div>
+        <SectionHeading>Accumulation Rules</SectionHeading>
         <ListItem label="Charge">Each card played adds charge to every face-down Soph card on the back row.</ListItem>
         <ListItem label="Flip">At {SOPH_FLIP_CHARGE_REQUIRED}+ charge, flip a Soph card to Ain and add its stored charge to your Light Stacks.</ListItem>
         <ListItem label="Sacrifice">A charged Soph card can instead be sacrificed. This removes it from the board and converts a percentage of its charge into stacks.</ListItem>
@@ -331,7 +308,7 @@ function LightStacksBody() {
       </div>
 
       <div style={{ ...cardStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Limitless Cosmos</div>
+        <SectionHeading>Limitless Cosmos</SectionHeading>
         <div style={bodyTextStyle}>
           Causality cards use <Tag>Limitless Cosmos</Tag> as a separate turn-scoped resource. Causality effects
           generate it, convert Limitless Light Stacks into it, or spend it for card effects. The card text shows
@@ -340,7 +317,7 @@ function LightStacksBody() {
       </div>
 
       <div style={{ ...cardStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Spectrum Level</div>
+        <SectionHeading>Spectrum Level</SectionHeading>
         <div style={bodyTextStyle}>
           Every card has a <Tag>Spectrum Level</Tag> from 0 to 5. You can only play a card from hand, or summon an
           Ain Soph Aur, when your current Spectrum Level is at or above the card&apos;s level. Every turn, Garden
@@ -354,14 +331,14 @@ function LightStacksBody() {
       </div>
 
       <div style={{ ...cardStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>The Payoff</div>
+        <SectionHeading>The Payoff</SectionHeading>
         <div style={bodyTextStyle}>
           Attack resolution reads Collection Power directly for scaling, while Limitless Light Stack costs are paid separately when an attack requires them.
         </div>
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Starter Deck Focus</div>
+        <SectionHeading>Starter Deck Focus</SectionHeading>
         <ListItem label="Core Plan">Play cards to charge Soph units, flip them, then sequence stack costs around cooldowns.</ListItem>
         <ListItem label="Practical Tip">Keep enough stacks for your strongest card action instead of spending the entire pool at once.</ListItem>
       </div>
@@ -373,7 +350,7 @@ function SetsBody() {
   return (
     <>
       <div style={cardStyle}>
-        <div style={sectionHeadingStyle}>Ability Amplification</div>
+        <SectionHeading>Ability Amplification</SectionHeading>
         <div style={bodyTextStyle}>
           Buy abilities in Ability Materialization with the listed set materials, then equip up to three owned
           abilities in a saved deck. Activate them from the in-turn Ability Amplification panel. Neutrality and
@@ -382,9 +359,9 @@ function SetsBody() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 10 }}>
+      <div className="codex-card-grid">
         {ABILITY_DEFINITIONS.map(ability => (
-          <div key={ability.id} style={{
+          <div key={ability.id} className="codex-ability" style={{
             ...cardAltStyle,
             padding: '9px 11px',
           }}>
@@ -418,7 +395,7 @@ function RaritiesBody() {
   return (
     <>
       <div style={cardStyle}>
-        <div style={sectionHeadingStyle}>Rarity Tiers</div>
+        <SectionHeading>Rarity Tiers</SectionHeading>
         <div style={bodyTextStyle}>
           Rarity is feel-based. Higher tiers scale harder but the same effect families live across all tiers
           &mdash; there's no fixed "must-have" tier per slot.
@@ -427,7 +404,7 @@ function RaritiesBody() {
 
       <div style={{ marginTop: 10, ...cardAltStyle, padding: '6px 10px' }}>
         {tiers.map(({ name, source, description }, i) => (
-          <div key={name} style={{
+          <div key={name} className="codex-rarity-row" style={{
             display: 'grid',
             gridTemplateColumns: '92px 160px 1fr',
             gap: 10,
@@ -449,26 +426,26 @@ function ModesBody() {
   return (
     <>
       <div style={cardStyle}>
-        <div style={sectionHeadingStyle}>Eternity's Wake &mdash; Boss Fights</div>
+        <SectionHeading>Eternity's Wake &mdash; Boss Fights</SectionHeading>
         <ListItem label="Format">One boss per session, 3-minute timer, single turn. All Divine Light you generate is dealt as damage instead of banked.</ListItem>
-        <ListItem label="Categories">Bosses are organized by set &mdash; Neutrality, Pyroabyss, Heavenly Light, Thornbound Plains, and so on. Use the tab strip at the top of the Wake menu to switch.</ListItem>
+        <ListItem label="Categories">The current boss sets are Neutrality and Causality. Use the set filters in the Wake menu to switch.</ListItem>
         <ListItem label="Rewards">First clear and repeat clears grant Aberrated Shards and the boss's signature Eternal card. Aberrated Shards are reserved for event Packs, Boxes, and Cases.</ListItem>
         <ListItem label="Causality Wake">The Causality filter contains five endgame-heavy bosses, each with a unique Causality Eternal reward.</ListItem>
         <ListItem label="Tier Progress">On completion, this mode awards +X <Tag>Card-light</Tag> for each card in your deck (and Extra Deck). Higher-tier bosses give more, up to 20 Card-light per card. The displayed amount is the base; each card also receives an extra +5% per Tier it has already reached.</ListItem>
       </div>
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Garden of Cards</div>
+        <SectionHeading>Garden of Cards</SectionHeading>
         <div style={bodyTextStyle}>Choose a set filter to enter an expedition. Valley of Null has three Neutrality encounters; Rift of Causality has four Causality encounters. Each encounter awards its listed set materials. Complete the final encounter to finish the run.</div>
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Infinitude &mdash; Crafting</div>
+        <SectionHeading>Infinitude &mdash; Crafting</SectionHeading>
         <ListItem label="Recipes">Each Infinite is forged by consuming a specific combination of Eternal cards. Recipes are listed in the Infinitude menu.</ListItem>
         <ListItem label="Visibility">If a set has no Infinite recipes yet, no Infinites appear for that set &mdash; the menu reflects only what is actually craftable.</ListItem>
       </div>
 
       <div style={{ ...cardStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Card Packs</div>
+        <SectionHeading>Card Packs</SectionHeading>
         <div style={bodyTextStyle}>
           Open the Card Store to spend Divine Light on packs. Each pack has its own rarity weights and pity
           counters; the store displays them up front. Use the Deck Builder to assemble up to 50 Main Deck cards
@@ -477,7 +454,7 @@ function ModesBody() {
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>More Modes</div>
+        <SectionHeading>More Modes</SectionHeading>
         <ListItem label="Challenges">Daily and weekly challenges provide rotating rewards. Claim every weekly reward to consume that rotation into two Super Weekly boss challenges.</ListItem>
         <ListItem label="Card-light Resonance">Refine eligible duplicate copies into Card-light Shards, then spend them 1:1 to add Card-light to any card.</ListItem>
         <ListItem label="Monthly Login">Open Login Calendar from Main Menu → Progress. The calendar shows each local date&apos;s reward; claim the current day&apos;s reward, with at most one claim per day. Missed dates do not queue for later claims.</ListItem>
@@ -497,13 +474,13 @@ function CardBornTierBody() {
   return (
     <>
       <div style={cardStyle}>
-        <div style={sectionHeadingStyle}>What is Card-born Tier?</div>
+        <SectionHeading>What is Card-born Tier?</SectionHeading>
         <div style={bodyTextStyle}>Each card played from your hand adds <Tag>1 Card-light</Tag> to that card definition's shared progress. The eight milestones provide claimable Aberrated Shards rewards and update the card's highest-tier <Tag>Resonance</Tag> contribution. Copies of the same card share one progression.</div>
       </div>
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>The 8 Tiers</div>
+        <SectionHeading>The 8 Tiers</SectionHeading>
         {MASTERY_TIERS.map(tier => (
-          <div key={tier.tier} style={{ display: 'grid', gridTemplateColumns: '28px 110px 70px 1fr', gap: 10, padding: '6px 4px', alignItems: 'baseline' }}>
+          <div key={tier.tier} className="codex-tier-row" style={{ display: 'grid', gridTemplateColumns: '28px 110px 70px 1fr', gap: 10, padding: '6px 4px', alignItems: 'baseline' }}>
             <div style={{ fontSize: 14, color: PALETTE.accent, textAlign: 'center' }}>{CARD_BORN_TIERS[tier.tier - 1]?.glyph ?? '◇'}</div>
             <div style={{ fontSize: 12, fontWeight: 700, color: PALETTE.inkDeep, fontFamily: DISPLAY_FONT }}>T{tier.tier} · {tier.label}</div>
             <div style={{ fontSize: 11, color: PALETTE.inkSoft }}>{tier.threshold.toLocaleString()} Card-light</div>
@@ -512,15 +489,15 @@ function CardBornTierBody() {
         ))}
       </div>
       <div style={{ ...cardStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Current Sources and Rewards</div>
+        <SectionHeading>Current Sources and Rewards</SectionHeading>
         <div style={bodyTextStyle}>Hand plays add 1 Card-light to the played card. Completed Eternity's Wake boss fights add Card-light to each unique card in the participating Main and Extra Deck, with awards based on boss position and capped at 20 per card. Tier rewards are claimed manually as Aberrated Shards.</div>
       </div>
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Resonance and Collection Power</div>
+        <SectionHeading>Resonance and Collection Power</SectionHeading>
         <div style={bodyTextStyle}>Each unique card contributes the Resonance value of its highest reached Tier, regardless of copies owned. Card-light advances the card toward its next Tier; Resonance increases only when that milestone is crossed. Every 10 Resonance adds +0.01 Collection Power through the formula 1 + Resonance / 1,000. The natural maximum assumes every registered card has reached Infinite Bond, so adding cards to the game automatically raises the cap. Collection Power amplifies Divine Light gains and contributes to Light attack and Ain Soph Aur Bridge scaling.</div>
       </div>
       <div style={{ ...cardStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Card-light Resonance</div>
+        <SectionHeading>Card-light Resonance</SectionHeading>
         <div style={bodyTextStyle}>The <Tag>Card-light Resonance</Tag> menu converts eligible duplicate copies into Card-light Shards while preserving protected and locked copies. Spend Card-light Shards <Tag>1:1 for Card-light</Tag> on a selected card.</div>
       </div>
     </>
@@ -531,31 +508,47 @@ function ProgressionBody() {
   return (
     <>
       <div style={cardStyle}>
-        <div style={sectionHeadingStyle}>Aberrated Shards</div>
+        <SectionHeading>Aberrated Shards</SectionHeading>
         <div style={bodyTextStyle}>
           The secondary event and specialized pack currency. Earned from <Tag>boss clears</Tag> (first-clear bonus + repeat bonus),{' '}
           <Tag>daily logins</Tag>, achievements, and Card-born Tier milestones. Spent on limited-time Causality event packs.
         </div>
       </div>
       <div style={{ ...cardStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Holofoil Cards</div>
+        <SectionHeading>Holofoil Cards</SectionHeading>
         <ListItem label="Acquisition">Every card rolled in a single Pack has a 2% chance to drop as a holofoil. Boxes and Cases guarantee at least one holofoil.</ListItem>
         <ListItem label="Visual Finish">Front-facing cards show full-bleed artwork under the screened splotched-ink frame; names and rules appear in inspectors or detail views rather than over the art. Holofoils use source-specific full-card metallic treatments: base pack foils use black/red/white, Enigma uses black/white/gold, Eternal uses purple-red, and Infinite uses chromatic black/white. Face-down views show only the card back.</ListItem>
         <ListItem label="Collection">Holofoils are purely cosmetic and are tracked separately in your collection and deck-building. They cannot be created with Aberrated Shards.</ListItem>
       </div>
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Monthly Login Calendar</div>
+        <SectionHeading>Monthly Login Calendar</SectionHeading>
         <div style={bodyTextStyle}>Login rewards follow a persistent full-screen monthly track available from Main Menu → Progress → Login Calendar. Every date is displayed with its reward icon or card artwork. Claim the current local date&apos;s reward; missed dates do not queue, and only one daily reward can be claimed per local day.</div>
       </div>
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Card-born Tier</div>
+        <SectionHeading>Card-born Tier</SectionHeading>
         <div style={bodyTextStyle}>Every hand play adds Card-light to that card definition. The Card-born Tier menu shows the eight thresholds, current progress, Resonance contribution, and claimable rewards.</div>
         </div>
       <div style={{ ...cardStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Profile, Titles &amp; Themes</div>
-        <ListItem label="Profile">Set your display name and avatar from the Profile menu.</ListItem>
-        <ListItem label="Titles">Earned by defeating specific bosses or crafting specific Infinites.</ListItem>
-        <ListItem label="UI Theme">Switch between palette presets or save a custom theme from the Settings menu.</ListItem>
+        <SectionHeading>Profile, Titles &amp; Themes</SectionHeading>
+        <ListItem label="Player Information">Open your profile to edit your display name (up to 24 characters), avatar, title, and bio (up to 200 characters). Save the bio explicitly. Showcase up to five signature cards, manage social features, or use the Save Data tab for portable saves.</ListItem>
+        <ListItem label="Titles">Earn titles through gameplay milestones, boss clears, Infinity crafting, set completion, progression, social activity, and custom-background achievements. Pick an earned title from your profile.</ListItem>
+        <ListItem label="UI Theme">Choose an unlocked Core or Rewards palette in Player Information and select Save UI Theme. Its four swatches rotate through accents, outlines, glows, and readable heading/button-title gradients: each holds for one minute, followed by a three-second fade. Reduced motion switches swatches without fading; Pantheon Default stays monochrome.</ListItem>
+        <ListItem label="Appearance">Light and Dark Mode are available in Settings and your profile. Ordinary reading surfaces stay predominantly white or black; your palette supplies the decorative color. Artwork, main-menu backgrounds, card foil, and special experiences retain their own colors. Small captions remain solid and readable.</ListItem>
+        <ListItem label="Collection">Browse, search, sort, and favorite cards without changing their artwork or finish. Infinite cards group by Neutrality or Causality, not by Light, Dark, or Ain Soph Aur.</ListItem>
+      </div>
+      <div style={{ ...cardAltStyle, marginTop: 10 }}>
+        <SectionHeading>Finding &amp; Claiming Achievements</SectionHeading>
+        <ListItem label="Browse">Achievements has {ACHIEVEMENT_CATEGORIES.length} subcategories under Gameplay, Collection, Battles, Progression, Social, and Cosmetics. All Achievements shows the same sectioned organization.</ListItem>
+        <ListItem label="Find">Search titles, requirements, or background reward names. Filter by All statuses, Ready to claim, Locked, or Claimed. Category counts show total unlock progress; the shown count follows your current filters.</ListItem>
+        <ListItem label="Claims">Claim earned rewards individually or use Claim All. Reorganizing the categories does not change requirements, saved claims, or currency payouts. Custom-background achievements award a background and title, not extra currency.</ListItem>
+      </div>
+      <div style={{ ...cardStyle, marginTop: 10 }}>
+        <SectionHeading>Custom Main Menu Backgrounds</SectionHeading>
+        <div style={bodyTextStyle}>Find eleven background achievements in Achievements &gt; Cosmetics &gt; Custom Backgrounds: four Eternal/Infinite set crowns and seven Transcendent Forge rewards. Their artwork is installed. Once earned, open Player Information &gt; Main Menu Background and select the unlocked image to equip it. These backgrounds change splash art, not your UI color palette.</div>
+        {[...CROWN_BACKGROUND_REWARDS, ...CUSTOM_MAIN_MENU_BACKGROUND_REWARDS].map(reward => (
+          <ListItem key={reward.achievementId} label={reward.name}>{reward.requirement}</ListItem>
+        ))}
+        <div style={{ ...bodyTextStyle, marginTop: 8 }}>The all-four reward requires four distinct Volume I cards; duplicate copies of one card do not count as different cards. Ability rewards require acquisition, not equipping or activation. Backgrounds unlock automatically when earned and remain earned on that save. Claiming the achievement records its claim; it is not required to equip the art. If an image is unavailable, its tile shows Artwork pending and cannot be equipped.</div>
       </div>
     </>
   );
@@ -567,7 +560,7 @@ function ForgeBody() {
   return (
     <>
       <div style={cardStyle}>
-        <div style={sectionHeadingStyle}>Unlocking the Forge</div>
+        <SectionHeading>Unlocking the Forge</SectionHeading>
         <div style={bodyTextStyle}>
           The Forge of Transcendence is a permanent gallery that belongs to no set. Beat every boss in the
           current event roster (currently the five <Tag>Causality</Tag> Eternity&apos;s Wake bosses), claim the
@@ -577,7 +570,7 @@ function ForgeBody() {
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Key of Transcendence</div>
+        <SectionHeading>Key of Transcendence</SectionHeading>
         <div style={bodyTextStyle}>
           After clearing every current event boss at least once, claim the one-time Key of Transcendence reward
           from the event screen. Then spend that Key to open the Forge permanently.
@@ -585,7 +578,7 @@ function ForgeBody() {
       </div>
 
       <div style={{ ...cardStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Shards of Transcendence</div>
+        <SectionHeading>Shards of Transcendence</SectionHeading>
         <div style={bodyTextStyle}>
           The Monthly Login Calendar directly grants 1 Shard on day 10 and 2 on day 25. Separate 1% bonus rolls
           for 1–3 Shards are available only after the Forge is open:
@@ -596,7 +589,7 @@ function ForgeBody() {
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Transcendent Cards (Vol. 1)</div>
+        <SectionHeading>Transcendent Cards (Vol. 1)</SectionHeading>
         <div style={bodyTextStyle}>
           Every Transcendent card carries the same innate <Tag>Transcendent Ability</Tag>: if it is in your Main
           Deck or Extra Deck, your maximum hand size becomes 10 instead of 8. Vol. 1: Before the First Shuffle contains
@@ -633,157 +626,138 @@ function buildSections(): Section[] {
   return TUTORIAL_SECTIONS.map(s => ({ ...s, body: bodyMap[s.id] ?? null }));
 }
 
+const TOPIC_GROUPS = [
+  { label: 'Basics', ids: ['overview', 'turn-flow', 'board'] },
+  { label: 'Systems', ids: ['attacks', 'patience', 'sets', 'rarities'] },
+  { label: 'Growth', ids: ['modes', 'card-born-tier', 'progression', 'forge'] },
+];
+
+const TOPIC_MARKS: Record<string, string> = {
+  overview: '01', 'turn-flow': '02', board: '03', attacks: '04', patience: '05',
+  sets: '06', rarities: '07', modes: '08', 'card-born-tier': '09', progression: '10', forge: '11',
+};
+
 export default function TutorialModal({ onClose }: Props) {
   useThemeVersion();
   const sections = buildSections();
   const [activeId, setActiveId] = useState<string>(sections[0].id);
+  const [query, setQuery] = useState('');
+  const [visited, setVisited] = useState(() => new Set([sections[0].id]));
+  const [pageIndex, setPageIndex] = useState<Array<{ id: string; label: string }>>([]);
+  const articleRef = useRef<HTMLElement>(null);
   const active = sections.find(s => s.id === activeId) ?? sections[0];
+  const activeIndex = sections.findIndex(section => section.id === active.id);
+  const search = query.trim().toLocaleLowerCase();
+  const filteredSections = sections.filter(section =>
+    `${section.label} ${section.title} ${section.subtitle}`.toLocaleLowerCase().includes(search),
+  );
+
+  useLayoutEffect(() => {
+    const article = articleRef.current;
+    if (!article) return;
+    article.scrollTop = 0;
+    setPageIndex(Array.from(article.querySelectorAll<HTMLElement>('.codex-block-heading')).map((heading, index) => {
+      heading.id = `codex-${activeId}-${index}`;
+      return { id: heading.id, label: heading.textContent ?? '' };
+    }));
+  }, [activeId]);
+
+  function selectTopic(id: string) {
+    setActiveId(id);
+    setVisited(previous => new Set([...previous, id]));
+  }
+
+  function handleDialogKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (event.key === 'Escape') {
+      event.stopPropagation();
+      onClose();
+    } else if (event.key === 'Tab') {
+      const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>(
+        'button, input, a[href], [tabindex="0"]',
+      )).filter(element => element.getClientRects().length > 0);
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    }
+  }
 
   return (
-    <div
-      style={{
-        position: 'absolute',
-        inset: 0,
-        background: warmTheme.appBackground,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 55,
-        pointerEvents: 'auto',
-        fontFamily: BODY_FONT,
-        backdropFilter: 'blur(2px)',
-      }}
-    >
-      <div
-        className="ornate-scroll ui-panel-intro"
-        style={{
-          width: 'min(960px, calc(100vw - 32px))',
-          height: 'min(88vh, 720px)',
-          background: PALETTE.panelAlt,
-          border: `1px solid ${PALETTE.border}`,
-          borderRadius: 20,
-          boxShadow: `0 28px 52px rgba(0,0,0,0.54), inset 0 0 0 1px color-mix(in srgb, ${warmTheme.text} 14%, transparent)`,
-          color: PALETTE.ink,
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          position: 'relative',
-          ['--ui-accent' as any]: 'var(--profile-accent-rgb, 97, 216, 255)',
-          ['--ui-accent-soft' as any]: 'var(--profile-accent-soft-rgb, 179, 154, 255)',
-        } as React.CSSProperties}
-      >
-        {/* Header */}
-        <div className="ui-shimmer-band" style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '16px 22px 12px',
-          borderBottom: `1px solid ${PALETTE.borderSoft}`,
-          position: 'relative',
-        }}>
+    <div className="codex-screen ui-panel-intro" role="dialog" aria-modal="true" aria-labelledby="codex-title" onKeyDown={handleDialogKeyDown}>
+      <div className="codex-shell">
+        <header className="codex-header">
           <div>
-            <div className="ui-title-glow" style={{
-              fontSize: 22,
-              fontWeight: 700,
-              color: PALETTE.inkDeep,
-              letterSpacing: 0.8,
-              fontFamily: DISPLAY_FONT,
-            }}>
-              How To Play
-            </div>
-            <div style={{ fontSize: 12, color: PALETTE.inkMuted, marginTop: 2, fontFamily: BODY_FONT }}>
+            <div className="codex-eyebrow">The Codex</div>
+            <h1 id="codex-title" className="ui-title-glow">How To Play</h1>
+            <p>
               Go as infinite as possible before your deck engine stalls.
-            </div>
+            </p>
           </div>
-          <button
-            className="menu-tactile-btn"
-            onClick={onClose}
-            style={{
-              borderRadius: 10,
-              border: `1px solid ${PALETTE.border}`,
-              background: 'linear-gradient(180deg, var(--profile-surface-strong) 0%, var(--profile-surface-muted) 100%)',
-              color: PALETTE.inkDeep,
-              cursor: 'pointer',
-              fontSize: 12.5,
-              padding: '7px 14px',
-              fontFamily: DISPLAY_FONT,
-              letterSpacing: 0.5,
-            }}
-          >
-            Close
+          <button className="codex-close" onClick={onClose} autoFocus>
+            Close <kbd>Esc</kbd>
           </button>
-        </div>
-
-        {/* Body: sidebar + content */}
-        <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
-          {/* Sidebar nav */}
-          <nav style={{
-            width: 184,
-            flexShrink: 0,
-            borderRight: `1px solid ${PALETTE.borderSoft}`,
-            background: 'color-mix(in srgb, var(--profile-surface-muted) 82%, transparent)',
-            padding: '12px 8px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 3,
-            overflowY: 'auto',
-          }}>
-            {sections.map(section => {
-              const isActive = section.id === activeId;
-              return (
-                <button
-                  key={section.id}
-                  onClick={() => setActiveId(section.id)}
-                  style={{
-                    textAlign: 'left',
-                    padding: '8px 12px',
-                    borderRadius: 9,
-                    border: `1px solid ${isActive ? PALETTE.border : 'transparent'}`,
-                    background: isActive
-                      ? 'linear-gradient(180deg, var(--profile-surface-strong) 0%, color-mix(in srgb, var(--profile-accent) 18%, var(--profile-surface-strong)) 100%)'
-                      : 'transparent',
-                    color: isActive ? PALETTE.inkDeep : PALETTE.inkMuted,
-                    fontFamily: DISPLAY_FONT,
-                    fontSize: 12.5,
-                    fontWeight: isActive ? 700 : 600,
-                    letterSpacing: 0.5,
-                    cursor: 'pointer',
-                    boxShadow: isActive ? 'inset 0 1px 0 rgba(255,255,255,0.45), 0 2px 6px rgba(0,0,0,0.08)' : 'none',
-                  }}
-                >
-                  {section.label}
-                </button>
-              );
+        </header>
+        <div className="codex-layout">
+          <nav className="codex-rail ornate-scroll" aria-label="Codex topics">
+            <label className="codex-search">
+              <span className="codex-search-label">Find a topic</span>
+              <input type="search" value={query} onChange={event => setQuery(event.target.value)}
+                placeholder="Search the Codex..." aria-label="Search Codex topics" />
+            </label>
+            {TOPIC_GROUPS.map(group => {
+              const topics = filteredSections.filter(section => group.ids.includes(section.id));
+              if (!topics.length) return null;
+              return <div className="codex-topic-group" key={group.label}>
+                <h2>{group.label}</h2>
+                {topics.map(section => (
+                  <button key={section.id} className={`codex-topic${section.id === activeId ? ' is-active' : ''}`}
+                    aria-current={section.id === activeId ? 'page' : undefined}
+                    onClick={() => selectTopic(section.id)} aria-controls="codex-article">
+                    <span className="codex-topic-mark" aria-hidden="true">{TOPIC_MARKS[section.id]}</span>
+                    <span className={section.id === activeId ? 'ui-button-title' : undefined}>{section.label}</span>
+                    <span className="codex-topic-visited" aria-label={visited.has(section.id) ? 'Viewed' : undefined}>
+                      {visited.has(section.id) ? '\u2713' : ''}
+                    </span>
+                  </button>
+                ))}
+              </div>;
             })}
+            {!filteredSections.length && <p className="codex-empty" role="status">No topics match your search.</p>}
+            <div className="codex-progress">
+              <span>{visited.size} of {sections.length} topics viewed</span>
+              <progress value={visited.size} max={sections.length} aria-label="Topics viewed" />
+            </div>
           </nav>
-
-          {/* Content */}
-          <div style={{
-            flex: 1,
-            minWidth: 0,
-            overflowY: 'auto',
-            padding: '18px 22px 22px',
-          }}>
-            <div style={{
-              fontSize: 18,
-              fontWeight: 700,
-              color: PALETTE.inkDeep,
-              fontFamily: DISPLAY_FONT,
-              letterSpacing: 0.6,
-            }}>
-              {active.title}
+          <article ref={articleRef} id="codex-article" className="codex-article ornate-scroll" aria-labelledby="codex-topic-title" tabIndex={0}>
+            <div className="codex-reading-pane">
+              <div className="codex-article-heading">
+                <span className="codex-eyebrow">Chapter {TOPIC_MARKS[active.id]}</span>
+                <h2 id="codex-topic-title">{active.title}</h2>
+                <p>{active.subtitle}</p>
+              </div>
+              <div className="codex-content" key={active.id}>{active.body}</div>
+              <nav className="codex-pagination" aria-label="Chapter navigation">
+                {activeIndex > 0 && <button onClick={() => selectTopic(sections[activeIndex - 1].id)}>
+                  <small>Previous chapter</small><span>{sections[activeIndex - 1].label}</span>
+                </button>}
+                {activeIndex < sections.length - 1 && <button className="codex-next" onClick={() => selectTopic(sections[activeIndex + 1].id)}>
+                  <small>Next chapter</small><span>{sections[activeIndex + 1].label}</span>
+                </button>}
+              </nav>
             </div>
-            <div style={{
-              fontSize: 12,
-              color: PALETTE.inkMuted,
-              fontStyle: 'italic',
-              marginTop: 2,
-              marginBottom: 14,
-            }}>
-              {active.subtitle}
-            </div>
-            <div>{active.body}</div>
-          </div>
+          </article>
+          <aside className="codex-index ornate-scroll" aria-label="On this page">
+            <h2>On this page</h2>
+            {pageIndex.map(entry => <a key={entry.id} href={`#${entry.id}`} onClick={event => {
+              event.preventDefault();
+              articleRef.current?.querySelector<HTMLElement>(`#${entry.id}`)?.scrollIntoView({ block: 'start', behavior: 'instant' });
+            }}>{entry.label}</a>)}
+          </aside>
         </div>
       </div>
     </div>

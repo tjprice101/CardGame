@@ -330,13 +330,16 @@ describe('ui theme registry', () => {
     expect(warmTheme.accent).toBe(DEFAULT_WARM_PALETTE.accent);
   });
 
-  it('uses the ink-and-ivory global palette with blue-violet accents', () => {
-    expect(DEFAULT_WARM_PALETTE.appBackground).toContain('#090a10');
-    expect(DEFAULT_WARM_PALETTE.surface).toContain('13, 15, 24');
-    expect(DEFAULT_WARM_PALETTE.text).toBe('#f8faff');
-    expect(DEFAULT_WARM_PALETTE.accent).toBe('#61d8ff');
-    expect(DEFAULT_WARM_PALETTE.accentSoft).toBe('#b39aff');
-    expect(DEFAULT_WARM_PALETTE.accentDeep).toBe('#21113c');
+  it('uses black surfaces with white and silver global accents', () => {
+    expect(DEFAULT_WARM_PALETTE.appBackground).toContain('#000000');
+    expect(DEFAULT_WARM_PALETTE.surface).toContain('15, 15, 15');
+    expect(DEFAULT_WARM_PALETTE.text).toBe('#ffffff');
+    expect(DEFAULT_WARM_PALETTE.accent).toBe('#ffffff');
+    expect(DEFAULT_WARM_PALETTE.accentSoft).toBe('#cccccc');
+    expect(DEFAULT_WARM_PALETTE.accentDeep).toBe('#000000');
+    expect(DEFAULT_WARM_PALETTE.button).toBe('linear-gradient(110deg, #ffffff 0%, #dddddd 54%, #aaaaaa 100%)');
+    expect(UI_THEME_BY_ID[DEFAULT_UI_THEME_ID].name).toBe('Pantheon Default');
+    expect(UI_THEME_BY_ID[DEFAULT_UI_THEME_ID].palette).toEqual(DEFAULT_WARM_PALETTE);
   });
 
   it('normalizes profile preview palettes without mutating the shared palette', () => {

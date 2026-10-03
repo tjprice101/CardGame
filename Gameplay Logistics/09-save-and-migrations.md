@@ -16,6 +16,10 @@ Board, hand, pending effects, and mulligan selection are ephemeral. Materialized
 
 Garden material progress includes the Neutrality currencies plus `seedOfCausality`, `causalBloom`, `shatteredCausalTranscript`, and `heartOfCausality`. Missing values from older saves must normalize to zero before dungeon rewards or Infinite crafting mutate them. `turn.attackSequence` is ephemeral and should never be resumed from an untrusted interrupted save.
 
+Profile UI changes reuse existing save fields: name, bio, avatar/title, five signature IDs, `uiThemeId`, `customUiTheme`, and `mainMenuBackgroundId`. Light/Dark Mode remains `settings.buttonColorMode`. Keep canonical background IDs, not image URLs, in saves so production asset hashing or desktop overrides cannot invalidate selections.
+
+The seven background rewards latch into `progress.achievementUnlocks` and use existing `achievementClaims`. Retroactive load checks earn eligible rewards; once latched they remain earned even if current ownership changes. Art availability is separate from achievement progress. Installing PNGs and reorganizing achievement presentation required no new save schema or migration. Intensity's proposed art roster must not create live card IDs or alter saves.
+
 ## Migration Rules
 
 - Treat old fields as optional.

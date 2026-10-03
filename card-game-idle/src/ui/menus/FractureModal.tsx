@@ -172,14 +172,14 @@ export default function FractureModal({ onClose }: Props) {
       color: P.text,
     }}>
       {/* Header */}
-      <div style={{
+      <div className="ui-artwork-header" style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '18px 28px 14px',
         borderBottom: `1px solid ${P.border}`,
         background: `linear-gradient(90deg, rgba(20,31,50,0.96), rgba(32,50,71,0.84)), url("${import.meta.env.BASE_URL}assets/menu-banners/updated/card-light-resonance.png") right center / cover`,
         backdropFilter: 'blur(8px)',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+        <div data-ui-artwork-copy style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           <div>
             <div style={{ fontSize: 18, letterSpacing: 2.5, textTransform: 'uppercase', fontFamily: uiTypography.display, color: P.text }}>
               Card-light Resonance

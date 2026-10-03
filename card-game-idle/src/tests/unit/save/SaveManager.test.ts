@@ -61,6 +61,14 @@ describe('SaveManager integrity', () => {
       const inner = JSON.parse(LZString.decompressFromUTF16(env.p)!) as Record<string, unknown>;
       expect(inner.saveTampered).toBeUndefined();
     });
+
+    it.each(['light', 'dark'] as const)('persists the %s button mode without changing the profile palette', mode => {
+      state = makeState({ settings: { ...defaultGameState.settings, buttonColorMode: mode } });
+      mgr.save();
+      const result = mgr.loadWithStatus();
+      expect(result!.state.settings.buttonColorMode).toBe(mode);
+      expect(result!.state.progress.profile.uiThemeId).toBe(state.progress.profile.uiThemeId);
+    });
   });
 
   describe('tamper detection', () => {

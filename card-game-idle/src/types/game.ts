@@ -461,6 +461,8 @@ export interface SettingsState {
   sfxVolume: number;
   particlesEnabled: boolean;
   reducedMotion: boolean;
+  /** Controls UI surface and button brightness; older saves default to dark. */
+  buttonColorMode?: 'light' | 'dark';
   language: UiLanguage;
   fontSizePreset: FontSizePreset;
   cardArtDisplay: CardArtDisplay;

@@ -6,7 +6,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore, selectProfile, selectProgress } from '@/state/store';
-import { warmTheme, uiTypography, normalizeUiPalette, resetUiPalette, type UiPalette } from '@/ui/theme';
+import { warmTheme, uiTypography, normalizeUiPalette, getUiColorModePalette, getReadableUiColor, type UiPalette } from '@/ui/theme';
 import { resolveAvatar } from '@/data/profile/avatars';
 import { TITLE_BADGES, resolveTitleBadge } from '@/data/profile/titleBadges';
 import {
@@ -19,8 +19,10 @@ import {
 import {
   DEFAULT_MAIN_MENU_BACKGROUND_ID,
   getDefaultMainMenuBackground,
+  isMainMenuBackgroundAvailable,
   isMainMenuBackgroundUnlocked,
   loadMainMenuBackgroundEntries,
+  resolveMainMenuBackground,
   type MainMenuBackgroundEntry,
 } from '@/data/profile/mainMenuBackgrounds';
 import TitlesModal from '@/ui/profile/TitlesModal';
@@ -49,6 +51,7 @@ import {
 import AuthPanel from '@/ui/social/AuthPanel';
 import FriendsPanel from '@/ui/social/FriendsPanel';
 import { flushCloudSaveNow } from '@/social/cloudSaveSync';
+import './PlayerInformationPage.css';
 
 interface Props {
   onClose: () => void;
@@ -61,10 +64,10 @@ interface Props {
 type TabId = 'profile' | 'menu-backgrounds' | 'social' | 'save';
 
 const TABS: { id: TabId; label: string; glyph: string; caption: string }[] = [
-  { id: 'profile', label: 'Profile',     glyph: 'ID', caption: 'Identity, titles & themes' },
-  { id: 'menu-backgrounds', label: 'Main Menu Background Customizations', glyph: 'BG', caption: 'Swap splash background art' },
-  { id: 'social',  label: 'Social',      glyph: 'SO', caption: 'Account, friends & boards' },
-  { id: 'save',    label: 'Save & Data', glyph: 'SV', caption: 'Save, export, import, wipe' },
+  { id: 'profile', label: 'Profile',     glyph: 'I', caption: 'Identity, titles & themes' },
+  { id: 'menu-backgrounds', label: 'Main Menu Background', glyph: 'II', caption: 'Swap splash background art' },
+  { id: 'social',  label: 'Social',      glyph: 'III', caption: 'Account, friends & boards' },
+  { id: 'save',    label: 'Save & Data', glyph: 'IV', caption: 'Save, export, import, wipe' },
 ];
 
 const UI_THEME_EDITABLE_KEYS: Array<keyof UiPalette> = [
@@ -99,6 +102,7 @@ const G = {
   goldBorderStrong: 'var(--profile-border-strong)',
   goldGlass:        'var(--profile-accent-glass)',
   text:             'var(--profile-text)',
+  textMuted:        'var(--profile-text-muted)',
   cinzel:           uiTypography.display,
   success:          'var(--profile-success)',
   danger:           'var(--profile-danger)',
@@ -124,6 +128,8 @@ export default function PlayerInformationPage({
   const setSignatureCard = useStore(s => s.setSignatureCard);
   const dailyLogin = useStore(s => s.progress.dailyLogin);
   const saveTampered = useStore(s => s.saveTampered ?? false);
+  const colorMode = useStore(s => s.settings.buttonColorMode);
+  const updateSettings = useStore(s => s.updateSettings);
 
   const status = useSocialStore(selectSocialStatus);
   const socialUser = useSocialStore(selectSocialUser);
@@ -161,6 +167,7 @@ export default function PlayerInformationPage({
     const base = def ? getThemePreviewPalette(def, themeNowMs) : warmTheme;
     return normalizeUiPalette({ ...base, ...themeDraft });
   }, [themeBaseId, themeDraft, themeNowMs]);
+  const displayPalette = getUiColorModePalette(profilePalette, colorMode === 'light' ? 'light' : 'dark');
 
   const totalCollection = useMemo(
     () => Object.values(progress.collection).reduce((a, b) => a + b, 0),
@@ -222,15 +229,6 @@ export default function PlayerInformationPage({
   useEffect(() => {
     setBioDraft(profile.bio ?? '');
   }, [profile.bio]);
-
-  // Keep profile theme previews scoped to this screen; the rest of the app uses
-  // the shared warm default palette.
-  useEffect(() => {
-    return () => {
-      resetUiPalette();
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   function chooseThemeBase(themeId: string) {
     if (!isThemeUnlocked(themeId, progress)) return;
@@ -360,27 +358,29 @@ export default function PlayerInformationPage({
   }
 
   return (
-    <div style={{
+    <div className="player-information" style={{
       ...S.backdrop,
-      ['--profile-accent' as any]: profilePalette.accent,
-      ['--profile-accent-soft' as any]: profilePalette.accentSoft,
-      ['--profile-accent-deep' as any]: profilePalette.accentDeep,
-      ['--profile-text' as any]: profilePalette.text,
-      ['--profile-text-soft' as any]: profilePalette.textSoft,
-      ['--profile-text-muted' as any]: profilePalette.textMuted,
-      ['--profile-text-faint' as any]: profilePalette.textFaint,
-      ['--profile-border' as any]: profilePalette.border,
-      ['--profile-border-strong' as any]: profilePalette.borderStrong,
-      ['--profile-accent-glass' as any]: profilePalette.surfaceMuted,
-      ['--profile-app-bg' as any]: profilePalette.appBackground,
-      ['--profile-surface' as any]: profilePalette.surface,
-      ['--profile-surface-strong' as any]: profilePalette.surfaceStrong,
-      ['--profile-surface-muted' as any]: profilePalette.surfaceMuted,
-      ['--profile-button' as any]: profilePalette.button,
-      ['--profile-button-text' as any]: profilePalette.accentDeep,
-      ['--profile-glow' as any]: profilePalette.glow,
-      ['--profile-success' as any]: profilePalette.success,
-      ['--profile-danger' as any]: profilePalette.danger,
+      ['--profile-accent' as any]: displayPalette.accent,
+      ['--profile-accent-soft' as any]: displayPalette.accentSoft,
+      ['--profile-accent-deep' as any]: displayPalette.accentDeep,
+      ['--profile-accent-text' as any]: getReadableUiColor(displayPalette.accentDeep, displayPalette.accent),
+      ['--profile-accent-soft-text' as any]: getReadableUiColor(displayPalette.accentDeep, displayPalette.accentSoft),
+      ['--profile-text' as any]: displayPalette.text,
+      ['--profile-text-soft' as any]: displayPalette.textSoft,
+      ['--profile-text-muted' as any]: displayPalette.textMuted,
+      ['--profile-text-faint' as any]: displayPalette.textFaint,
+      ['--profile-border' as any]: displayPalette.border,
+      ['--profile-border-strong' as any]: displayPalette.borderStrong,
+      ['--profile-accent-glass' as any]: displayPalette.surfaceMuted,
+      ['--profile-app-bg' as any]: displayPalette.appBackground,
+      ['--profile-surface' as any]: displayPalette.surface,
+      ['--profile-surface-strong' as any]: displayPalette.surfaceStrong,
+      ['--profile-surface-muted' as any]: displayPalette.surfaceMuted,
+      ['--profile-button' as any]: displayPalette.button,
+      ['--profile-button-text' as any]: displayPalette.accentDeep,
+      ['--profile-glow' as any]: displayPalette.glow,
+      ['--profile-success' as any]: displayPalette.success,
+      ['--profile-danger' as any]: displayPalette.danger,
       ['--profile-danger-soft' as any]: 'rgba(184,92,79,0.2)',
       ['--profile-danger-border' as any]: 'rgba(184,92,79,0.58)',
     }}>
@@ -390,12 +390,12 @@ export default function PlayerInformationPage({
       <div style={S.washVignette} />
       <div style={S.scanlines} />
 
-      <div className="ui-panel-intro" style={S.panel}>
+      <div className="ui-panel-intro player-information-shell">
 
         {/* ── Header ── */}
-        <header style={S.header}>
+        <header className="player-information-header">
           <div style={S.headerBrand}>
-            <div style={S.headerTitle}>Player Information</div>
+            <h1 className="ui-title-glow player-information-title">Player Information</h1>
             <div style={S.headerRule}>
               <div style={S.headerRuleLine} />
               <span style={S.headerRuleGlyph}>✦</span>
@@ -407,10 +407,16 @@ export default function PlayerInformationPage({
         </header>
 
         {/* ── Identity Hero ── */}
-        <section style={S.identityHero}>
+        <aside className="player-identity-monument" aria-label="Player identity">
 
           {/* Triple-ring avatar frame */}
-          <div style={S.avatarOuter}>
+          <button className="player-portrait" onClick={() => setShowPictures(true)} aria-label="Change profile picture">
+            <svg className="player-portrait-orbit" viewBox="0 0 200 200" fill="none" stroke="currentColor" aria-hidden="true">
+              <circle cx="100" cy="100" r="97" strokeWidth=".7" />
+              <circle cx="100" cy="100" r="90" strokeWidth=".5" strokeDasharray="2 7" />
+              <path d="M100 3 197 100 100 197 3 100Z" strokeWidth=".6" />
+              <path d="M31 31 169 31 169 169 31 169Z" strokeWidth=".5" />
+            </svg>
             <div style={S.avatarMiddle}>
               <div style={S.avatarInner}>
                 {currentAvatar.imageUrl
@@ -420,31 +426,37 @@ export default function PlayerInformationPage({
                 }
               </div>
             </div>
-          </div>
+          </button>
 
           {/* Identity text column */}
-          <div style={S.identityBody}>
+          <div className="player-identity-body">
             <input
+              aria-label="Display name"
               type="text"
               value={nameDraft}
               onChange={e => setNameDraft(e.target.value)}
               onBlur={commitName}
               onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
               maxLength={24}
-              style={S.nameInput}
+              className="player-name-input"
             />
-            <div style={S.titleRibbon}>
+            <div className="player-name-ornament" aria-hidden="true">◆</div>
+            <button className="player-title-ribbon" onClick={() => setShowTitles(true)} aria-label="Change title">
               {currentTitle ? currentTitle.text : 'No title selected'}
+            </button>
+            <div className="player-bio-frame">
+              <textarea
+                aria-label="Bio"
+                value={bioDraft}
+                onChange={e => setBioDraft(e.target.value)}
+                maxLength={200}
+                rows={2}
+                placeholder="Write a short bio…"
+                className="player-bio-input"
+              />
+              <small className="player-bio-count">{bioDraft.length} / 200</small>
             </div>
-            <textarea
-              value={bioDraft}
-              onChange={e => setBioDraft(e.target.value)}
-              maxLength={200}
-              rows={2}
-              placeholder="Write a short bio…"
-              style={S.bioInput as React.CSSProperties}
-            />
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
+            <div className="player-bio-actions">
               <button
                 onClick={persistBio}
                 className="menu-tactile-btn"
@@ -454,7 +466,7 @@ export default function PlayerInformationPage({
               </button>
               {bioSaved && <span style={{ fontSize: 10, color: G.success }}>Bio saved</span>}
             </div>
-            <div style={S.statusRow}>
+            <div className="player-connection-status" role="status">
               <span style={{
                 ...S.statusDot,
                 background: authed ? G.success : 'rgba(120,120,120,0.45)',
@@ -469,42 +481,37 @@ export default function PlayerInformationPage({
           </div>
 
           {/* Emblem stat pillars */}
-          <div style={S.heroStats}>
+          <div className="player-identity-stats">
             <EmblemStat label="Divine Light" value={progress.divineLight.toLocaleString()} />
-            <div style={S.emblemDivider} />
             <EmblemStat label="Shards" value={progress.aberratedShards.toLocaleString()} />
-            <div style={S.emblemDivider} />
             <EmblemStat label="Streak" value={`${dailyLogin.streak}d`} />
-            <div style={S.emblemDivider} />
             <EmblemStat label="Friends" value={friends.length.toLocaleString()} highlight={authed} />
           </div>
-        </section>
+        </aside>
 
+        <section className="player-information-workspace" aria-label="Player customization">
         {/* ── Tab navigation ── */}
-        <nav style={S.tabRow}>
+        <nav className="player-information-tabs" aria-label="Player information sections">
           {TABS.map(tab => {
             const active = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
+                className={`player-information-tab${active ? ' is-active' : ''}`}
+                aria-pressed={active}
+                aria-controls="player-information-content"
                 onClick={() => setActiveTab(tab.id)}
-                style={{
-                  ...S.tabBtn,
-                  background: active ? G.goldGlass : 'transparent',
-                  borderBottom: active ? `3px solid ${G.gold}` : '3px solid transparent',
-                  boxShadow: active ? profilePalette.glow : 'none',
-                }}
               >
-                <span style={{ ...S.tabGlyph, opacity: active ? 0.9 : 0.35 }}>{tab.glyph}</span>
-                <div style={{ ...S.tabLabel, color: active ? G.goldSoft : 'rgba(240,223,192,0.65)' }}>{tab.label}</div>
-                <div style={{ ...S.tabCaption, opacity: active ? 0.65 : 0.4 }}>{tab.caption}</div>
+                <span className="player-tab-numeral">{tab.glyph}</span>
+                <div className="player-tab-label">{tab.label}</div>
+                <div className="player-tab-caption">{tab.caption}</div>
               </button>
             );
           })}
         </nav>
 
         {/* ── Tab content ── */}
-        <main style={S.content}>
+        <main className="player-information-content" id="player-information-content" aria-label={TABS.find(tab => tab.id === activeTab)?.label}>
           <div style={S.contentInner}>
             {activeTab === 'profile' && (
               <ProfileTab
@@ -530,6 +537,8 @@ export default function PlayerInformationPage({
                 themeNowMs={themeNowMs}
                 onPickSignatureCard={setSigPickerSlot}
                 onClearSignatureCard={(slot) => setSignatureCard(slot, null)}
+                colorMode={colorMode === 'light' ? 'light' : 'dark'}
+                onChangeColorMode={mode => updateSettings({ buttonColorMode: mode })}
               />
             )}
             {activeTab === 'social' && (
@@ -564,10 +573,17 @@ export default function PlayerInformationPage({
             )}
           </div>
         </main>
+        </section>
+        <footer className="player-information-footer">
+          <span className="player-footer-dot" aria-hidden="true" />
+          <span>Progress saves automatically</span>
+          <span role="status">{gameSaved ? 'Game data saved' : 'Pantheon'}</span>
+        </footer>
       </div>
 
       {showTitles && (
         <TitlesModal
+          palette={displayPalette}
           onClose={() => setShowTitles(false)}
           onApply={() => {
             setTitleSaved(true);
@@ -654,6 +670,8 @@ function ProfileTab(props: {
   themeNowMs: number;
   onPickSignatureCard: (slot: number) => void;
   onClearSignatureCard: (slot: number) => void;
+  colorMode: 'light' | 'dark';
+  onChangeColorMode: (mode: 'light' | 'dark') => void;
 }) {
   const {
     progress, profile, currentAvatar, currentTitle, palette,
@@ -662,6 +680,7 @@ function ProfileTab(props: {
     onOpenTitles, onChangePicture, themeBaseId,
     onChooseTheme, onSaveTheme, onResetThemeDraft, themeSaved, themeNowMs,
     onPickSignatureCard, onClearSignatureCard,
+    colorMode, onChangeColorMode,
   } = props;
 
   const [themeSubtab, setThemeSubtab] = useState<'core' | 'reward'>(() => {
@@ -686,7 +705,7 @@ function ProfileTab(props: {
   }, [progress]);
 
   return (
-    <div style={S.tabGrid}>
+    <div className="player-profile-grid">
 
       {/* Lifetime Stats */}
       <GlassCard title="Lifetime Stats">
@@ -757,6 +776,13 @@ function ProfileTab(props: {
           >
             Rewards {rewardThemeTotals.unlocked}/{rewardThemeTotals.total}
           </button>
+          <div className="player-appearance-toggle" role="group" aria-label="Appearance mode">
+            {(['dark', 'light'] as const).map(mode => (
+              <button key={mode} aria-pressed={colorMode === mode} onClick={() => onChangeColorMode(mode)}>
+                {mode === 'dark' ? 'Dark' : 'Light'}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div style={S.themeGrid}>
@@ -772,11 +798,10 @@ function ProfileTab(props: {
                 disabled={!unlocked}
                 style={{
                   ...S.themeCard,
-                  background: active ? palette.surfaceStrong : palette.surface,
+                  background: active ? 'var(--profile-surface-strong)' : 'var(--profile-surface)',
                   border: active ? `2px solid ${palette.accent}` : `1px solid ${palette.border}`,
                   boxShadow: active ? palette.glow : 'none',
                   cursor: unlocked ? 'pointer' : 'not-allowed',
-                  opacity: unlocked ? 1 : 0.52,
                 }}
               >
                 <div style={{ display: 'flex', gap: 5, marginBottom: 6 }}>
@@ -801,7 +826,11 @@ function ProfileTab(props: {
           </button>
         </div>
         <div style={S.saveHint}>
-          Save locks your selected base theme plus custom colors as your active UI theme.
+          Save links accents, outlines, glows, and heading gradients to this palette's four swatches.
+          Each holds for one minute, then fades to the next over three seconds. Ordinary surfaces
+          stay predominantly white in Light Mode or black in Dark Mode. Headings and bold button
+          titles use matching readable gradients; small captions stay solid. Reduced motion
+          switches swatches without fading. Pantheon Default stays black and white.
         </div>
       </GlassCard>
 
@@ -822,7 +851,7 @@ function ProfileTab(props: {
                     width: 90, height: 124, borderRadius: 12,
                     border: def ? `1px solid ${rarityColor}55` : `1px dashed ${palette.border}`,
                     ...(def ? getLiveCardFaceBackgroundStyle(def, 'normal', 'front') : {}),
-                    backgroundColor: def ? palette.surfaceStrong : palette.surface,
+                    backgroundColor: def ? palette.surfaceStrong : 'var(--profile-surface)',
                     position: 'relative',
                     display: 'flex', flexDirection: 'column', alignItems: 'stretch',
                     overflow: 'hidden', cursor: 'pointer', padding: 0,
@@ -852,8 +881,8 @@ function ProfileTab(props: {
                       position: 'absolute', inset: 0,
                       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4,
                     }}>
-                      <span style={{ fontSize: 20, color: palette.textMuted, fontWeight: 300, lineHeight: 1 }}>+</span>
-                      <span style={{ fontSize: 7, color: palette.textFaint, letterSpacing: 1, textTransform: 'uppercase' }}>
+                      <span style={{ fontSize: 20, color: 'var(--profile-text-muted)', fontWeight: 300, lineHeight: 1 }}>+</span>
+                      <span style={{ fontSize: 7, color: 'var(--profile-text-faint)', letterSpacing: 1, textTransform: 'uppercase' }}>
                         Slot {i + 1}
                       </span>
                     </div>
@@ -894,12 +923,25 @@ function MainMenuBackgroundsTab(props: {
   onSelectBackground: (id: string) => void;
 }) {
   const { selectedBackgroundId, backgrounds, progress, loading, loadError, onSelectBackground, palette } = props;
+  const equipped = resolveMainMenuBackground(selectedBackgroundId, backgrounds, progress);
 
   return (
     <div style={S.tabGrid}>
       <GlassCard title="Main Menu Background Customizations" wide>
+        <div className="player-background-stage ui-artwork-header" style={{ backgroundImage: `url("${equipped.imageUrl}")` }}>
+          <div data-ui-artwork-copy>
+            <small>Current main menu background</small>
+            <h3>{equipped.name}</h3>
+            <p>{equipped.description}</p>
+          </div>
+        </div>
         <div style={S.saveHint}>
           Choose which splash art appears behind the Main Menu hub. This is saved independently from UI theme colors.
+        </div>
+        <div style={S.saveHint}>
+          Eternal and Infinite Crown backgrounds use full-set collection achievements; Transcendent backgrounds use Forge achievements.
+          Find all eleven in Achievements &gt; Cosmetics &gt; Custom Backgrounds. Each tile shows its requirement;
+          rewards stay unlocked once earned. Artwork-pending rewards cannot be equipped until their art is installed.
         </div>
 
         {loading && <div style={S.saveHint}>Loading splash backgrounds…</div>}
@@ -907,52 +949,67 @@ function MainMenuBackgroundsTab(props: {
 
         <div style={S.menuBgGrid}>
           {backgrounds.map((bg) => {
-            const active = bg.id === selectedBackgroundId;
             const unlocked = isMainMenuBackgroundUnlocked(bg, progress);
-            const stateLabel = active ? 'Equipped' : unlocked ? 'Unlocked' : 'Locked';
+            const available = isMainMenuBackgroundAvailable(bg);
+            const active = bg.id === selectedBackgroundId && unlocked && available;
+            const stateLabel = active ? 'Equipped' : unlocked ? available ? 'Unlocked' : 'Earned - art pending' : 'Locked';
             return (
               <button
                 key={bg.id}
                 className="menu-tactile-btn"
-                disabled={!unlocked}
+                aria-label={bg.name}
+                disabled={!unlocked || !available}
                 onClick={() => {
-                  if (!unlocked) return;
+                  if (!unlocked || !available) return;
                   onSelectBackground(bg.id);
                 }}
                 style={{
                   ...S.menuBgCard,
                   border: active ? `2px solid ${palette.accent}` : `1px solid ${palette.border}`,
                   boxShadow: active ? palette.glow : 'none',
-                  opacity: unlocked ? 1 : 0.62,
-                  cursor: unlocked ? 'pointer' : 'not-allowed',
+                  cursor: unlocked && available ? 'pointer' : 'not-allowed',
                 }}
               >
                 <div
                   style={{
                     ...S.menuBgPreview,
-                    backgroundImage: `url("${bg.imageUrl}")`,
+                    backgroundImage: available ? `url("${bg.imageUrl}")` : undefined,
                     filter: unlocked ? undefined : 'grayscale(0.82) brightness(0.58)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'var(--profile-text-muted)',
+                    backgroundColor: 'var(--profile-surface-strong)',
+                    fontSize: 12,
                   }}
-                />
+                >
+                  {!available && 'Artwork pending'}
+                </div>
                 <div style={S.menuBgMetaRow}>
                   <div style={S.menuBgName}>{bg.name}</div>
                   <div
                     style={{
                       ...S.menuBgState,
-                      color: active ? palette.accentDeep : unlocked ? palette.textSoft : palette.textMuted,
-                      background: active ? palette.accentSoft : unlocked ? palette.surfaceStrong : palette.surfaceMuted,
+                      color: 'var(--profile-text)',
+                      background: active ? 'var(--profile-surface-strong)' : 'var(--profile-surface-muted)',
                     }}
                   >
                     {stateLabel}
                   </div>
                 </div>
+                {bg.rarity && (
+                  <div style={{ ...S.themeDesc, color: 'var(--profile-text-soft)' }}>
+                    {bg.rarity} background achievement
+                  </div>
+                )}
                 <div style={S.themeDesc}>
-                  {!unlocked
-                    ? (bg.unlockHint ?? 'Unlock requirement not yet met.')
-                    : bg.source === 'workspace'
-                      ? 'Imported splash art'
-                      : 'Built-in default'}
+                  {bg.unlockAchievementId
+                    ? bg.unlockHint
+                    : !unlocked
+                      ? (bg.unlockHint ?? 'Unlock requirement not yet met.')
+                      : bg.source === 'workspace' ? 'Imported splash art' : bg.description}
                 </div>
+                {bg.unlockAchievementId && <div style={S.themeDesc}>{bg.description}</div>}
               </button>
             );
           })}
@@ -1162,43 +1219,43 @@ function GlassCard(props: {
 }) {
   const tone = props.tone ?? 'warm';
   const toneBorderColor: Record<string, string> = {
-    warm:   warmTheme.border,
-    cool:   'rgba(110,140,210,0.32)',
+    warm:   'var(--profile-border)',
+    cool:   'var(--profile-border)',
     danger: 'rgba(184,92,79,0.38)',
   };
   const toneAccent: Record<string, string> = {
     warm:   G.gold,
-    cool:   '#7a9ad0',
+    cool:   G.goldSoft,
     danger: G.danger,
   };
   const toneInsetGlow: Record<string, string> = {
-    warm:   warmTheme.surfaceMuted,
-    cool:   'rgba(100,130,200,0.08)',
+    warm:   'var(--profile-surface-muted)',
+    cool:   'var(--profile-surface-muted)',
     danger: 'rgba(184,92,79,0.10)',
   };
   return (
-    <div style={{
+    <section className={`player-ceremonial-card player-ceremonial-card--${tone}`} style={{
       ...S.card,
       ...props.cardStyle,
       borderColor: toneBorderColor[tone],
-      boxShadow: `0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 ${toneInsetGlow[tone]}`,
+      boxShadow: `0 8px 32px color-mix(in srgb, var(--profile-surface-muted) 50%, transparent), inset 0 1px 0 ${toneInsetGlow[tone]}`,
       gridColumn: props.wide ? '1 / -1' : 'auto',
     }}>
-      <div style={S.cardHeader}>
+      <div className="player-card-header" style={S.cardHeader}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ ...S.cardAccentBar, background: toneAccent[tone] }} />
-          <div style={S.cardTitle}>{props.title}</div>
+          <h2 style={S.cardTitle}>{props.title}</h2>
         </div>
         {props.meta && <div style={S.cardMeta}>{props.meta}</div>}
       </div>
-      <div style={{ ...S.cardBody, ...props.bodyStyle }}>{props.children}</div>
-    </div>
+      <div className="player-card-body" style={{ ...S.cardBody, ...props.bodyStyle }}>{props.children}</div>
+    </section>
   );
 }
 
 function StatMedallion({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div style={S.medallion}>
+    <div className="player-stat-medallion" style={S.medallion}>
       <div style={S.medallionLabel}>{label}</div>
       <div style={S.medallionValue}>{value}</div>
       {sub && <div style={S.medallionSub}>{sub}</div>}
@@ -1247,25 +1304,26 @@ const S: Record<string, React.CSSProperties> = {
     overflowY: 'auto',
     overflowX: 'hidden',
     fontFamily: uiTypography.body,
+    color: 'var(--profile-text)',
     animation: 'backdropFade 0.22s ease',
   },
   washWarm: {
     position: 'absolute',
     top: '-22%', left: '-10%', width: '75%', height: '85%',
-    background: 'radial-gradient(ellipse, rgba(88,170,218,0.24) 0%, rgba(58,142,200,0.10) 42%, transparent 68%)',
+    background: 'radial-gradient(ellipse, color-mix(in srgb, var(--profile-accent) 5%, transparent), transparent 68%)',
     filter: 'blur(80px)',
     pointerEvents: 'none',
   },
   washCool: {
     position: 'absolute',
     bottom: '-22%', right: '-10%', width: '70%', height: '80%',
-    background: 'radial-gradient(ellipse, rgba(70,90,170,0.13) 0%, transparent 65%)',
+    background: 'radial-gradient(ellipse, color-mix(in srgb, var(--profile-accent-soft) 3%, transparent), transparent 65%)',
     filter: 'blur(90px)',
     pointerEvents: 'none',
   },
   washVignette: {
     position: 'absolute', inset: 0,
-    background: 'radial-gradient(ellipse at 50% 44%, transparent 26%, rgba(0,0,0,0.60) 100%)',
+    background: 'radial-gradient(ellipse at 50% 44%, transparent 26%, var(--profile-surface-muted) 100%)',
     pointerEvents: 'none',
   },
   scanlines: {
@@ -1313,7 +1371,7 @@ const S: Record<string, React.CSSProperties> = {
   },
   headerRuleGlyph: {
     fontSize: 11,
-    color: 'var(--profile-text-muted)',
+    color: 'var(--profile-accent)',
     lineHeight: 1,
     flexShrink: 0,
     userSelect: 'none',
@@ -1364,14 +1422,14 @@ const S: Record<string, React.CSSProperties> = {
     boxShadow: 'var(--profile-glow)',
   },
   avatarMiddle: {
-    width: 104, height: 104,
+    width: '80%', height: '80%',
     borderRadius: '50%',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     border: '2px solid var(--profile-border-strong)',
     boxShadow: 'var(--profile-glow)',
   },
   avatarInner: {
-    width: 88, height: 88,
+    width: '88%', height: '88%',
     borderRadius: '50%',
     border: '2.5px solid var(--profile-accent-soft)',
     background: 'var(--profile-surface-strong)',
@@ -1436,9 +1494,9 @@ const S: Record<string, React.CSSProperties> = {
     width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
   },
   statusLabel: {
-    letterSpacing: 1.5, textTransform: 'uppercase', fontSize: 9, fontWeight: 400,
+    letterSpacing: 1, textTransform: 'uppercase', fontSize: 11, fontWeight: 400,
   },
-  statusEmail: { fontFamily: 'monospace', fontSize: 10, opacity: 0.62 },
+  statusEmail: { fontFamily: 'monospace', fontSize: 11 },
 
   /* Emblem stat pillars */
   heroStats: {
@@ -1450,18 +1508,18 @@ const S: Record<string, React.CSSProperties> = {
   },
   emblemStat: {
     display: 'flex', flexDirection: 'column', alignItems: 'center',
-    padding: '6px 20px', gap: 5,
+    padding: '14px 8px', gap: 5, minWidth: 0,
   },
   emblemLabel: {
-    fontSize: 8,
-    letterSpacing: 3,
+    fontSize: 10,
+    letterSpacing: 1.5,
     textTransform: 'uppercase',
     color: 'var(--profile-text-muted)',
     fontWeight: 400,
     whiteSpace: 'nowrap',
   },
   emblemValue: {
-    fontSize: 20,
+    fontSize: 'clamp(17px,1.6vw,25px)',
     fontWeight: 600,
     letterSpacing: 0.5,
     color: 'var(--profile-text)',
@@ -1527,7 +1585,7 @@ const S: Record<string, React.CSSProperties> = {
   /* ── Card grid ── */
   tabGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
     gap: 18,
     alignItems: 'start',
   },
@@ -1548,7 +1606,8 @@ const S: Record<string, React.CSSProperties> = {
     background: 'var(--profile-surface-strong)',
     backdropFilter: 'blur(8px)',
     display: 'flex', flexDirection: 'column',
-    overflow: 'hidden',
+    position: 'relative',
+    minWidth: 0,
   },
   cardHeader: {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
@@ -1559,8 +1618,9 @@ const S: Record<string, React.CSSProperties> = {
     width: 3, height: 18, borderRadius: 2, flexShrink: 0,
   },
   cardTitle: {
-    fontSize: 10,
-    letterSpacing: 4,
+    fontSize: 13,
+    letterSpacing: 2,
+    margin: 0,
     textTransform: 'uppercase',
     color: 'var(--profile-text)',
     fontWeight: 600,
@@ -1580,28 +1640,28 @@ const S: Record<string, React.CSSProperties> = {
   /* ── Stat medallions ── */
   medallionGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(128px, 1fr))',
+    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
     gap: 10,
   },
   medallion: {
     padding: '15px 10px 13px',
-    borderRadius: 12,
+    borderRadius: '50% / 22%',
     background: 'var(--profile-accent-glass)',
     border: '1px solid var(--profile-border)',
     textAlign: 'center',
     display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center',
   },
   medallionLabel: {
-    fontSize: 8, letterSpacing: 2, textTransform: 'uppercase',
+    fontSize: 10, letterSpacing: 1, textTransform: 'uppercase',
     color: 'var(--profile-text-muted)',
     fontFamily: uiTypography.display,
   },
   medallionValue: {
-    fontSize: 26, fontWeight: 300, color: 'var(--profile-accent-soft)',
+    fontSize: 24, fontWeight: 700, color: 'var(--profile-text)',
     fontVariantNumeric: 'tabular-nums', letterSpacing: 0.3, lineHeight: 1.15,
   },
   medallionSub: {
-    fontSize: 9, color: 'var(--profile-text-faint)', letterSpacing: 0.4,
+    fontSize: 11, color: 'var(--profile-text-muted)', letterSpacing: 0.4,
   },
 
   /* ── Avatar showcase (Profile Picture card) ── */
@@ -1679,7 +1739,7 @@ const S: Record<string, React.CSSProperties> = {
   },
   themeGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 190px), 1fr))',
     gap: 10,
   },
   themeCard: {
@@ -1691,12 +1751,12 @@ const S: Record<string, React.CSSProperties> = {
     transition: 'all 0.18s ease',
   },
   themeName: {
-    fontSize: 12, fontWeight: 600, color: 'var(--profile-text)',
+    fontSize: 14, fontWeight: 600, color: 'var(--profile-text)',
     letterSpacing: 1.5,
     fontFamily: uiTypography.display,
   },
   themeDesc: {
-    fontSize: 9, color: 'var(--profile-text-muted)', lineHeight: 1.4, marginTop: 4,
+    fontSize: 12, color: 'var(--profile-text-muted)', lineHeight: 1.5, marginTop: 4,
   },
   themeEditorGrid: {
     display: 'grid',
@@ -1732,7 +1792,7 @@ const S: Record<string, React.CSSProperties> = {
   },
   menuBgGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 220px))',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))',
     justifyContent: 'start',
     gap: 12,
   },
@@ -1761,9 +1821,10 @@ const S: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 6,
+    flexWrap: 'wrap',
   },
   menuBgName: {
-    fontSize: 10,
+    fontSize: 13,
     fontWeight: 600,
     letterSpacing: 0.8,
     color: 'var(--profile-text)',
@@ -1813,7 +1874,7 @@ const S: Record<string, React.CSSProperties> = {
     borderRadius: 10,
     border: '1px dashed rgba(100,140,220,0.28)',
     background: 'rgba(70,90,170,0.08)',
-    color: 'rgba(180,200,240,0.72)',
+    color: 'var(--profile-text-soft)',
     fontSize: 11.5, lineHeight: 1.6,
   },
   lockedPlaceholder: {
@@ -1835,7 +1896,7 @@ const S: Record<string, React.CSSProperties> = {
 
   /* ── Save & Data ── */
   saveHint: {
-    fontSize: 11, color: 'var(--profile-text-faint)', lineHeight: 1.55,
+    fontSize: 12, color: 'var(--profile-text-muted)', lineHeight: 1.55,
   },
   exportRow: {
     display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
@@ -1847,7 +1908,7 @@ const S: Record<string, React.CSSProperties> = {
 
   /* ── Danger zone ── */
   dangerCopy: {
-    fontSize: 12, color: 'rgba(240,223,192,0.68)', lineHeight: 1.6,
+    fontSize: 12, color: 'var(--profile-text-soft)', lineHeight: 1.6,
   },
   dangerBtn: {
     width: '100%', padding: '12px 0', borderRadius: 10,
@@ -1860,7 +1921,7 @@ const S: Record<string, React.CSSProperties> = {
   dangerConfirm: {
     padding: '14px 16px', borderRadius: 12,
     border: '1px solid rgba(184,92,79,0.45)',
-    background: 'rgba(15,5,4,0.7)',
+    background: 'var(--profile-surface-muted)',
     display: 'flex', flexDirection: 'column', gap: 12,
   },
   dangerConfirmText: {
@@ -1885,6 +1946,3 @@ const S: Record<string, React.CSSProperties> = {
 
 // Keep import alive \u2014 warmTheme used by AuthPanel / FriendsPanel sub-trees.
 void warmTheme;
-
-
-

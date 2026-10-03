@@ -25,30 +25,39 @@ export interface UiPalette {
   shadow: string;
   glow: string;
   button: string;
+  titleGradient?: string;
+  buttonTitleGradient?: string;
+  artworkTitleGradient?: string;
+  buttonSurfaceGradient?: string;
+  lightButtonSurfaceGradient?: string;
 }
 
 export const DEFAULT_WARM_PALETTE: UiPalette = {
-  appBackground: 'radial-gradient(circle at 50% -12%, rgba(77, 49, 145, 0.34) 0%, rgba(77, 49, 145, 0) 48%), radial-gradient(circle at 12% 80%, rgba(42, 168, 220, 0.12) 0%, transparent 36%), linear-gradient(180deg, #090a10 0%, #11121b 48%, #05060a 100%)',
-  overlay: 'rgba(4, 5, 10, 0.94)',
-  backdrop: 'rgba(3, 4, 8, 0.76)',
-  surface: 'rgba(13, 15, 24, 0.95)',
-  surfaceStrong: 'rgba(22, 24, 37, 0.98)',
-  surfaceMuted: 'rgba(7, 8, 14, 0.94)',
-  border: 'rgba(226, 235, 255, 0.2)',
-  borderStrong: 'rgba(150, 191, 255, 0.58)',
-  text: '#f8faff',
-  textSoft: 'rgba(248, 250, 255, 0.92)',
-  textMuted: 'rgba(218, 225, 241, 0.74)',
-  textFaint: 'rgba(199, 208, 230, 0.52)',
-  accent: '#61d8ff',
-  accentSoft: '#b39aff',
-  accentDeep: '#21113c',
+  appBackground: 'radial-gradient(circle at 50% -12%, rgba(255, 255, 255, 0.08) 0%, transparent 48%), linear-gradient(180deg, #080808 0%, #141414 48%, #000000 100%)',
+  overlay: 'rgba(0, 0, 0, 0.94)',
+  backdrop: 'rgba(0, 0, 0, 0.76)',
+  surface: 'rgba(15, 15, 15, 0.95)',
+  surfaceStrong: 'rgba(26, 26, 26, 0.98)',
+  surfaceMuted: 'rgba(7, 7, 7, 0.94)',
+  border: 'rgba(255, 255, 255, 0.2)',
+  borderStrong: 'rgba(255, 255, 255, 0.58)',
+  text: '#ffffff',
+  textSoft: 'rgba(255, 255, 255, 0.92)',
+  textMuted: 'rgba(224, 224, 224, 0.74)',
+  textFaint: 'rgba(204, 204, 204, 0.52)',
+  accent: '#ffffff',
+  accentSoft: '#cccccc',
+  accentDeep: '#000000',
   success: '#85b879',
   danger: '#cb5b50',
   cherubim: '#d7ad63',
   shadow: '0 16px 36px rgba(0, 0, 0, 0.34)',
-  glow: '0 10px 28px rgba(111, 101, 255, 0.3), 0 0 18px rgba(88, 211, 255, 0.16)',
-  button: 'linear-gradient(110deg, #60d9ff 0%, #9085ff 54%, #54298f 100%)',
+  glow: '0 10px 28px rgba(255, 255, 255, 0.18), 0 0 18px rgba(255, 255, 255, 0.1)',
+  button: 'linear-gradient(110deg, #ffffff 0%, #dddddd 54%, #aaaaaa 100%)',
+  titleGradient: 'none',
+  buttonTitleGradient: 'none',
+  buttonSurfaceGradient: 'none',
+  lightButtonSurfaceGradient: 'none',
 };
 
 /**
@@ -59,6 +68,107 @@ export const DEFAULT_WARM_PALETTE: UiPalette = {
 export const warmTheme: UiPalette = { ...DEFAULT_WARM_PALETTE };
 
 type Rgba = { r: number; g: number; b: number; a: number };
+
+export const PROFILE_COLOR_HOLD_MS = 60_000;
+export const PROFILE_COLOR_FADE_MS = 3_000;
+
+/** Rotate decorative colors while keeping the UI's reading surfaces neutral. */
+export function getRotatingUiPalette(palette: UiPalette, elapsedMs: number, reducedMotion = false): UiPalette {
+  const colors = [palette.accent, palette.accentSoft, palette.surfaceStrong, palette.text].map(value => {
+    const color = parseColor(value);
+    if (!color) throw new Error(`Invalid profile rotation color: ${value}`);
+    return color;
+  });
+  const slotMs = PROFILE_COLOR_HOLD_MS + PROFILE_COLOR_FADE_MS;
+  const elapsed = Math.max(0, elapsedMs);
+  const index = Math.floor(elapsed / slotMs) % colors.length;
+  const phaseMs = elapsed % slotMs;
+  const blend = reducedMotion ? 0 : clamp01((phaseMs - PROFILE_COLOR_HOLD_MS) / PROFILE_COLOR_FADE_MS);
+  const from = colors[index];
+  const to = colors[(index + 1) % colors.length];
+  const color = {
+    r: from.r + (to.r - from.r) * blend,
+    g: from.g + (to.g - from.g) * blend,
+    b: from.b + (to.b - from.b) * blend,
+    a: 1,
+  };
+  const tint = (strength: number, alpha = 1) => rgbaToCss({
+    r: color.r * strength, g: color.g * strength, b: color.b * strength, a: alpha,
+  });
+  const titleTint = (white: number) => rgbaToCss({
+    r: color.r * (1 - white) + 255 * white,
+    g: color.g * (1 - white) + 255 * white,
+    b: color.b * (1 - white) + 255 * white,
+    a: 1,
+  });
+  const readableTitle = (white: number) => getReadableUiColor(titleTint(white), '#333333');
+  const readableButtonTitle = (strength: number) => getReadableUiColor(tint(strength), '#adadad');
+  return {
+    ...DEFAULT_WARM_PALETTE,
+    appBackground: '#000000',
+    accent: rgbaToCss(color),
+    accentSoft: titleTint(0.35),
+    border: rgbaToCss({ ...color, a: 0.32 }),
+    borderStrong: rgbaToCss({ ...color, a: 0.68 }),
+    glow: `0 0 18px ${rgbaToCss({ ...color, a: 0.28 })}, 0 0 36px ${rgbaToCss({ ...color, a: 0.12 })}`,
+    accentDeep: `#${[color.r, color.g, color.b].map(channel => clamp255(channel * 0.12).toString(16).padStart(2, '0')).join('')}`,
+    titleGradient: `linear-gradient(110deg, ${readableTitle(0)} 0%, ${readableTitle(0.75)} 54%, ${readableTitle(0)} 100%)`,
+    buttonTitleGradient: `linear-gradient(110deg, ${readableButtonTitle(0.9)} 0%, ${readableButtonTitle(0.25)} 54%, ${readableButtonTitle(0.9)} 100%)`,
+    buttonSurfaceGradient: 'linear-gradient(110deg, rgba(24, 24, 24, 1) 0%, rgba(12, 12, 12, 1) 54%, rgba(0, 0, 0, 1) 100%)',
+    lightButtonSurfaceGradient: 'linear-gradient(110deg, rgba(255, 255, 255, 1) 0%, rgba(244, 244, 244, 1) 54%, rgba(230, 230, 230, 1) 100%)',
+  };
+}
+
+export function getUiColorModePalette(palette: UiPalette, mode: 'light' | 'dark'): UiPalette {
+  const light = mode === 'light';
+  const background = light ? '#e6e6e6' : '#1a1a1a';
+  const accent = getReadableUiColor(palette.accent, background);
+  const accentSoft = getReadableUiColor(palette.accentSoft, background);
+  const color = parseColor(accent);
+  if (!color) throw new Error(`Invalid UI accent color: ${accent}`);
+  const neutral = {
+    appBackground: light ? '#ffffff' : '#000000',
+    overlay: light ? 'rgba(255, 255, 255, 0.96)' : 'rgba(0, 0, 0, 0.94)',
+    backdrop: light ? 'rgba(0, 0, 0, 0.38)' : 'rgba(0, 0, 0, 0.76)',
+    surface: light ? 'rgba(246, 246, 246, 0.98)' : 'rgba(12, 12, 12, 0.98)',
+    surfaceStrong: light ? 'rgba(255, 255, 255, 0.98)' : 'rgba(20, 20, 20, 0.98)',
+    surfaceMuted: light ? 'rgba(236, 236, 236, 0.98)' : 'rgba(5, 5, 5, 0.98)',
+    accent,
+    accentSoft,
+    border: rgbaToCss({ ...color, a: light ? 0.38 : 0.32 }),
+    borderStrong: rgbaToCss({ ...color, a: 0.68 }),
+    glow: `0 0 18px ${rgbaToCss({ ...color, a: 0.28 })}, 0 0 36px ${rgbaToCss({ ...color, a: 0.12 })}`,
+    success: getReadableUiColor(palette.success, background),
+    danger: getReadableUiColor(palette.danger, background),
+  };
+  if (!light) return {
+    ...palette,
+    ...neutral,
+    text: '#ffffff',
+    textSoft: 'rgba(255, 255, 255, 0.92)',
+    textMuted: 'rgba(255, 255, 255, 0.78)',
+    textFaint: 'rgba(255, 255, 255, 0.62)',
+  };
+  return {
+    ...palette,
+    ...neutral,
+    text: '#111111',
+    textSoft: 'rgba(17, 17, 17, 0.92)',
+    textMuted: 'rgba(17, 17, 17, 0.88)',
+    textFaint: 'rgba(17, 17, 17, 0.78)',
+    shadow: '0 12px 30px rgba(0, 0, 0, 0.14)',
+    buttonSurfaceGradient: palette.lightButtonSurfaceGradient ?? 'none',
+    titleGradient: palette.buttonTitleGradient && palette.buttonTitleGradient !== 'none'
+      ? palette.buttonTitleGradient
+      : 'linear-gradient(110deg, #000000 0%, #222222 54%, #000000 100%)',
+    buttonTitleGradient: palette.buttonTitleGradient && palette.buttonTitleGradient !== 'none'
+      ? palette.buttonTitleGradient
+      : 'linear-gradient(110deg, #000000 0%, #222222 54%, #000000 100%)',
+    artworkTitleGradient: palette.titleGradient && palette.titleGradient !== 'none'
+      ? palette.titleGradient
+      : 'linear-gradient(110deg, #ffffff 0%, #dddddd 54%, #ffffff 100%)',
+  };
+}
 
 function clamp01(n: number): number {
   return Math.max(0, Math.min(1, n));
@@ -165,8 +275,38 @@ function withAlpha(c: Rgba, a: number): Rgba {
   return { r: c.r, g: c.g, b: c.b, a: clamp01(a) };
 }
 
+export function getReadableUiColor(foreground: string, background: string): string {
+  const fg = parseColor(foreground);
+  const bg = parseColor(background);
+  if (!fg || !bg) throw new Error(`Invalid UI contrast colors: ${foreground}, ${background}`);
+  const opaqueBg = bg.a < 1 ? compositeOver(bg, { r: 20, g: 28, b: 40, a: 1 }) : bg;
+  if (contrastRatio(fg, opaqueBg) >= 4.5) return foreground;
+  const black = { r: 0, g: 0, b: 0, a: 1 };
+  const white = { r: 255, g: 255, b: 255, a: 1 };
+  const target = contrastRatio(black, opaqueBg) > contrastRatio(white, opaqueBg) ? black : white;
+  let low = 0;
+  let high = 1;
+  let readable = target;
+  for (let step = 0; step < 12; step++) {
+    const blend = (low + high) / 2;
+    const candidate = {
+      r: clamp255(fg.r + (target.r - fg.r) * blend),
+      g: clamp255(fg.g + (target.g - fg.g) * blend),
+      b: clamp255(fg.b + (target.b - fg.b) * blend),
+      a: 1,
+    };
+    if (contrastRatio(candidate, opaqueBg) >= 4.5) {
+      readable = candidate;
+      high = blend;
+    } else {
+      low = blend;
+    }
+  }
+  return rgbaToCss(readable);
+}
+
 export function normalizeUiPalette(palette: UiPalette): UiPalette {
-  const fallbackBg: Rgba = { r: 20, g: 28, b: 40, a: 1 };
+  const fallbackBg: Rgba = { r: 20, g: 20, b: 20, a: 1 };
   const bgs = [palette.surface, palette.surfaceStrong, palette.surfaceMuted]
     .map(parseColor)
     .filter((v): v is Rgba => !!v)
@@ -199,9 +339,9 @@ export function normalizeUiPalette(palette: UiPalette): UiPalette {
     return s > minContrastAgainstBackgrounds(acc, bgs) ? c : acc;
   }, best);
 
-  const chosenSoft = withAlpha(chosenText, 0.92);
-  const chosenMuted = withAlpha(chosenText, 0.78);
-  const chosenFaint = withAlpha(chosenText, 0.62);
+  const chosenSoft = withAlpha(chosenText, Math.max(0.92, parseColor(palette.textSoft)?.a ?? 0.92));
+  const chosenMuted = withAlpha(chosenText, Math.max(0.78, parseColor(palette.textMuted)?.a ?? 0.78));
+  const chosenFaint = withAlpha(chosenText, Math.max(0.62, parseColor(palette.textFaint)?.a ?? 0.62));
 
   return {
     ...palette,
@@ -240,7 +380,13 @@ function bumpThemeVersion(): void {
 
 /** Overwrite warmTheme in-place with `palette`. */
 export function applyUiPalette(palette: UiPalette): void {
-  Object.assign(warmTheme, normalizeUiPalette(palette));
+  Object.assign(warmTheme, normalizeUiPalette(palette), {
+    buttonSurfaceGradient: palette.buttonSurfaceGradient ?? 'none',
+    lightButtonSurfaceGradient: palette.lightButtonSurfaceGradient ?? 'none',
+  });
+  warmTheme.titleGradient = palette.titleGradient ?? 'none';
+  warmTheme.buttonTitleGradient = palette.buttonTitleGradient ?? 'none';
+  warmTheme.artworkTitleGradient = palette.artworkTitleGradient ?? palette.titleGradient ?? 'none';
   publishThemeCssVariables();
   bumpThemeVersion();
 }
@@ -248,6 +394,7 @@ export function applyUiPalette(palette: UiPalette): void {
 /** Reset warmTheme to the default warm palette. */
 export function resetUiPalette(): void {
   Object.assign(warmTheme, DEFAULT_WARM_PALETTE);
+  warmTheme.artworkTitleGradient = 'none';
   publishThemeCssVariables();
   bumpThemeVersion();
 }
@@ -268,7 +415,7 @@ function publishThemeCssVariables(): void {
   };
   const colorToRgbChannels = (value: string): string => {
     const color = parseColor(value);
-    return color ? `${clamp255(color.r)}, ${clamp255(color.g)}, ${clamp255(color.b)}` : '97, 216, 255';
+    return color ? `${clamp255(color.r)}, ${clamp255(color.g)}, ${clamp255(color.b)}` : '255, 255, 255';
   };
   setVar('--profile-app-background', warmTheme.appBackground);
   setVar('--profile-text', warmTheme.text);
@@ -278,15 +425,28 @@ function publishThemeCssVariables(): void {
   setVar('--profile-accent', warmTheme.accent);
   setVar('--profile-accent-soft', warmTheme.accentSoft);
   setVar('--profile-accent-deep', warmTheme.accentDeep);
+  setVar('--profile-accent-text', getReadableUiColor(warmTheme.accentDeep, warmTheme.accent));
+  setVar('--profile-accent-soft-text', getReadableUiColor(warmTheme.accentDeep, warmTheme.accentSoft));
   setVar('--profile-accent-glass', warmTheme.surfaceMuted);
   setVar('--profile-border', warmTheme.border);
   setVar('--profile-border-strong', warmTheme.borderStrong);
   setVar('--profile-surface', warmTheme.surface);
   setVar('--profile-surface-strong', warmTheme.surfaceStrong);
   setVar('--profile-surface-muted', warmTheme.surfaceMuted);
+  setVar('--profile-glow', warmTheme.glow);
+  setVar('--profile-shadow', warmTheme.shadow);
+  setVar('--profile-success', warmTheme.success);
+  setVar('--profile-danger', warmTheme.danger);
   setVar('--profile-accent-rgb', colorToRgbChannels(warmTheme.accent));
   setVar('--profile-accent-soft-rgb', colorToRgbChannels(warmTheme.accentSoft));
   setVar('--profile-button', warmTheme.button);
+  setVar('--profile-button-surface-gradient', warmTheme.buttonSurfaceGradient ?? 'none');
+  setVar('--profile-button-text', warmTheme.accentDeep);
+  setVar('--profile-title-gradient', warmTheme.titleGradient ?? 'none');
+  setVar('--profile-button-title-gradient', warmTheme.buttonTitleGradient ?? 'none');
+  setVar('--profile-artwork-title-gradient', warmTheme.artworkTitleGradient ?? warmTheme.titleGradient ?? 'none');
+  root.toggleAttribute('data-profile-title-gradient', warmTheme.titleGradient !== 'none' && !!warmTheme.titleGradient);
+  root.toggleAttribute('data-profile-button-gradient', warmTheme.buttonSurfaceGradient !== 'none' && !!warmTheme.buttonSurfaceGradient);
 }
 
 export const uiTypography = {

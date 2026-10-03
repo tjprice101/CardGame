@@ -76,8 +76,8 @@ describe('live card face rendering', () => {
     expect(legacyInfinite.every(card => !CardRegistry.get(card.definitionId))).toBe(true);
     expect(collectionSource).toContain('legacyInfiniteCards');
     expect(collectionSource).toContain('legacyInfinite: true');
-    expect(collectionSource).toContain("label: 'Neutrality'");
-    expect(collectionSource).toContain('legacyInfiniteEntries.length > 0');
+    expect(collectionSource).toContain('getCardSet(entry.card.definitionId) === setLabel');
+    expect(collectionSource).toContain('infiniteSections.length > 0');
     expect(collectionSource).toContain('Archived Infinite');
   });
 
@@ -174,8 +174,14 @@ describe('live card face rendering', () => {
     expect(menuSource).toContain('main-menu-collection-grid');
     expect(menuSource).toContain('main-menu-play-grid');
     expect(menuSource).toContain('main-menu-begin-turn');
+    expect(menuSource).toContain('captionColor: theme.accentDeep');
+    expect(animationSource).toContain('.main-menu-reference-hub .main-menu-begin-turn > span { color: var(--menu-button-text);');
+    expect(animationSource).toContain('.main-menu-reference-hub .main-menu-begin-turn > strong { color: var(--menu-button-text);');
+    expect(animationSource).toContain('.main-menu-reference-hub .main-menu-begin-turn > small { color: var(--menu-button-text);');
+    expect(animationSource).not.toMatch(/(?:^|[;{\s])color: transparent !important;/);
+    expect(menuSource).not.toContain("textShadow: '0 2px 12px rgba(0,0,0,0.6)'");
     expect(menuSource).toContain('main-menu-reference-hub');
-    expect(menuSource).toContain('main-menu-center-stage');
+    expect(menuSource).not.toContain('main-menu-center-stage');
     expect(menuSource).toContain('main-menu-daily-highlights');
     expect(menuSource).toContain('main-menu-resource-zone');
     expect(menuSource).toContain('main-menu-daily-heading');
@@ -183,6 +189,9 @@ describe('live card face rendering', () => {
     expect(menuSource).toContain("showCaption={action.id === 'eternitys-wake' && action.disabled}");
     expect(menuSource).toContain('Requires 3 Enigmatic cards');
     expect(menuSource).not.toContain('main-menu-stage-figure');
+    expect(menuSource).not.toContain('main-menu-stage-orbit');
+    expect(menuSource).not.toContain('main-menu-stage-sigil');
+    expect(menuSource).not.toContain('main-menu-stage-card');
     expect(menuSource).not.toContain('rgba(75,48,137,0.58)');
     expect(menuSource).toContain('label="Shards" value={shards.toLocaleString()} tone="crimson" theme={uiTheme} onClick={props.onCardStore} showPlus={false}');
     expect(menuSource).not.toContain('has-button-frame');
@@ -230,6 +239,184 @@ describe('live card face rendering', () => {
     expect(menuSource).not.toContain('role="tablist" aria-label="Main menu sections"');
   });
 
+  it('darkens disabled actions and shows monochrome locks with requirements for gated menu features', () => {
+    const css = readFileSync(join(process.cwd(), 'src/styles/animations.css'), 'utf8');
+    const source = readFileSync(join(process.cwd(), 'src/ui/menu/MainMenuHub.tsx'), 'utf8');
+    const effect = css.match(/button:disabled::after \{([^}]+)\}/)?.[1];
+    expect(effect).toBeDefined();
+    expect(effect).toContain('background: rgba(0,0,0,0.18);');
+    expect(effect).toContain('pointer-events: none;');
+    expect(effect).not.toContain('blur');
+    expect(effect).not.toContain('animation');
+    expect(source).toContain('function LockedFeatureOverlay');
+    expect(source).toContain('className="main-menu-lock-condition">{condition}');
+    expect(source.match(/<LockedFeatureOverlay/g)).toHaveLength(5);
+    expect(css).toContain('button:disabled:has(> .main-menu-lock-overlay) { opacity: 0.78; }');
+    expect(css).toContain('.main-menu-lock-heading > strong');
+    expect(css).toContain('background: linear-gradient(135deg, var(--profile-surface-strong, #1a1a1a), var(--profile-surface-muted, #070707));');
+  });
+
+  it('extends synchronized gradients to bold button labels across the themed screens', () => {
+    const css = readFileSync(join(process.cwd(), 'src/styles/animations.css'), 'utf8');
+    expect(css).toContain('button:not(:disabled) .ui-button-title.ui-button-title-on-light');
+    expect(css).toContain('background-image: var(--profile-button-title-gradient);');
+    for (const file of [
+      'src/ui/menu/MainMenuHub.tsx',
+      'src/ui/deck/DeckBuilder.tsx',
+      'src/ui/store/CardPackStore.tsx',
+      'src/ui/menus/TutorialModal.tsx',
+      'src/ui/menus/EnigmaModal.tsx',
+      'src/ui/menus/QuestsModal.tsx',
+      'src/ui/menus/AchievementsModal.tsx',
+    ]) {
+      expect(readFileSync(join(process.cwd(), file), 'utf8')).toContain('ui-button-title');
+    }
+  });
+
+  it('limits legibility shadows to text over artwork, not ordinary text or gradient controls', () => {
+    const css = readFileSync(join(process.cwd(), 'src/styles/animations.css'), 'utf8');
+    expect(css).toContain('--ui-text-legibility-shadow: -0.6px 0 #000');
+    expect(css).toContain('text-shadow: var(--ui-text-legibility-shadow);');
+    expect(css).not.toMatch(/#root\s*\{[^}]*text-shadow/);
+    expect(css).not.toContain('text-shadow: inherit;');
+    const lightButtonRule = css.match(/html\[data-profile-title-gradient\] button:not\(:disabled\) \.ui-button-title\.ui-button-title-on-light:not\([^{}]+\) \{([^}]+)\}/)?.[1];
+    expect(lightButtonRule).toContain('background-image: var(--profile-button-title-gradient);');
+    expect(lightButtonRule).toContain('text-shadow: none !important;');
+    expect(lightButtonRule).toContain('filter: none;');
+    const gradientRules = [...css.matchAll(/([^{}]+)\{([^{}]*-webkit-text-fill-color: transparent;[^{}]*)\}/g)]
+      .filter(match => match[1].includes('html[data-profile-title-gradient]'));
+    expect(gradientRules).toHaveLength(4);
+    for (const rule of gradientRules) {
+      expect(rule[2]).toContain('text-shadow: none !important;');
+      expect(rule[2]).not.toContain('drop-shadow');
+    }
+    const authSource = readFileSync(join(process.cwd(), 'src/ui/social/AuthPanel.tsx'), 'utf8');
+    expect(authSource).toContain('buttonText: `var(--profile-button-text, ${warmTheme.accentDeep})`');
+  });
+
+  it('wires saved light/dark button modes independently of the profile rotation', () => {
+    const settings = readFileSync(join(process.cwd(), 'src/ui/settings/SettingsPanel.tsx'), 'utf8');
+    const app = readFileSync(join(process.cwd(), 'src/app/App.tsx'), 'utf8');
+    const css = readFileSync(join(process.cwd(), 'src/styles/animations.css'), 'utf8');
+    expect(settings).toContain('label="Light Mode or Dark Mode"');
+    expect(settings).toContain('Save Settings to apply.');
+    expect(app).toContain("dataset.buttonColorMode = settings.buttonColorMode === 'light' ? 'light' : 'dark'");
+    expect(css).toContain('--button-mode-title-gradient: var(--profile-title-gradient);');
+    expect(css).toContain('--button-mode-title-gradient: var(--profile-button-title-gradient);');
+    expect(css).toContain('html[data-button-color-mode][data-profile-button-gradient]');
+    expect(css).toContain('--button-mode-gradient: var(--profile-button-surface-gradient);');
+    expect(css).toContain('[style*="url("],');
+    expect(css).toContain('--button-mode-title-gradient: linear-gradient(110deg, #ffffff 0%, #dddddd 54%, #ffffff 100%);');
+    expect(css).toContain('html[data-button-color-mode] button:not(:disabled) :is(');
+    expect(css).toContain(':not(button, button *, [data-ui-special-text], [data-ui-special-text] *)');
+    for (const file of ['EternitysWake.tsx', 'BossCodex.tsx']) {
+      expect(readFileSync(join(process.cwd(), 'src/ui/eternitysWake', file), 'utf8')).toContain('data-ui-special-text');
+    }
+  });
+
+  it('preserves transparent controls and artwork contrast instead of painting rectangular button blocks', () => {
+    const css = readFileSync(join(process.cwd(), 'src/styles/animations.css'), 'utf8');
+    const modeSurfaceRules = [...css.matchAll(/html\[data-button-color-mode\] button:where\(([^{}]+)\):not\(:where\(([^{}]+)\)\) \{([^{}]+)\}/g)]
+      .filter(rule => rule[3].includes('background-image: var(--button-mode-gradient)'));
+    expect(modeSurfaceRules).toHaveLength(1);
+    for (const rule of modeSurfaceRules) {
+      expect(rule[1]).toContain('[style*="gradient("]');
+      expect(rule[2]).toContain('[style*="background: transparent"]');
+      expect(rule[2]).toContain('[style*="background: none"]');
+      expect(rule[2]).toContain('.main-menu-progress-tile');
+      expect(rule[2]).toContain('.main-menu-event-card');
+      expect(rule[2]).toContain('.attack-sequence-star');
+      expect(rule[3]).not.toContain('border-color:');
+    }
+    expect(css).toMatch(/\.main-menu-progress-tile \{\s*background: transparent !important;/);
+    expect(css).toMatch(/\.main-menu-progress-label \{\s*color: #ffffff !important;/);
+    expect(css).toContain('background-image: var(--profile-artwork-title-gradient) !important;');
+    expect(css).toContain('.main-menu-status-zone small,');
+  });
+
+  it('keeps artwork headings light and achievement text undimmed in light mode', () => {
+    const css = readFileSync(join(process.cwd(), 'src/styles/animations.css'), 'utf8');
+    expect(css).toContain('.ui-artwork-header [data-ui-artwork-copy]');
+    expect(css).toContain('background-image: var(--profile-artwork-title-gradient) !important;');
+    for (const file of [
+      'src/ui/menus/AchievementsModal.tsx', 'src/ui/menus/QuestsModal.tsx',
+      'src/ui/deck/DeckViewer.tsx', 'src/ui/store/CollectionViewer.tsx',
+      'src/ui/store/CardPackStore.tsx', 'src/ui/menus/FractureModal.tsx',
+    ]) {
+      const source = readFileSync(join(process.cwd(), file), 'utf8');
+      expect(source).toContain('ui-artwork-header');
+      expect(source).toContain('data-ui-artwork-copy');
+    }
+    const achievements = readFileSync(join(process.cwd(), 'src/ui/menus/AchievementsModal.tsx'), 'utf8');
+    expect(achievements).not.toContain('opacity: !a.unlocked');
+    expect(achievements).toContain("position: 'relative', display: 'flex', flexDirection: 'column', flex: 1");
+    expect(achievements).toContain('useThemeVersion();');
+  });
+
+  it('separates filled-pill text from surface captions and keeps semantic labels live', () => {
+    const css = readFileSync(join(process.cwd(), 'src/styles/animations.css'), 'utf8');
+    expect(css).toMatch(/\.login-calendar-tabs button\.is-active \{[^}]*color: var\(--profile-accent-text\)/);
+    expect(css).toMatch(/\.celestial-store-screen \.celestial-store-tag \{[^}]*color: var\(--profile-accent-text\)/);
+    expect(css).toMatch(/\.celestial-store-screen \.celestial-store-tag\.is-event \{[^}]*color: var\(--profile-accent-soft-text\)/);
+    const mastery = readFileSync(join(process.cwd(), 'src/ui/menus/CardMasteryModal.tsx'), 'utf8');
+    expect(mastery).toContain('useThemeVersion();');
+    expect(mastery).toContain('getReadableUiColor(tierColor(tier), warmTheme.surfaceStrong)');
+    expect(mastery).not.toContain('color: P.accentDeep, fontFamily');
+    expect(mastery).not.toContain('opacity: claimed ?');
+    const abilities = readFileSync(join(process.cwd(), 'src/ui/store/AbilityMaterialization.tsx'), 'utf8');
+    expect(abilities).toContain('useThemeVersion();');
+    expect(abilities).toContain('getReadableUiColor(tierColor, warmTheme.surfaceStrong)');
+    for (const file of ['ChatWindow.tsx', 'SendDeckPicker.tsx', 'SendGiftModal.tsx']) {
+      const source = readFileSync(join(process.cwd(), 'src/ui/social', file), 'utf8');
+      expect(source).toContain("background: 'var(--profile-surface-strong)'");
+      expect(source).toContain("color: 'var(--profile-text-muted)'");
+    }
+  });
+
+  it('anchors the Resources heading to the resource group while preserving the mobile row', () => {
+    const css = readFileSync(join(process.cwd(), 'src/styles/animations.css'), 'utf8');
+    expect(css).toMatch(/\.main-menu-resource-zone \{[^}]*width: max-content;[^}]*max-width: 100%;[^}]*justify-self: end;/);
+    expect(css).toContain('.main-menu-resource-zone { width: 100%; justify-self: stretch; }');
+    expect(css).toContain('.main-menu-resource-zone > .main-menu-section-heading { width: 100%;');
+  });
+
+  it('keeps pack artwork visible and its copy light in both appearance modes', () => {
+    const store = readFileSync(join(process.cwd(), 'src/ui/store/CardPackStore.tsx'), 'utf8');
+    const css = readFileSync(join(process.cwd(), 'src/styles/animations.css'), 'utf8');
+    expect(store).toContain('className="celestial-store-pack-banner ui-artwork-header"');
+    expect(store).toContain('rgba(8,7,14,0.38), rgba(12,10,20,0.12) 68%, rgba(12,10,20,0.04)');
+    expect(store).toContain('<p data-ui-artwork-copy>{pack.description}</p>');
+    expect(css).toMatch(/\.celestial-store-pack-banner::after \{[^}]*rgba\(8,7,12,\.28\)/);
+    expect(store).not.toContain('THE CELESTIAL ARCHIVE');
+    expect(store).toContain('ui-artwork-header card-store-header');
+    expect(store).toContain("background: active ? 'var(--profile-surface-strong)' : 'var(--profile-surface-muted)'");
+  });
+
+  it('keeps profile, inventory, deck captions, and pack headings on matching surface roles', () => {
+    const profile = readFileSync(join(process.cwd(), 'src/ui/player/PlayerInformationPage.tsx'), 'utf8');
+    expect(profile).toContain("background: active ? 'var(--profile-surface-strong)' : 'var(--profile-surface)'");
+    expect(profile).not.toContain('opacity: unlocked ? 1 : 0.52');
+    expect(profile).not.toContain('opacity: unlocked ? 1 : 0.62');
+    const legacyProfile = readFileSync(join(process.cwd(), 'src/ui/profile/ProfilePage.tsx'), 'utf8');
+    expect(legacyProfile).toContain('background: active ? warmTheme.surfaceStrong : warmTheme.surface');
+    expect(legacyProfile).not.toContain('opacity: unlocked ? 1 : 0.42');
+    expect(profile).not.toContain('color: active ? G.goldSoft : \'rgba(240,223,192');
+    const inventory = readFileSync(join(process.cwd(), 'src/ui/menus/InventoryModal.tsx'), 'utf8');
+    expect(inventory).toContain('background: warmTheme.appBackground');
+    expect(inventory).toContain('useThemeVersion();');
+    const titles = readFileSync(join(process.cwd(), 'src/ui/profile/TitlesModal.tsx'), 'utf8');
+    expect(titles).not.toContain('opacity(0.52)');
+    expect(titles).toContain('getReadableUiColor(GC[group].text, surfaceColor)');
+    expect(profile).toContain('palette={displayPalette}');
+    const pack = readFileSync(join(process.cwd(), 'src/ui/store/PackOpeningModal.tsx'), 'utf8');
+    expect(pack).toMatch(/title: \{[^}]*color: 'var\(--profile-text\)'/);
+    const viewer = readFileSync(join(process.cwd(), 'src/ui/deck/DeckViewer.tsx'), 'utf8');
+    expect(viewer).toContain("color: P.textMuted, minWidth: 28");
+    const analyze = readFileSync(join(process.cwd(), 'src/ui/deck/tabs/DeckBuilderAnalyzeTab.tsx'), 'utf8');
+    expect(analyze).toContain("getReadableUiColor(accent, warmTheme.surfaceStrong)");
+    expect(analyze).not.toContain('rgba(190,215,245,0.40)');
+  });
+
   it('keeps Card Store history tied to live pity and pack-open records', () => {
     const storeSource = readFileSync(join(process.cwd(), 'src/ui/store/CardPackStore.tsx'), 'utf8');
 
@@ -242,6 +429,19 @@ describe('live card face rendering', () => {
     expect(storeSource).toContain('entry.rarityCounts[rarity]');
     expect(storeSource).toContain('<time dateTime={new Date(entry.ts).toISOString()}>');
     expect(storeSource).not.toContain('Math.max(0, 3 - n)');
+  });
+
+  it('themes the shop ability archive and history without recoloring rarity indicators', () => {
+    const ability = readFileSync(join(process.cwd(), 'src/ui/store/AbilityMaterialization.tsx'), 'utf8');
+    const css = readFileSync(join(process.cwd(), 'src/styles/animations.css'), 'utf8');
+    expect(ability).toContain('className="ability-materialization-screen"');
+    expect(ability).toContain('className="ui-gradient-text">{ability.name}');
+    expect(ability).toContain('var(--profile-button-text)');
+    expect(ability).not.toContain('rgba(110,185,240');
+    expect(ability).not.toContain('rgba(200,223,242');
+    expect(ability).toContain("tier === 'transcendent'");
+    expect(css).toContain('background:var(--profile-app-background); color:var(--profile-text);');
+    expect(css).toContain('.pack-history-rarities span { color:var(--history-rarity');
   });
 
   it('uses the active profile palette for Main Menu and Login Calendar chrome', () => {
@@ -297,7 +497,7 @@ describe('live card face rendering', () => {
     expect(styleSource).not.toMatch(/:hover[^{}]*\{[^}]*\bscale\s*:/);
     expect(styleSource).toContain('.main-menu-reference-hub .menu-tactile-btn:not(:disabled):hover');
     expect(styleSource).toContain('filter: brightness(1.26) saturate(1.18)');
-    expect(menuSource).toContain("btn.style.filter = 'brightness(1.3) saturate(1.24)'");
+    expect(menuSource).toContain("btn.style.filter = 'brightness(1.08)'");
     for (const relativePath of [
       'src/ui/menu/MainMenuHub.tsx',
       'src/ui/eternitysWake/BossResultModal.tsx',

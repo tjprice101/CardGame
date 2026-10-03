@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useStore, selectProgress } from '@/state/store';
-import { uiTypography, warmTheme } from '@/ui/theme';
+import { getReadableUiColor, uiTypography, warmTheme } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { MASTERY_TIERS, RESONANCE_PER_COLLECTION_POWER_HUNDREDTH, computeGlobalResonanceScore, getCollectionPowerMultiplier, getMasteryClaimKey, getMaximumCollectionPowerMultiplier, listMasteryProgress } from '@/systems/progression/cardMastery';
 import type { MasteryView } from '@/systems/progression/cardMastery';
@@ -51,6 +52,10 @@ function tierColor(tier: number): string {
   return TIER_PALETTE[(tier - 1) % TIER_PALETTE.length];
 }
 
+function tierTextColor(tier: number): string {
+  return getReadableUiColor(tierColor(tier), warmTheme.surfaceStrong);
+}
+
 // ── System info panel content ──────────────────────────────────────────────
 function SystemInfoPanel() {
   const P = getThemePalette();
@@ -67,7 +72,7 @@ function SystemInfoPanel() {
       <div>
         <div style={{
           fontSize: 10, letterSpacing: 2.5, textTransform: 'uppercase',
-          color: P.accentDeep, fontFamily: uiTypography.display, marginBottom: 8,
+          color: P.accentSoft, fontFamily: uiTypography.display, marginBottom: 8,
         }}>What is Card-born Tier?</div>
         <div style={{ fontSize: 13, color: P.text, lineHeight: 1.65, fontFamily: uiTypography.body }}>
           Each card played from your hand adds <span style={{ color: P.accent, fontWeight: 700 }}>1 Card-light</span> to that card's shared definition progress.
@@ -78,7 +83,7 @@ function SystemInfoPanel() {
       </div>
 
       <div>
-        <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: P.accentDeep, fontFamily: uiTypography.display, marginBottom: 8 }}>
+        <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: P.accentSoft, fontFamily: uiTypography.display, marginBottom: 8 }}>
           Global Resonance Score
         </div>
         <div style={{ fontSize: 13, color: P.text, lineHeight: 1.65, fontFamily: uiTypography.body }}>
@@ -96,7 +101,7 @@ function SystemInfoPanel() {
       </div>
 
       <div>
-        <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: P.accentDeep, fontFamily: uiTypography.display, marginBottom: 8 }}>
+        <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: P.accentSoft, fontFamily: uiTypography.display, marginBottom: 8 }}>
           Tier Milestones
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -108,11 +113,11 @@ function SystemInfoPanel() {
               background: 'rgba(255,255,255,0.02)',
               border: `1px solid rgba(180,140,80,0.12)`,
             }}>
-              <span style={{ fontSize: 14, color: tierColor(tier.tier), width: 18, textAlign: 'center', flexShrink: 0 }}>
+              <span style={{ fontSize: 14, color: tierTextColor(tier.tier), width: 18, textAlign: 'center', flexShrink: 0 }}>
                 {TIER_ICONS[tier.tier - 1]}
               </span>
               <span style={{
-                fontSize: 12, fontWeight: 700, color: tierColor(tier.tier),
+                fontSize: 12, fontWeight: 700, color: tierTextColor(tier.tier),
                 fontFamily: uiTypography.display, letterSpacing: 0.5, width: 110, flexShrink: 0,
               }}>
                 T{tier.tier} · {tier.label}
@@ -132,7 +137,7 @@ function SystemInfoPanel() {
       </div>
 
       <div>
-        <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: P.accentDeep, fontFamily: uiTypography.display, marginBottom: 8 }}>
+        <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: P.accentSoft, fontFamily: uiTypography.display, marginBottom: 8 }}>
           Tier Progress from Boss Content
         </div>
         <div style={{ fontSize: 13, color: P.text, lineHeight: 1.65, fontFamily: uiTypography.body, marginBottom: 10 }}>
@@ -171,7 +176,7 @@ function SystemInfoPanel() {
       </div>
 
       <div>
-        <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: P.accentDeep, fontFamily: uiTypography.display, marginBottom: 8 }}>
+        <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: P.accentSoft, fontFamily: uiTypography.display, marginBottom: 8 }}>
           Card-light Resonance
         </div>
         <div style={{ fontSize: 13, color: P.text, lineHeight: 1.65, fontFamily: uiTypography.body }}>
@@ -201,7 +206,7 @@ function MasteryCardRow({ m, claimCardMastery, progress }: {
 
   return (
     <div style={{
-      background: hasClaimable ? withAlpha(P.accent, 0.08) : P.panel,
+      background: P.panelStrong,
       border: `1px solid ${hasClaimable ? P.borderStrong : P.border}`,
       borderRadius: 10,
       padding: '10px 14px',
@@ -215,7 +220,7 @@ function MasteryCardRow({ m, claimCardMastery, progress }: {
           background: m.reachedTier > 0 ? `rgba(${hexToRgb(highestTierColor)},0.15)` : 'rgba(255,255,255,0.04)',
           border: `1px solid ${m.reachedTier > 0 ? highestTierColor + '55' : P.border}`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 14, color: highestTierColor,
+          fontSize: 14, color: m.reachedTier > 0 ? tierTextColor(m.reachedTier) : P.textMuted,
         }}>
           {m.reachedTier > 0 ? TIER_ICONS[m.reachedTier - 1] : '◇'}
         </div>
@@ -287,15 +292,10 @@ function MasteryCardRow({ m, claimCardMastery, progress }: {
                 flex: 1, minWidth: 0,
                 padding: '4px 6px', borderRadius: 5,
                 fontSize: 10, fontFamily: uiTypography.display,
-                background: claimed
-                  ? 'rgba(255,255,255,0.03)'
-                  : reached
-                    ? `rgba(${hexToRgb(tc)},0.18)`
-                    : 'rgba(255,255,255,0.03)',
-                color: claimed ? P.textFaint : reached ? tc : 'rgba(255,255,255,0.18)',
+                background: P.panelStrong,
+                color: claimed ? P.textMuted : reached ? tierTextColor(tier.tier) : P.textFaint,
                 border: `1px solid ${claimed ? 'rgba(255,255,255,0.06)' : reached ? withAlpha(tc, 0.4) : 'rgba(255,255,255,0.08)'}`,
                 cursor: reached && !claimed ? 'pointer' : 'default',
-                opacity: claimed ? 0.5 : 1,
                 textAlign: 'center',
                 transition: 'all 0.15s',
               }}
@@ -346,6 +346,7 @@ function withAlpha(color: unknown, alpha: number): string {
 
 // ── Main component ─────────────────────────────────────────────────────────
 export default function CardMasteryModal({ onClose }: Props) {
+  useThemeVersion();
   const P = getThemePalette();
   const progress = useStore(selectProgress);
   const claimCardMastery = useStore(s => s.claimCardMastery);
@@ -425,7 +426,7 @@ export default function CardMasteryModal({ onClose }: Props) {
           <div style={{ flex: 1 }}>
             <div style={{
               fontSize: 10, letterSpacing: 3.5, textTransform: 'uppercase',
-              color: P.accentDeep, fontFamily: uiTypography.display, marginBottom: 6,
+              color: P.accentSoft, fontFamily: uiTypography.display, marginBottom: 6,
             }}>
               CARD-BORN PROGRESSION
             </div>
@@ -581,9 +582,9 @@ export default function CardMasteryModal({ onClose }: Props) {
                   padding: '7px 18px', borderRadius: 8, cursor: claimableSummary.tiersClaimable > 0 ? 'pointer' : 'default',
                   fontFamily: uiTypography.display, fontSize: 12, fontWeight: 700, letterSpacing: 0.5,
                   background: claimableSummary.tiersClaimable > 0
-                    ? `linear-gradient(135deg, ${P.accentDeep}, ${P.accent})`
+                    ? warmTheme.button
                     : withAlpha(P.text, 0.04),
-                  color: claimableSummary.tiersClaimable > 0 ? '#0c1e34' : P.textFaint,
+                  color: claimableSummary.tiersClaimable > 0 ? P.accentDeep : P.textFaint,
                   border: `1px solid ${claimableSummary.tiersClaimable > 0 ? P.borderStrong : P.border}`,
                   boxShadow: claimableSummary.tiersClaimable > 0 ? `0 4px 16px ${P.accentGlowColor}` : 'none',
                   transition: 'all 0.2s',

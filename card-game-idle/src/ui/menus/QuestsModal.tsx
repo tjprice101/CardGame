@@ -88,7 +88,7 @@ function QuestCard({ quest, cadence, resonanceScore, onClaim }: { quest: QuestIn
           {quest.progress}<span style={{ color: warmTheme.textFaint, fontSize: 15 }}>/{quest.goal}</span>
         </div>
       </div>
-      <div style={{ position: 'relative', marginTop: 14, height: 8, borderRadius: 999, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+      <div style={{ position: 'relative', marginTop: 14, height: 8, borderRadius: 999, background: warmTheme.surfaceMuted, border: `1px solid ${warmTheme.border}`, overflow: 'hidden' }}>
         <div style={{ width: `${progressPct}%`, height: '100%', background: `linear-gradient(90deg, ${theme.fillFrom}, ${theme.fillTo})`, boxShadow: claimable ? `0 0 12px ${theme.glow}` : 'none', transition: 'width 0.35s ease' }} />
       </div>
       <div style={{ position: 'relative', marginTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
@@ -103,7 +103,7 @@ function QuestCard({ quest, cadence, resonanceScore, onClaim }: { quest: QuestIn
           background: quest.claimed ? 'rgba(255,255,255,0.06)' : claimable ? `linear-gradient(180deg, ${theme.accentSoft} 0%, ${theme.accent} 100%)` : 'rgba(255,255,255,0.05)',
           border: `1px solid ${quest.claimed ? 'rgba(255,255,255,0.14)' : claimable ? theme.borderActive : 'rgba(255,255,255,0.12)'}`,
           boxShadow: claimable ? `0 6px 16px ${theme.glow}` : 'none',
-        }}>{quest.claimed ? 'Claimed' : claimable ? 'Claim Reward' : 'In progress'}</button>
+        }}><span className="ui-button-title ui-button-title-on-light">{quest.claimed ? 'Claimed' : claimable ? 'Claim Reward' : 'In progress'}</span></button>
       </div>
     </div>
   );
@@ -113,9 +113,9 @@ function ChallengeColumn({ cadence, quests, resonanceScore, onClaim }: { cadence
   const theme = getCadenceTheme(cadence);
   const completedCount = quests.filter(q => isQuestComplete(q)).length;
   return (
-    <section style={{ position: 'relative', display: 'flex', flexDirection: 'column', minHeight: 0, maxHeight: 'min(720px, calc(100vh - 190px))', padding: '20px 14px 18px 20px', borderRadius: 18, border: `1px solid ${theme.border}`, background: `${theme.headerTint}, linear-gradient(180deg, rgba(10,12,22,0.65) 0%, rgba(8,10,18,0.55) 100%)` }}>
+    <section style={{ position: 'relative', display: 'flex', flexDirection: 'column', minHeight: 0, maxHeight: 'min(720px, calc(100vh - 190px))', padding: '20px 14px 18px 20px', borderRadius: 18, border: `1px solid ${theme.border}`, background: warmTheme.surface, boxShadow: warmTheme.glow }}>
       <header style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16 }}>
-        <div><div style={{ color: theme.accentSoft, fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 2.8, textTransform: 'uppercase' }}>{theme.tag}</div><h2 style={{ margin: '4px 0 0', color: '#fff2dc', fontFamily: uiTypography.display, fontSize: 22, letterSpacing: 1, textShadow: `0 0 14px ${theme.glow}` }}>{theme.label}</h2></div>
+        <div><div style={{ color: theme.accentSoft, fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 2.8, textTransform: 'uppercase' }}>{theme.tag}</div><h2 style={{ margin: '4px 0 0', color: warmTheme.text, fontFamily: uiTypography.display, fontSize: 22, letterSpacing: 1 }}>{theme.label}</h2></div>
             <div style={{ color: theme.accentSoft, fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 2 }}>{completedCount}/{quests.length} READY</div>
       </header>
       <div className="ornate-scroll" style={{ flex: 1, display: 'grid', gap: 12, minHeight: 0, overflowY: 'auto', paddingRight: 6, paddingBottom: 4 }}>{quests.length === 0 ? <div style={{ color: warmTheme.textMuted, fontStyle: 'italic', padding: '18px 4px' }}>No challenges available right now.</div> : quests.map(quest => <QuestCard key={quest.id} quest={quest} cadence={cadence} resonanceScore={resonanceScore} onClaim={() => onClaim(quest.id)} />)}</div>
@@ -156,12 +156,12 @@ export default function QuestsModal({ onClose }: Props) {
   return (
     <div onClick={onClose} role="dialog" aria-modal="true" className="ui-panel-intro" style={{ position: 'absolute', inset: 0, zIndex: 50, overflowY: 'auto', padding: '32px 28px 60px', background: `radial-gradient(circle at 20% -10%, color-mix(in srgb, ${warmTheme.accent} 14%, transparent), transparent 45%), radial-gradient(circle at 80% -10%, color-mix(in srgb, ${warmTheme.accentSoft} 14%, transparent), transparent 45%), ${warmTheme.appBackground}`, color: warmTheme.text, fontFamily: uiTypography.body }}>
       <div onClick={event => event.stopPropagation()} style={{ maxWidth: 1100, margin: '0 auto' }}>
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', border: `1px solid ${warmTheme.borderStrong}`, borderRadius: 16, padding: '22px 24px', marginBottom: 24, backgroundImage: 'linear-gradient(90deg, rgba(8,9,15,0.96), rgba(12,14,24,0.80), rgba(10,12,20,0.35)), url("' + import.meta.env.BASE_URL + 'assets/menu-banners/challenges.png")', backgroundPosition: 'right center', backgroundSize: 'cover', boxShadow: `0 10px 30px rgba(0,0,0,0.30), inset 0 -1px 0 color-mix(in srgb, ${warmTheme.accentSoft} 18%, transparent)` }}>
-          <div>
+        <header className="ui-artwork-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', border: `1px solid ${warmTheme.borderStrong}`, borderRadius: 16, padding: '22px 24px', marginBottom: 24, backgroundImage: 'linear-gradient(90deg, rgba(8,9,15,0.96), rgba(12,14,24,0.80), rgba(10,12,20,0.35)), url("' + import.meta.env.BASE_URL + 'assets/menu-banners/challenges.png")', backgroundPosition: 'right center', backgroundSize: 'cover', boxShadow: `0 10px 30px rgba(0,0,0,0.30), inset 0 -1px 0 color-mix(in srgb, ${warmTheme.accentSoft} 18%, transparent)` }}>
+          <div data-ui-artwork-copy>
             <div style={{ color: warmTheme.accent, fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 3 }}>✦ DAILY & WEEKLY OBJECTIVES</div>
             <h1 style={{ margin: '8px 0 4px', color: warmTheme.text, fontFamily: uiTypography.display, fontSize: 34, letterSpacing: 1.5 }}>Challenges</h1>
             <div style={{ color: warmTheme.textMuted, fontSize: 13 }}>Complete daily and weekly challenges for Divine Light and Aberrated Shards. Base rewards target approximately 60,000 Divine Light from daily challenges across seven days and 100,000 from weekly challenges.</div>
-            {readyCount > 0 && <div style={{ display: 'inline-block', marginTop: 12, padding: '5px 12px', borderRadius: 999, fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.6, color: warmTheme.accentDeep, background: `linear-gradient(180deg, ${warmTheme.accentSoft} 0%, ${warmTheme.accent} 100%)`, border: `1px solid ${warmTheme.borderStrong}`, boxShadow: `0 6px 14px color-mix(in srgb, ${warmTheme.accent} 35%, transparent)` }}>{readyCount} REWARD{readyCount === 1 ? '' : 'S'} READY</div>}
+            {readyCount > 0 && <div data-ui-special-text style={{ display: 'inline-block', marginTop: 12, padding: '5px 12px', borderRadius: 999, fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.6, color: warmTheme.text, background: warmTheme.surfaceStrong, border: `1px solid ${warmTheme.borderStrong}`, boxShadow: `0 6px 14px color-mix(in srgb, ${warmTheme.accent} 35%, transparent)` }}>{readyCount} REWARD{readyCount === 1 ? '' : 'S'} READY</div>}
           </div>
           <button onClick={onClose} aria-label="Close Challenges" style={{ width: 42, height: 42, borderRadius: '50%', border: `1px solid ${warmTheme.borderStrong}`, background: `color-mix(in srgb, ${warmTheme.accent} 8%, transparent)`, color: warmTheme.text, fontSize: 18, cursor: 'pointer', fontFamily: uiTypography.display }}>✕</button>
         </header>

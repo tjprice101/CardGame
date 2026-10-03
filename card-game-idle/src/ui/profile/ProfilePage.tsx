@@ -64,11 +64,11 @@ export default function ProfilePage({ onClose }: Props) {
     <div style={{
       position: 'absolute',
       inset: 0,
-      background: 'radial-gradient(circle at 50% 14%, rgba(201, 170, 112, 0.2) 0%, rgba(201, 170, 112, 0) 36%), radial-gradient(circle at 10% 86%, rgba(104, 134, 174, 0.2) 0%, rgba(104, 134, 174, 0) 40%), repeating-linear-gradient(35deg, rgba(222, 196, 148, 0.06) 0px, rgba(222, 196, 148, 0.06) 1px, rgba(0, 0, 0, 0) 1px, rgba(0, 0, 0, 0) 20px), linear-gradient(180deg, rgba(16, 18, 23, 0.965) 0%, rgba(19, 24, 31, 0.965) 100%)',
+      background: warmTheme.appBackground,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       zIndex: 50, pointerEvents: 'auto', fontFamily: uiTypography.body,
-      ['--ui-accent' as any]: '230, 196, 132',
-      ['--ui-accent-soft' as any]: '250, 224, 184',
+      ['--ui-accent' as any]: 'var(--profile-accent-rgb)',
+      ['--ui-accent-soft' as any]: 'var(--profile-accent-soft-rgb)',
     }}>
       <div className="ui-panel-intro" style={{
         background: warmTheme.surfaceStrong,
@@ -87,7 +87,7 @@ export default function ProfilePage({ onClose }: Props) {
           marginBottom: 16, borderBottom: `1px solid ${warmTheme.border}`, paddingBottom: 12,
           position: 'relative',
         }}>
-          <div className="ui-title-glow" style={{ fontSize: 18, fontWeight: 'bold', color: warmTheme.accentDeep, letterSpacing: 2 }}>
+          <div className="ui-title-glow" style={{ fontSize: 18, fontWeight: 'bold', color: warmTheme.text, letterSpacing: 2 }}>
             Profile
           </div>
           <button className="menu-tactile-btn"
@@ -110,7 +110,7 @@ export default function ProfilePage({ onClose }: Props) {
             width: 64, height: 64, borderRadius: '50%',
             background: warmTheme.accentSoft,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 34, color: warmTheme.accentDeep,
+            fontSize: 34, color: 'var(--profile-accent-soft-text)',
             border: `2px solid ${warmTheme.borderStrong}`,
             boxShadow: warmTheme.glow,
             flexShrink: 0,
@@ -173,7 +173,7 @@ export default function ProfilePage({ onClose }: Props) {
             width: 52, height: 52, borderRadius: '50%',
             background: warmTheme.surface,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 28, color: warmTheme.accentDeep,
+            fontSize: 28, color: warmTheme.text,
             border: `2px solid ${warmTheme.borderStrong}`,
             boxShadow: warmTheme.glow,
             flexShrink: 0,
@@ -268,11 +268,10 @@ export default function ProfilePage({ onClose }: Props) {
                 style={{
                   display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
                   padding: 10, gap: 6,
-                  background: active ? warmTheme.accentSoft : 'rgba(0,0,0,0.04)',
+                  background: active ? warmTheme.surfaceStrong : warmTheme.surface,
                   border: active ? `2px solid ${warmTheme.accent}` : `1px solid ${warmTheme.border}`,
                   borderRadius: 10,
                   cursor: unlocked ? 'pointer' : 'not-allowed',
-                  opacity: unlocked ? 1 : 0.42,
                   color: warmTheme.text,
                   fontFamily: uiTypography.body,
                   textAlign: 'left',

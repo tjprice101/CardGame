@@ -27,6 +27,22 @@ Face-down Soph cards render only the canonical card backing plus state badges su
 
 `MainMenuHub.tsx` shows Progress, Collection, and Play together, keeps Begin Turn as the fixed primary action, uses a timed Forge/Causality event-banner carousel, and preserves the selected background and profile quote. Resource counters route to existing destinations. All actions and lock requirements must remain reachable, and theme colors remain profile-driven.
 
+## Appearance, Profile, And Browsing
+
+Ordinary UI uses **neutral reading surfaces with personal-color ceremonial flair**. `src/ui/theme.ts` is the palette authority: `getUiColorModePalette` enforces black/near-black Dark Mode surfaces and white/near-white Light Mode surfaces, including profile previews. Personal color belongs in accents, borders, selection outlines, glows, and readable heading/button-title gradients, not large tinted backgrounds. The default palette stays monochrome.
+
+`getRotatingUiPalette` rotates the stored palette's four source swatches through decorative roles, with a 60-second hold and a three-second fade. Reduced motion preserves the 63-second swatch cadence but switches without fading. Preserve raw catalog/custom swatches; do not overwrite them with neutral display surfaces. Light Mode retains the chosen hue while adjusting foreground brightness for contrast. Small captions use solid text roles. Accent-filled pills use `--profile-accent-text` or `--profile-accent-soft-text`; arbitrary dark accent colors are not safe badge foregrounds.
+
+`warmTheme` is mutated in place. Inline palette consumers must subscribe through `useThemeVersion()` or rerender through a subscribed parent. Profile draft previews publish their own display-mode CSS roles, including accent-pill foregrounds. Never append hex alpha to a CSS variable value.
+
+This treatment covers the recently updated decks, Collection, Card Store, Achievements, Challenges, Codex, inventory, social/settings surfaces, and profile pickers. Do not neutralize card artwork/foil, main-menu splash art, artwork headers, event/Forge/Wake compositions, or gameplay special effects. Rarity, set, success, danger, and warning colors remain meaningful.
+
+Player Information is the ceremonial identity/workspace screen: persistent portrait, name, title, bio, and stats beside scrolling Profile, Main Menu Background, Social, and Save Data tabs. Narrow screens stack. Name/bio limits are 24/200; bio and theme have explicit save actions. Five signature slots, title/avatar pickers, portable saves, and two-stage wipe confirmation remain intact. Appearance mode uses the same persistent `settings.buttonColorMode` as Settings.
+
+Collection retains artwork, foil, ownership history, favorites, filtering, sorting, and virtualization. Infinite sections use Neutrality/Causality set membership, not Light/Dark/Ain Soph Aur card type. Card details use appearance-aware rules text. Card Store is called **Card Store**, not Celestial Archive; its pack art keeps its own composition while ordinary chrome uses shared roles.
+
+The 12 updated resource, Garden-material, and Forge-item PNGs retain original dimensions and foreground colors but have feathered alpha cutouts. Keep that alpha when replacing icons. Card faces, avatars, and banners are not item cutouts. Main-menu resource names sit above their bars; decorative theme changes must not change layout or hide labels.
+
 ## Card Text Pipeline
 
 Card rules are formatted through:

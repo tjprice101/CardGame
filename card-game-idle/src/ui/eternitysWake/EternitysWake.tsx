@@ -168,7 +168,7 @@ export default function EternitysWake({ onClose }: Props) {
         position: 'relative',
       }}>
         <div>
-          <div className="ui-title-glow" style={{ fontSize: 22, fontWeight: 'bold', color: '#ff6b6b', letterSpacing: 3 }}>
+          <div className="ui-title-glow" data-ui-special-text style={{ fontSize: 22, fontWeight: 'bold', color: '#ff6b6b', letterSpacing: 3 }}>
             ETERNITY'S WAKE
           </div>
           <div style={{ fontSize: 11, color: 'rgba(255,107,107,0.6)', marginTop: 2, letterSpacing: 1 }}>

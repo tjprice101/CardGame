@@ -3,6 +3,8 @@ import type { BossCategory } from '@/types/bossFight';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
 import { infiniteCards } from '@/data/cards/infiniteCards';
 import { CardRegistry } from '@/cards/CardRegistry';
+import { CUSTOM_MAIN_MENU_BACKGROUND_REWARDS, isCustomBackgroundRewardUnlocked } from './customMainMenuBackgrounds';
+import { CROWN_BACKGROUND_REWARDS, isCrownBackgroundUnlocked } from './crownBackgroundRewards';
 import {
   getEverCollectionCount,
   getEverHoloTotal,
@@ -18,7 +20,7 @@ import {
  * titles for every boss clear, every Infinity-menu craft, and every
  * full card-set completion.
  */
-export type TitleBadgeGroup = 'milestone' | 'boss' | 'infinite' | 'set';
+export type TitleBadgeGroup = 'milestone' | 'boss' | 'infinite' | 'set' | 'background';
 
 export interface TitleBadgeDefinition {
   id: string;
@@ -901,6 +903,20 @@ export const TITLE_BADGES: TitleBadgeDefinition[] = [
   ...buildBossClearTitles(),
   ...buildInfiniteCardTitles(),
   ...buildSetCompletionTitles(),
+  ...CUSTOM_MAIN_MENU_BACKGROUND_REWARDS.map(reward => ({
+    id: reward.achievementId,
+    text: reward.name,
+    description: reward.requirement,
+    isUnlocked: (progress: ProgressState) => isCustomBackgroundRewardUnlocked(reward, progress),
+    group: 'background' as const,
+  })),
+  ...CROWN_BACKGROUND_REWARDS.map(reward => ({
+    id: reward.achievementId,
+    text: reward.name,
+    description: reward.requirement,
+    isUnlocked: (progress: ProgressState) => isCrownBackgroundUnlocked(reward, progress),
+    group: 'background' as const,
+  })),
 ];
 
 export const TITLE_BADGE_BY_ID: Record<string, TitleBadgeDefinition> =

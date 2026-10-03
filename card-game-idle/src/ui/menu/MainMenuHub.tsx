@@ -132,6 +132,22 @@ function formatMenuShortcut(code: string): string {
  * Glass-shard tile — each button is a translucent crystalline pane.
  * Arranged in a harmonious, high-contrast dashboard with responsive theme integration.
  */
+function LockedFeatureOverlay({ label, condition }: { label: string; condition: string }) {
+  return (
+    <span className="main-menu-lock-overlay">
+      <span className="main-menu-lock-heading">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+          <path d="M7 10V7a5 5 0 0 1 10 0v3" />
+          <rect x="4" y="10" width="16" height="12" rx="2" />
+          <path d="M12 14v4" />
+        </svg>
+        <strong>{label} · Locked</strong>
+      </span>
+      <span className="main-menu-lock-condition">{condition}</span>
+    </span>
+  );
+}
+
 function TileButton(props: {
   label: string;
   caption?: string;
@@ -160,9 +176,9 @@ function TileButton(props: {
         glass: `linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.02) 100%), ${theme.button}`,
         specular: 'rgba(255,255,255,0.48)',
         border: theme.borderStrong,
-        color: '#ffffff',
-        captionColor: 'rgba(255,255,255,0.85)',
-        textShadow: '0 2px 12px rgba(0,0,0,0.6)',
+        color: theme.accentDeep,
+        captionColor: theme.accentDeep,
+        textShadow: 'none',
         boxShadow: `0 8px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.35)`,
       }
     : dim
@@ -218,7 +234,7 @@ function TileButton(props: {
         fontFamily: uiTypography.body,
         textAlign: 'left',
         cursor: props.disabled ? 'not-allowed' : 'pointer',
-        opacity: props.disabled ? 0.38 : 1,
+        opacity: props.disabled ? 0.78 : 1,
         overflow: 'hidden',
         boxShadow: props.selected ? `0 0 0 1px ${theme.glow}, 0 10px 28px rgba(0,0,0,0.52)` : palette.boxShadow,
         transition: 'transform 160ms ease, filter 160ms ease, box-shadow 160ms ease, border-color 160ms ease',
@@ -230,7 +246,7 @@ function TileButton(props: {
         props.onPreview?.();
         if (!props.disabled) {
           const btn = e.currentTarget;
-          btn.style.filter = 'brightness(1.3) saturate(1.24)';
+          btn.style.filter = 'brightness(1.08)';
           btn.style.borderColor = theme.accentSoft;
           btn.style.outline = `1px solid ${theme.accentSoft}`;
           btn.style.outlineOffset = '2px';
@@ -273,11 +289,11 @@ function TileButton(props: {
         position: 'relative',
       }}>
         {props.icon && (
-          <span style={{ fontSize: props.size === 'hero' ? 20 : 14, color: theme.accentSoft, lineHeight: 1 }}>
+          <span style={{ fontSize: props.size === 'hero' ? 20 : 14, color: isPrimary ? palette.color : theme.accentSoft, lineHeight: 1 }}>
             {props.icon}
           </span>
         )}
-        <div style={{
+        <div className={`ui-button-title${props.tone === 'primary' ? ' ui-button-title-on-light' : ''}`} style={{
           fontFamily: uiTypography.display,
           fontSize: props.size === 'hero' ? 24 : props.size === 'small' ? 13 : 17,
           letterSpacing: props.size === 'small' ? 1.2 : 1.5,
@@ -317,11 +333,12 @@ function TileButton(props: {
           fontSize: 10,
           letterSpacing: 0.8,
           backdropFilter: 'blur(4px)',
-          color: props.badge.tone === 'alert' ? '#ffffff' : props.badge.tone === 'gold' ? theme.accentDeep : theme.text,
+          color: props.badge.tone === 'alert' ? '#ffffff' : theme.accentDeep,
           background: props.badge.tone === 'alert' ? theme.danger : props.badge.tone === 'gold' ? theme.accentSoft : theme.accent,
           boxShadow: theme.glow,
         }}>{props.badge.label}</div>
       )}
+      {props.disabled && <LockedFeatureOverlay label={props.label} condition={props.caption ?? 'Unavailable'} />}
     </button>
   );
 }
@@ -367,11 +384,12 @@ function ProgressActionTile({ action, theme }: { action: MenuAction; theme: UiPa
       onClick={action.onClick}
       disabled={action.disabled}
       title={`${action.label}${action.status ? ` · ${action.status}` : ''}`}
-      aria-label={`${action.label}${action.badge ? `, ${action.badge.label} available` : ''}`}
+      aria-label={`${action.label}${action.disabled ? `, Locked, ${action.status}` : action.badge ? `, ${action.badge.label} available` : ''}`}
     >
       <span className="main-menu-progress-hex" style={{ borderColor: theme.accent, color: theme.accentSoft, background: theme.surfaceMuted }}><GameEmblem id={action.id} size={28} /></span>
       <span className="main-menu-progress-label">{action.label}</span>
       {action.badge && <span className="main-menu-live-badge" aria-hidden="true">{action.badge.label}</span>}
+      {action.disabled && <LockedFeatureOverlay label={action.label} condition={action.status!} />}
     </button>
   );
 }
@@ -409,7 +427,7 @@ function ResourcePill(props: { glyph: React.ReactNode; label: string; value: str
         <span style={{ fontFamily: uiTypography.display, fontSize: 13, letterSpacing: 1, lineHeight: 1 }}>{props.value}</span>
         <span style={{ fontFamily: uiTypography.body, fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', opacity: 0.55, lineHeight: 1 }}>{props.label}</span>
       </span>
-      {props.onClick && props.showPlus !== false && <span aria-hidden style={{ width: 20, height: 20, display: 'grid', placeItems: 'center', borderRadius: '50%', background: 'rgba(125,92,192,0.28)', color: props.theme.accentSoft, fontSize: 14, fontWeight: 700 }}>+</span>}
+      {props.onClick && props.showPlus !== false && <span aria-hidden style={{ width: 20, height: 20, display: 'grid', placeItems: 'center', borderRadius: '50%', background: props.theme.surfaceMuted, border: `1px solid ${props.theme.border}`, color: props.theme.accentSoft, fontSize: 14, fontWeight: 700 }}>+</span>}
     </>;
   return props.onClick
     ? <button type="button" className="menu-tactile-btn" onClick={props.onClick} title={`Open ${props.label}`} style={style}>{contents}</button>
@@ -502,6 +520,8 @@ export default function MainMenuHub(props: MainMenuHubProps) {
     void loadMainMenuBackgroundEntries().then((entries) => {
       if (cancelled) return;
       setMenuBackgroundChoices(entries);
+    }).catch(error => {
+      if (!cancelled) console.warn('Could not load main menu backgrounds.', error);
     });
     return () => { cancelled = true; };
   }, []);
@@ -550,8 +570,9 @@ export default function MainMenuHub(props: MainMenuHubProps) {
     () => resolveMainMenuBackground(
       profile.mainMenuBackgroundId ?? DEFAULT_MAIN_MENU_BACKGROUND_ID,
       menuBackgroundChoices,
+      progress,
     ),
-    [profile.mainMenuBackgroundId, menuBackgroundChoices],
+    [profile.mainMenuBackgroundId, menuBackgroundChoices, progress],
   );
 
   const shards = Math.floor(progress.aberratedShards ?? 0);
@@ -787,19 +808,12 @@ export default function MainMenuHub(props: MainMenuHubProps) {
                 <span className="main-menu-rail-copy"><strong>{action.label}</strong><small>{action.status}</small></span>
                 {shortcut && <kbd aria-hidden="true">{shortcut}</kbd>}
                 {action.badge && <span className="main-menu-rail-badge" aria-label={`${action.badge.label} available`}>{action.badge.label}</span>}
+                {action.disabled && <LockedFeatureOverlay label={action.label} condition={action.status!} />}
               </button>
             );
           })}
         </div>
       </nav>
-
-      <div className="main-menu-center-stage" aria-hidden="true">
-        <div className="main-menu-stage-orbit main-menu-stage-orbit-outer" />
-        <div className="main-menu-stage-orbit main-menu-stage-orbit-inner" />
-        <div className="main-menu-stage-sigil" />
-        <span className="main-menu-stage-card main-menu-stage-card-left" />
-        <span className="main-menu-stage-card main-menu-stage-card-right" />
-      </div>
 
       <div className="main-menu-right-stack">
         <section className="main-menu-event-zone" aria-labelledby="main-menu-events-heading">
@@ -816,6 +830,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
               <strong>Forge of Transcendence</strong>
               <small>{forgeUnlocked ? 'A light with no allegiance.' : `Requires every event boss beaten · ${forgeBossesCleared}/${FORGE_EVENT_BOSS_IDS.length}`}</small>
               <em>{forgeUnlocked ? 'OPEN' : `${progress.keysOfTranscendence ?? 0} Keys of Transcendence`}</em>
+              {forgeLocked && <LockedFeatureOverlay label="Forge of Transcendence" condition={`Requires every event boss beaten · ${forgeBossesCleared}/${FORGE_EVENT_BOSS_IDS.length}`} />}
             </button>
           )}
           {props.onEventCausality && eventSlide === 1 && (
@@ -873,6 +888,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
               <span className="main-menu-highlight-icon"><GameEmblem id={highlight.id} size={22} /></span>
               <span className="main-menu-highlight-copy"><strong>{highlight.label}</strong><small>{highlight.detail}</small></span>
               {highlight.badge > 0 && <span className="main-menu-highlight-badge">{highlight.badge}</span>}
+              {highlight.disabled && <LockedFeatureOverlay label={highlight.label} condition={highlight.detail} />}
             </button>
           ))}
         </div>
@@ -886,7 +902,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
           </div>
           <button type="button" className="menu-tactile-btn main-menu-begin-turn" onClick={beginTurnAction.onClick} disabled={beginTurnAction.disabled}>
             <span>Active deck · {beginTurnShortcut}</span>
-            <strong>Begin Turn <i aria-hidden="true">→</i></strong>
+            <strong><span className="ui-button-title ui-button-title-on-light">Begin Turn</span> <i aria-hidden="true">→</i></strong>
             <small>{beginTurnAction.status}</small>
           </button>
         </div>

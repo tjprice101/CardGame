@@ -91,6 +91,49 @@ Shard drop rolls are gated until all five Forge Causality bosses have been clear
 
 Achievements and unlock gates should distinguish those rarity sources instead of treating all premium cards as one bucket.
 
+## Achievements And Cosmetic Backgrounds
+
+Achievement definitions derive from `src/data/profile/titleBadges.ts`; unlock/claim views and currency rewards belong to `src/systems/progression/achievements.ts`. The presentation taxonomy in `achievementCategories.ts` is separate from the reward group. Never change reward groups, IDs, or payouts merely to reorganize the menu.
+
+The 19 subcategories are:
+
+| Section | Subcategories |
+| --- | --- |
+| Gameplay | Card Play; Resources; Daily Devotion |
+| Collection | Collection Growth; Holographic Cards; Infinity Crafted; Eternal Cards; Enigmatic Cards; Set Completion |
+| Battles | Wake Milestones; Boss & Category Clears; Null Raids |
+| Progression | Forge & Transcendence; Causality; Garden Expeditions; Ability Materialization |
+| Social | Friends & Co-op |
+| Cosmetics | Custom Backgrounds |
+
+Null Raid achievements represent retained legacy progress, not a newly enabled mode. Every milestone is explicitly classified; unknown assignments fail visibly instead of disappearing. All Achievements is sectioned by the same categories. Search covers titles, requirements, reward names, and categories; status filters are All statuses, Ready to claim, Locked, and Claimed. Sidebar counts are total unlock counts, not filtered counts. Individual and Claim All actions use existing store claims.
+
+`src/data/profile/customMainMenuBackgrounds.ts` is the source of truth for seven permanent Transcendent cosmetic rewards. Their currency rewards are zero; existing noncosmetic Forge milestone payouts are unchanged.
+
+`crownBackgroundRewards.ts` adds four dedicated achievements for Neutrality Eternal Crown Splash, Neutrality Infinite Crown Splash, Causality Eternal Crown Splash, and Causality Infinite Crown Splash. Each uses its existing full-set theme gate (including lifetime ownership and persisted theme unlocks), retains `main-menu-bg-slot-{themeId}`, and awards a background/title without currency. Cosmetics > Custom Backgrounds therefore contains eleven achievements. The profile slots and imported overrides carry matching achievement IDs; earned achievements remain latched. Neutrality currently has no live Infinite definitions, so its empty-set gate stays locked unless the theme was already earned and persisted. This does not add playable Neutrality Infinite cards or recipes.
+
+| Background | Requirement | Bundled PNG stem |
+| --- | --- | --- |
+| The Unsealed Impossible | Unlock the Forge | `forge-unsealed-impossible` |
+| A Star Without a Sky | Own at least one distinct Volume I Transcendent | `forge-star-without-sky` |
+| The Fourfold Absolute | Own all four distinct Volume I Transcendents | `forge-fourfold-absolute` |
+| The Dawn That Devours Night | Acquire First Dawn Accord | `forge-devouring-dawn` |
+| The Velocity of Silence | Acquire Axiom of Acceleration | `forge-velocity-of-silence` |
+| Cathedral of Unwritten Tomorrows | Acquire Vault of Unwritten Futures | `forge-unwritten-tomorrows` |
+| Where Every Origin Breaks | Acquire Confluence of All Origins | `forge-origins-break` |
+
+All seven supplied PNGs are installed in `card-game-idle/src/assets/main-menu-backgrounds/`, not the repository root. Vite's eager asset glob bundles them for web and desktop. `mainMenuBackgrounds.ts` preserves canonical selection IDs, availability checks, and achievement gates; matching desktop imported art may override an image without bypassing the gate. Earned unlocks latch into existing `progress.achievementUnlocks`; claims remain in `achievementClaims`. No new save migration was needed.
+
+Find the rewards in Achievements > Cosmetics > Custom Backgrounds; equip earned art in Player Information > Main Menu Background. Claiming is not required to equip an earned background. Duplicate copies cannot satisfy the four-distinct-card gate; acquiring an ability is separate from owning its associated card, equipping it, or activating it. Missing images honestly show Artwork pending, remain unequippable, and fall back to available unlocked art in the main menu. Do not substitute unrelated artwork into a missing reward slot.
+
+## Proposed Art Versus Live Content
+
+`Midjourney Art/Custom Main Menu Backgrounds.md` is the seven installed rewards' production prompt guide. Its subject-first Splotched Ink format follows the established replacement/updated/Forge guides, with distressed white paper, black dry-brush forms, and controlled pink-to-scarlet flames. Each silhouette differs and leaves space for main-menu overlays.
+
+`Midjourney Art/Intensity Set Prompts.md` replaces the old Pyroabyss set prompt file as a **proposed art roster**, not a playable set. It has 29 concepts: Level 0/1/2/3/4/5 counts 4/4/3/3/2/3, five Eternal concepts, and five Infinity concepts. The Last Seam story combines white volcanic creation, black abyssal memory, and molten-gold bonds. All prompts use the shared Splotched Ink medium but their own white/black/gold palette; each Infinity concept derives from an Eternal counterpart and intentionally retains gold.
+
+Do not expose Intensity as a live pack, boss category, card registry entry, unlock, or crafting recipe until those systems are explicitly implemented and tested. "Infinity" is the art brief's tier label; the current runtime rarity remains "Infinite." Proposed filenames are not runtime IDs. Older Pyroabyss splash/boss art remains legacy reference, not proof of live Intensity content.
+
 ## Enigmas
 
 Enigma progress can complete during a boss run. The player locks on to one unlocked manuscript in the Enigma menu, and only that manuscript advances. If a run restores a pre-run progress snapshot, the store must capture and merge Enigma flags and cumulative progress counters so mid-run progress is not lost. Requirements explicitly scoped to one turn, a simultaneous board state, or the end of a turn must not complete outside that scope. Non-turn goals such as Causality card plays, Cosmos generated/consumed, Bridge attacks, and Twin-light summons use persisted counters shown as live trackers in the Enigma panel.

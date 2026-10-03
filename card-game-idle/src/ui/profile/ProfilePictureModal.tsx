@@ -40,7 +40,7 @@ export default function ProfilePictureModal({ currentAvatarId, onClose, onApply 
     <div
       style={{
         position: 'fixed', inset: 0,
-        background: 'rgba(4,2,1,0.88)',
+        background: warmTheme.backdrop,
         backdropFilter: 'blur(8px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         zIndex: 200, fontFamily: 'Georgia, serif',
@@ -50,13 +50,13 @@ export default function ProfilePictureModal({ currentAvatarId, onClose, onApply 
       <div
         className="ui-panel-intro"
         style={{
-          background: 'linear-gradient(160deg, #0e0603 0%, #080302 60%, #060202 100%)',
-          border: '1px solid rgba(200,128,58,0.30)',
+          background: 'var(--profile-surface-strong)',
+          border: '1px solid var(--profile-border-strong)',
           borderRadius: 18,
           padding: '0',
           width: 'min(92vw, 1100px)', height: 'min(96vh, 1000px)', maxHeight: 'none',
           display: 'flex', flexDirection: 'column',
-          boxShadow: '0 24px 80px rgba(0,0,0,0.72), 0 0 0 1px rgba(200,128,58,0.07)',
+          boxShadow: 'var(--profile-shadow), var(--profile-glow)',
           overflow: 'hidden',
         }}
         onClick={e => e.stopPropagation()}
@@ -67,7 +67,7 @@ export default function ProfilePictureModal({ currentAvatarId, onClose, onApply 
           style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             padding: '20px 26px 16px',
-            borderBottom: '1px solid rgba(200,128,58,0.16)',
+            borderBottom: '1px solid var(--profile-border)',
             flexShrink: 0,
           }}
         >
@@ -75,13 +75,13 @@ export default function ProfilePictureModal({ currentAvatarId, onClose, onApply 
             <div style={{
               fontFamily: '"Cinzel", "Cormorant Garamond", Georgia, serif',
               fontSize: 18, fontWeight: 300, letterSpacing: 5, textTransform: 'uppercase',
-              color: '#daa058', textShadow: '0 2px 22px rgba(218,160,88,0.38)',
+              color: 'var(--profile-text)',
             }}>
               Avatar
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
-              <div style={{ height: 1, width: 50, background: 'linear-gradient(90deg, rgba(200,128,58,0.5) 0%, transparent 100%)' }} />
-              <span style={{ fontSize: 9, letterSpacing: 3.5, textTransform: 'uppercase', color: 'rgba(218,160,88,0.40)' }}>
+              <div style={{ height: 1, width: 50, background: 'linear-gradient(90deg, var(--profile-accent) 0%, transparent 100%)' }} />
+              <span style={{ fontSize: 9, letterSpacing: 3.5, textTransform: 'uppercase', color: 'var(--profile-text-muted)' }}>
                 Choose your profile picture
               </span>
             </div>
@@ -90,9 +90,9 @@ export default function ProfilePictureModal({ currentAvatarId, onClose, onApply 
             onClick={onClose}
             style={{
               width: 38, height: 38, borderRadius: '50%',
-              border: '1px solid rgba(200,128,58,0.32)',
-              background: 'rgba(200,128,58,0.06)',
-              color: 'rgba(218,160,88,0.65)',
+              border: '1px solid var(--profile-border-strong)',
+              background: 'var(--profile-surface)',
+              color: 'var(--profile-text)',
               fontSize: 13, cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontFamily: 'inherit', lineHeight: 1, padding: 0,
@@ -108,15 +108,15 @@ export default function ProfilePictureModal({ currentAvatarId, onClose, onApply 
             <div key={sec.prefix}>
               {/* Section header */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 9 }}>
-                <div style={{ width: 3, height: 14, borderRadius: 2, background: '#c8803a', flexShrink: 0 }} />
+                <div style={{ width: 3, height: 14, borderRadius: 2, background: 'var(--profile-accent)', flexShrink: 0 }} />
                 <div style={{
                   fontSize: 9.5, letterSpacing: 3.5, textTransform: 'uppercase',
-                  color: 'rgba(218,160,88,0.65)',
+                  color: 'var(--profile-text-muted)',
                   fontFamily: '"Cinzel", Georgia, serif', fontWeight: 600,
                 }}>
                   {sec.label}
                 </div>
-                <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, rgba(200,128,58,0.22) 0%, transparent 80%)' }} />
+                <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, var(--profile-border) 0%, transparent 80%)' }} />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 8 }}>
@@ -135,19 +135,15 @@ export default function ProfilePictureModal({ currentAvatarId, onClose, onApply 
                         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
                         padding: '8px 4px', borderRadius: 10,
                         border: selected
-                          ? '1px solid rgba(200,128,58,0.65)'
+                          ? '1px solid var(--profile-border-strong)'
                           : isHovered && unlocked
-                            ? '1px solid rgba(200,128,58,0.30)'
-                            : '1px solid rgba(200,128,58,0.10)',
-                        background: selected
-                          ? 'rgba(200,128,58,0.10)'
-                          : isHovered && unlocked
-                            ? 'rgba(200,128,58,0.05)'
-                            : 'rgba(0,0,0,0.12)',
+                            ? '1px solid var(--profile-border-strong)'
+                            : '1px solid var(--profile-border)',
+                        background: 'var(--profile-surface-muted)',
                         cursor: unlocked ? 'pointer' : 'default',
                         position: 'relative',
                         transition: 'border-color 0.15s, background 0.15s',
-                        borderLeft: selected ? '2px solid rgba(200,128,58,0.80)' : undefined,
+                        borderLeft: selected ? '2px solid var(--profile-accent)' : undefined,
                       }}
                     >
                       {/* Outer ring */}
@@ -156,14 +152,14 @@ export default function ProfilePictureModal({ currentAvatarId, onClose, onApply 
                         borderRadius: '50%',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         border: selected
-                          ? '2px solid rgba(200,128,58,0.60)'
+                          ? '2px solid var(--profile-border-strong)'
                           : isHovered && unlocked
-                            ? '2px solid rgba(200,128,58,0.30)'
-                            : '2px solid rgba(200,128,58,0.10)',
+                            ? '2px solid var(--profile-border-strong)'
+                            : '2px solid var(--profile-border)',
                         boxShadow: selected
-                          ? '0 0 22px rgba(200,128,58,0.22)'
+                          ? 'var(--profile-glow)'
                           : isHovered && unlocked
-                            ? '0 0 12px rgba(200,128,58,0.12)'
+                            ? 'var(--profile-glow)'
                             : 'none',
                         filter: unlocked ? 'none' : 'grayscale(0.65) opacity(0.42)',
                         transition: 'border-color 0.15s, box-shadow 0.15s',
@@ -175,15 +171,15 @@ export default function ProfilePictureModal({ currentAvatarId, onClose, onApply 
                           borderRadius: '50%',
                           overflow: 'hidden',
                           border: selected
-                            ? '1.5px solid rgba(218,160,88,0.80)'
-                            : '1.5px solid rgba(200,128,58,0.25)',
+                            ? '1.5px solid var(--profile-accent-soft)'
+                            : '1.5px solid var(--profile-border)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          background: 'linear-gradient(160deg, rgba(30,15,4,0.98), rgba(10,5,1,1))',
+                          background: 'var(--profile-surface-muted)',
                         }}>
                           {avatar.imageUrl
                             ? <img src={avatar.imageUrl} alt={avatar.name}
                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
-                            : <span style={{ fontSize: 22, color: '#c8803a' }}>{avatar.glyph}</span>
+                            : <span style={{ fontSize: 22, color: 'var(--profile-accent)' }}>{avatar.glyph}</span>
                           }
                         </div>
                       </div>
@@ -194,7 +190,7 @@ export default function ProfilePictureModal({ currentAvatarId, onClose, onApply 
                           position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)',
                           width: 62, height: 62,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 16, color: 'rgba(200,128,58,0.40)', pointerEvents: 'none',
+                          fontSize: 16, color: 'var(--profile-text-muted)', pointerEvents: 'none',
                         }}>
                           ⊘
                         </div>
@@ -203,7 +199,7 @@ export default function ProfilePictureModal({ currentAvatarId, onClose, onApply 
                       {/* Name */}
                       <div style={{
                         fontSize: 9.5, textAlign: 'center', lineHeight: 1.3,
-                        color: selected ? '#daa058' : unlocked ? 'rgba(218,160,88,0.65)' : 'rgba(200,128,58,0.25)',
+                        color: 'var(--profile-text)',
                         maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                       }}>
                         {avatar.name}
@@ -214,15 +210,15 @@ export default function ProfilePictureModal({ currentAvatarId, onClose, onApply 
                         <div style={{
                           position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%',
                           transform: 'translateX(-50%)',
-                          background: 'rgba(8,4,1,0.97)',
-                          border: '1px solid rgba(200,128,58,0.30)',
+                          background: 'var(--profile-surface-strong)',
+                          border: '1px solid var(--profile-border-strong)',
                           borderRadius: 8, padding: '8px 10px',
-                          fontSize: 10.5, color: 'rgba(240,223,192,0.88)', lineHeight: 1.5,
+                          fontSize: 10.5, color: 'var(--profile-text-soft)', lineHeight: 1.5,
                           whiteSpace: 'normal', width: 180, zIndex: 10,
                           pointerEvents: 'none',
                           boxShadow: '0 6px 22px rgba(0,0,0,0.6)',
                         }}>
-                          <span style={{ color: '#daa058', fontWeight: 600 }}>Unlock: </span>
+                          <span style={{ color: 'var(--profile-text)', fontWeight: 600 }}>Unlock: </span>
                           {avatar.description}
                         </div>
                       )}
@@ -237,18 +233,16 @@ export default function ProfilePictureModal({ currentAvatarId, onClose, onApply 
         {/* ── Footer ── */}
         <div style={{
           padding: '10px 26px',
-          borderTop: '1px solid rgba(200,128,58,0.12)',
+          borderTop: '1px solid var(--profile-border)',
           display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0,
         }}>
-          <div style={{ height: 1, flex: 1, background: 'linear-gradient(90deg, transparent, rgba(200,128,58,0.18) 50%, transparent 100%)' }} />
-          <div style={{ fontSize: 9.5, color: 'rgba(218,160,88,0.35)', letterSpacing: 1 }}>
+          <div style={{ height: 1, flex: 1, background: 'linear-gradient(90deg, transparent, var(--profile-border) 50%, transparent 100%)' }} />
+          <div style={{ fontSize: 9.5, color: 'var(--profile-text-muted)', letterSpacing: 1 }}>
             Hover locked avatars to see unlock conditions
           </div>
-          <div style={{ height: 1, flex: 1, background: 'linear-gradient(90deg, transparent, rgba(200,128,58,0.18) 50%, transparent 100%)' }} />
+          <div style={{ height: 1, flex: 1, background: 'linear-gradient(90deg, transparent, var(--profile-border) 50%, transparent 100%)' }} />
         </div>
       </div>
     </div>
   );
 }
-
-void warmTheme;

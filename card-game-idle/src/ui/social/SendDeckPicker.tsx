@@ -110,7 +110,7 @@ function DeckRow({
       onClick={onClick}
       style={{
         ...rowStyle,
-        background: active ? warmTheme.accentSoft : 'transparent',
+        background: active ? warmTheme.surfaceStrong : 'transparent',
         borderColor: active ? warmTheme.accent : warmTheme.border,
       }}
     >
@@ -133,7 +133,7 @@ const backdropStyle: React.CSSProperties = {
 };
 
 const modalStyle: React.CSSProperties = {
-  background: warmTheme.surfaceStrong,
+  background: 'var(--profile-surface-strong)',
   border: `1px solid ${warmTheme.borderStrong}`,
   borderRadius: 12,
   boxShadow: warmTheme.shadow,
@@ -156,7 +156,7 @@ const headerStyle: React.CSSProperties = {
 const closeBtn: React.CSSProperties = {
   background: 'transparent',
   border: 'none',
-  color: warmTheme.textMuted,
+  color: 'var(--profile-text-muted)',
   fontSize: 14,
   cursor: 'pointer',
 };
@@ -179,7 +179,7 @@ const rowStyle: React.CSSProperties = {
   padding: '6px 10px',
   border: `1px solid ${warmTheme.border}`,
   borderRadius: 6,
-  color: warmTheme.text,
+  color: 'var(--profile-text)',
   cursor: 'pointer',
   fontSize: 11,
   fontFamily: 'Georgia, serif',
@@ -187,7 +187,7 @@ const rowStyle: React.CSSProperties = {
 
 const hintStyle: React.CSSProperties = {
   fontSize: 10,
-  color: warmTheme.textMuted,
+  color: 'var(--profile-text-muted)',
   textAlign: 'center',
   padding: 16,
 };
@@ -199,7 +199,7 @@ const textareaStyle: React.CSSProperties = {
   background: 'rgba(0,0,0,0.06)',
   border: `1px solid ${warmTheme.border}`,
   borderRadius: 6,
-  color: warmTheme.text,
+  color: 'var(--profile-text)',
   fontFamily: 'Georgia, serif',
   resize: 'vertical',
 };
@@ -207,10 +207,10 @@ const textareaStyle: React.CSSProperties = {
 const primaryBtn: React.CSSProperties = {
   padding: '6px 14px',
   fontSize: 11,
-  background: warmTheme.accent,
+  background: 'var(--profile-accent)',
   border: `1px solid ${warmTheme.accent}`,
   borderRadius: 6,
-  color: warmTheme.surface,
+  color: 'var(--profile-accent-text)',
   cursor: 'pointer',
   fontFamily: 'Georgia, serif',
 };
@@ -221,7 +221,7 @@ const ghostBtn: React.CSSProperties = {
   background: 'transparent',
   border: `1px solid ${warmTheme.border}`,
   borderRadius: 6,
-  color: warmTheme.text,
+  color: 'var(--profile-text)',
   cursor: 'pointer',
   fontFamily: 'Georgia, serif',
 };

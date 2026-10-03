@@ -62,7 +62,7 @@ export default function BossCodex({ onClose }: Props) {
         background: 'rgba(9, 6, 12, 0.4)',
       }}>
         <div>
-          <div className="ui-title-glow" style={{ fontSize: 20, fontWeight: 'bold', color: '#ff6b6b', letterSpacing: 2 }}>
+          <div className="ui-title-glow" data-ui-special-text style={{ fontSize: 20, fontWeight: 'bold', color: '#ff6b6b', letterSpacing: 2 }}>
             BOSS CODEX
           </div>
           <div style={{ fontSize: 11, color: 'rgba(255,200,200,0.65)', marginTop: 3 }}>

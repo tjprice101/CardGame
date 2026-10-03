@@ -253,7 +253,7 @@ const row: React.CSSProperties = {
 };
 
 const rowSelfMix: React.CSSProperties = {
-  background: warmTheme.accentSoft,
+  background: 'var(--profile-surface-strong)',
   borderColor: warmTheme.accent,
 };
 
@@ -262,7 +262,7 @@ const rankStyle: React.CSSProperties = {
   textAlign: 'center',
   fontSize: 11,
   fontWeight: 'bold',
-  color: warmTheme.textMuted,
+  color: 'var(--profile-text-muted)',
 };
 
 const avatarChip: React.CSSProperties = {
@@ -273,7 +273,8 @@ const avatarChip: React.CSSProperties = {
   alignItems: 'center',
   justifyContent: 'center',
   fontSize: 14,
-  background: warmTheme.accentSoft,
+  background: 'var(--profile-surface-strong)',
+  color: 'var(--profile-text)',
   border: `1px solid ${warmTheme.border}`,
   flexShrink: 0,
 };
@@ -281,7 +282,7 @@ const avatarChip: React.CSSProperties = {
 const nameStyle: React.CSSProperties = {
   fontSize: 11,
   fontWeight: 'bold',
-  color: warmTheme.text,
+  color: 'var(--profile-text)',
   display: 'flex',
   alignItems: 'center',
   gap: 6,
@@ -289,14 +290,14 @@ const nameStyle: React.CSSProperties = {
 
 const subtle: React.CSSProperties = {
   fontSize: 9,
-  color: warmTheme.textMuted,
+  color: 'var(--profile-text-muted)',
   marginTop: 2,
 };
 
 const valStyle: React.CSSProperties = {
   fontSize: 14,
   fontWeight: 'bold',
-  color: warmTheme.accentDeep,
+  color: 'var(--profile-text)',
   flexShrink: 0,
   padding: '0 4px',
 };
@@ -305,8 +306,8 @@ const selfChip: React.CSSProperties = {
   fontSize: 8,
   letterSpacing: 1,
   padding: '1px 4px',
-  background: warmTheme.accent,
-  color: '#fff',
+  background: 'var(--profile-accent)',
+  color: 'var(--profile-accent-text)',
   borderRadius: 4,
 };
 
@@ -316,15 +317,15 @@ const metricBtn: React.CSSProperties = {
   background: 'transparent',
   border: `1px solid ${warmTheme.border}`,
   borderRadius: 6,
-  color: warmTheme.textMuted,
+  color: 'var(--profile-text-muted)',
   cursor: 'pointer',
   fontFamily: 'Georgia, serif',
 };
 
 const metricBtnActive: React.CSSProperties = {
   ...metricBtn,
-  background: warmTheme.accentSoft,
+  background: 'var(--profile-accent-soft)',
   borderColor: warmTheme.accent,
-  color: warmTheme.accentDeep,
+  color: 'var(--profile-accent-soft-text)',
   fontWeight: 'bold',
 };

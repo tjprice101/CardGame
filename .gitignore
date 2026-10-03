@@ -17,5 +17,8 @@ card-game-idle/supabase/**/*.prompts
 !card-game-idle/supabase/migrations/*.sql
 
 # Prompt document folders
-Midjourney Art/
+Midjourney Art/*
+!Midjourney Art/Custom Main Menu Backgrounds.md
+!Midjourney Art/Intensity Set Prompts.md
+!Midjourney Art/Main Menu Splash Screens.md
 Music/

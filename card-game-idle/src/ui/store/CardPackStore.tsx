@@ -42,11 +42,13 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: '12px 24px',
     flexShrink: 0,
     background: `linear-gradient(90deg, rgba(5,6,12,0.96) 0%, rgba(7,8,16,0.82) 58%, rgba(7,8,16,0.48) 100%), url("${import.meta.env.BASE_URL}assets/menu-banners/updated/card-store-archive.png") right center / cover`,
     boxShadow: '0 8px 26px rgba(0,0,0,0.32), inset 0 -1px 0 color-mix(in srgb, var(--profile-accent) 16%, transparent)',
   },
-  title: { fontSize: 26, fontWeight: 'bold', color: 'var(--profile-accent-soft, #b39aff)', letterSpacing: 2.5, textShadow: '0 0 28px color-mix(in srgb, var(--profile-accent-soft) 42%, transparent), 0 2px 6px rgba(0,0,0,0.8)' },
+  title: { width: 'fit-content', padding: '0 2px', fontSize: 26, fontWeight: 'bold', color: '#ffffff', letterSpacing: 2.5 },
   score: { fontSize: 13, color: 'var(--profile-text-muted, rgba(218,225,241,0.74))' },
   body: {
     flex: 1,
@@ -83,16 +85,16 @@ const styles: Record<string, React.CSSProperties> = {
     opacity: 0.5,
     filter: 'grayscale(0.6)',
   },
-  packName: { fontSize: 14, fontWeight: 'bold', color: 'var(--profile-accent, #61d8ff)', letterSpacing: 0.4 },
+  packName: { fontSize: 14, fontWeight: 'bold', color: 'var(--profile-accent, #ffffff)', letterSpacing: 0.4 },
   packDesc: { fontSize: 11, color: 'var(--profile-text-muted, rgba(218,225,241,0.74))', lineHeight: 1.42 },
-  packCost: { fontSize: 13, color: 'var(--profile-accent-soft, #b39aff)' },
+  packCost: { fontSize: 13, color: 'var(--profile-accent-soft, #cccccc)' },
   openBtn: {
     padding: '6px 12px',
     borderRadius: 10,
     border: '1px solid var(--profile-border-strong, rgba(150,191,255,0.58))',
-    background: 'var(--profile-button, linear-gradient(110deg, #60d9ff, #9085ff 54%, #54298f))',
+    background: 'var(--profile-button, linear-gradient(110deg, #ffffff, #dddddd 54%, #aaaaaa))',
     boxShadow: 'inset 0 1px 0 color-mix(in srgb, var(--profile-text) 15%, transparent), 0 2px 8px color-mix(in srgb, var(--profile-accent) 35%, transparent)',
-    color: 'var(--profile-accent-deep, #21113c)',
+    color: 'var(--profile-accent-deep, #000000)',
     fontSize: 11,
     fontWeight: 600,
     fontFamily: uiTypography.body,
@@ -103,7 +105,7 @@ const styles: Record<string, React.CSSProperties> = {
     width: '100%',
   },
   openBtnDisabled: {
-    opacity: 0.35,
+    borderStyle: 'dashed',
     cursor: 'not-allowed',
   },
   lockedLabel: {
@@ -211,7 +213,7 @@ const styles: Record<string, React.CSSProperties> = {
   } as React.CSSProperties,
   eventDividerLabel: {
     fontSize: 11,
-    color: 'var(--profile-accent-soft, #b39aff)',
+    color: 'var(--profile-accent-soft, #cccccc)',
     letterSpacing: 2,
     fontWeight: 700,
     textTransform: 'uppercase',
@@ -426,14 +428,14 @@ export default function CardPackStore({ onClose }: Props) {
         ref={(element) => { packRefs.current[pack.id] = element; }}
         className={`celestial-store-pack-detail${isLocked ? ' is-locked' : ''}${focusPackId === pack.id ? ' is-focused' : ''}`}
       >
-        <header className="celestial-store-pack-banner" style={{
+        <header className="celestial-store-pack-banner ui-artwork-header" style={{
           backgroundImage: artSrc
-            ? `linear-gradient(90deg, rgba(8,7,14,0.94), rgba(12,10,20,0.48) 68%, rgba(12,10,20,0.18)), url("${artSrc}")`
+            ? `linear-gradient(90deg, rgba(8,7,14,0.38), rgba(12,10,20,0.12) 68%, rgba(12,10,20,0.04)), url("${artSrc}")`
             : 'linear-gradient(120deg, rgba(30,22,48,0.95), rgba(9,8,15,0.95))',
         }}>
-          <span className={`celestial-store-tag${usesShards ? ' is-event' : ' is-featured'}`}>{usesShards ? 'Event pack' : isDailyDeal ? 'Daily deal' : isSpotlight ? 'Featured' : 'Core set'}</span>
+          <span data-ui-special-text className={`celestial-store-tag${usesShards ? ' is-event' : ' is-featured'}`}>{usesShards ? 'Event pack' : isDailyDeal ? 'Daily deal' : isSpotlight ? 'Featured' : 'Core set'}</span>
           <h2>{displayName}</h2>
-          <p>{pack.description}</p>
+          <p data-ui-artwork-copy>{pack.description}</p>
         </header>
 
         <div className="celestial-store-pack-content">
@@ -483,7 +485,7 @@ export default function CardPackStore({ onClose }: Props) {
                     disabled={!canAfford}
                     onClick={canAfford ? () => handleOpen(pack.id, tier) : undefined}
                   >
-                    <span className="celestial-store-offer-title">{label}{quantity > 1 ? ` ×${quantity}` : ''}<small>{totalCards} cards</small></span>
+                    <span className="celestial-store-offer-title"><span className="ui-button-title">{label}{quantity > 1 ? ` ×${quantity}` : ''}</span><small>{totalCards} cards</small></span>
                     <strong>{totalCost.toLocaleString()}<small> {currencyLabel}</small></strong>
                     {discount && <em>{discount}</em>}
                   </button>
@@ -498,18 +500,18 @@ export default function CardPackStore({ onClose }: Props) {
 
   return (
     <div className="ui-panel-intro celestial-store-screen" style={styles.overlay}>
-      <div style={{ ...styles.header, position: 'relative' }}>
-        <div>
-          <div style={{ color: 'var(--profile-accent, #61d8ff)', fontFamily: uiTypography.display, fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 5 }}>THE CELESTIAL ARCHIVE</div>
+      <div className="ui-artwork-header card-store-header" style={{ ...styles.header, position: 'relative' }}>
+        <div data-ui-artwork-copy style={{ flexShrink: 0, minWidth: 0 }}>
           <div className="ui-title-glow" style={styles.title}>Card Store</div>
           <div style={{ color: 'var(--profile-text-muted, rgba(218,225,241,0.74))', fontSize: 11, marginTop: 4 }}>Open sealed collections and trace new card identities.</div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-          <div style={styles.score}>Divine Light: {Math.floor(divineLight).toLocaleString()}</div>
-          <div style={styles.score}>Aberrated Shards: {shards.toLocaleString()}</div>
+          <div data-ui-artwork-copy style={styles.score}>Divine Light: {Math.floor(divineLight).toLocaleString()}</div>
+          <div data-ui-artwork-copy style={styles.score}>Aberrated Shards: {shards.toLocaleString()}</div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 4 }}>
-            <div style={styles.collectionBar}>{uniqueCardsCollected} / {totalRegisteredCards} unique cards</div>
+            <div data-ui-artwork-copy style={styles.collectionBar}>{uniqueCardsCollected} / {totalRegisteredCards} unique cards</div>
             <button
+              data-ui-artwork-copy
               onClick={() => setShowCollection(true)}
               style={{
                 padding: '4px 12px', borderRadius: 5, fontSize: 11, cursor: 'pointer',
@@ -522,7 +524,7 @@ export default function CardPackStore({ onClose }: Props) {
             </button>
           </div>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 6 }}>
-            <span style={{ fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase', color: 'var(--profile-text-muted)', fontWeight: 700 }}>
+            <span data-ui-artwork-copy style={{ fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase', color: 'var(--profile-text-muted)', fontWeight: 700 }}>
               Buy Qty
             </span>
             {([1, 5, 100] as const).map(q => {
@@ -539,7 +541,7 @@ export default function CardPackStore({ onClose }: Props) {
                     fontFamily: uiTypography.body,
                     letterSpacing: 1,
                     fontWeight: 700,
-                    background: active ? 'color-mix(in srgb, var(--profile-accent) 24%, transparent)' : 'color-mix(in srgb, var(--profile-accent) 6%, transparent)',
+                    background: active ? 'var(--profile-surface-strong)' : 'var(--profile-surface-muted)',
                     border: `1px solid ${active ? 'var(--profile-border-strong)' : 'var(--profile-border)'}`,
                     color: active ? 'var(--profile-text)' : 'var(--profile-text-muted)',
                     boxShadow: active ? '0 0 12px color-mix(in srgb, var(--profile-accent) 24%, transparent), inset 0 1px 0 color-mix(in srgb, var(--profile-text) 12%, transparent)' : 'none',
@@ -602,7 +604,7 @@ export default function CardPackStore({ onClose }: Props) {
               return (
                 <button key={pack.id} type="button" className={`celestial-store-set-button${isSelected ? ' is-selected' : ''}`} aria-pressed={isSelected} onClick={() => setSelectedPackId(pack.id)}>
                   <span className="celestial-store-set-art" style={{ backgroundImage: `url("${PACK_ART[pack.id] ?? ''}")` }} />
-                  <span><strong>{pack.setId}</strong><small>{pack.id === getSpotlightPackId() || pack.id === getDailyDealPackId() ? 'Featured' : 'Core set'}</small></span>
+                  <span><strong>{pack.setId}</strong><small data-ui-special-text>{pack.id === getSpotlightPackId() || pack.id === getDailyDealPackId() ? 'Featured' : 'Core set'}</small></span>
                 </button>
               );
             })}
@@ -614,7 +616,7 @@ export default function CardPackStore({ onClose }: Props) {
                   return (
                     <button key={pack.id} type="button" className={`celestial-store-set-button${isSelected ? ' is-selected' : ''}`} aria-pressed={isSelected} onClick={() => setSelectedPackId(pack.id)}>
                       <span className="celestial-store-set-art" style={{ backgroundImage: `url("${PACK_ART[pack.id] ?? ''}")` }} />
-                      <span><strong>{pack.setId}</strong><small>Event pack</small></span>
+                      <span><strong>{pack.setId}</strong><small data-ui-special-text className="is-event">Event pack</small></span>
                     </button>
                   );
                 })}
@@ -766,7 +768,7 @@ function PackHistoryPanel() {
                 return (
                   <article className="pack-history-row" key={`${entry.ts}-${entry.packId}-${entry.tier}-${idx}`}>
                     <div className="pack-history-row-main">
-                      <strong>{pack?.name ?? entry.packId} · {tierLabel}</strong>
+                      <strong className="ui-gradient-text">{pack?.name ?? entry.packId} · {tierLabel}</strong>
                       <time dateTime={new Date(entry.ts).toISOString()}>{formatTs(entry.ts)}</time>
                     </div>
                     <div className="pack-history-rarities" aria-label="Cards by rarity">

@@ -44,7 +44,9 @@ const EternityBossCoopInviteModal = lazy(() => import('@/ui/eternitysWake/Eterni
 const ArenaShell = lazy(() => import('@/ui/hud/ArenaShell'));
 const ShatterInfiniteLightOverlay = lazy(() => import('@/ui/hud/ShatterInfiniteLightOverlay'));
 const AttackSequenceOverlay = lazy(() => import('@/ui/hud/AttackSequenceOverlay'));
-import { resetUiPalette, warmTheme } from '@/ui/theme';
+import { applyUiPalette, DEFAULT_WARM_PALETTE, getRotatingUiPalette, getUiColorModePalette, warmTheme } from '@/ui/theme';
+import { DEFAULT_UI_THEME_ID, getEffectiveThemePalette, resolveThemeId } from '@/data/profile/uiThemes';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 import { useStore, selectTurn, selectBossFight, selectBattleground, selectSettings, selectProgress } from '@/state/store';
 import { useFriendsStore } from '@/state/friendsStore';
 import { DEFAULT_CONTROL_BINDINGS } from '@/types/game';
@@ -250,10 +252,32 @@ export default function App() {
   const socialAuthStatus = useSocialStore(s => s.status);
   const socialUserId = useSocialStore(s => s.user?.id ?? null);
 
+  useThemeVersion();
   useEffect(() => {
-    if (showPlayerInfo) return;
-    resetUiPalette();
-  }, [showPlayerInfo]);
+    const startedAt = Date.now();
+    let lastPalette = '';
+    const updatePalette = () => {
+      const currentProgress = useStore.getState().progress;
+      const profile = currentProgress.profile;
+      const themeId = resolveThemeId(profile.uiThemeId || DEFAULT_UI_THEME_ID, currentProgress);
+      const custom = profile.customUiTheme;
+      const isDefault = themeId === DEFAULT_UI_THEME_ID && (!custom || Object.keys(custom).length === 0);
+      const now = Date.now();
+      const rotatingPalette = isDefault ? DEFAULT_WARM_PALETTE : getRotatingUiPalette(
+        getEffectiveThemePalette(themeId, custom ?? null, currentProgress, startedAt),
+        now - startedAt,
+        settings.reducedMotion,
+      );
+      const palette = getUiColorModePalette(rotatingPalette, settings.buttonColorMode === 'light' ? 'light' : 'dark');
+      const signature = JSON.stringify(palette);
+      if (signature === lastPalette) return;
+      lastPalette = signature;
+      applyUiPalette(palette);
+    };
+    updatePalette();
+    const timerId = window.setInterval(updatePalette, 100);
+    return () => window.clearInterval(timerId);
+  }, [progress.profile.uiThemeId, progress.profile.customUiTheme, settings.reducedMotion, settings.buttonColorMode]);
 
   useEffect(() => {
     if (bossFight.mode !== 'active') return;
@@ -394,6 +418,7 @@ export default function App() {
   useEffect(() => {
     document.documentElement.classList.toggle('reduced-motion', settings.reducedMotion);
     document.documentElement.classList.toggle('compact-mode', !!settings.compactMode);
+    document.documentElement.dataset.buttonColorMode = settings.buttonColorMode === 'light' ? 'light' : 'dark';
     document.documentElement.lang = settings.language;
     const fontScale = getFontScale(settings.fontSizePreset);
     document.documentElement.style.setProperty('--ui-font-scale', String(fontScale));
@@ -404,7 +429,7 @@ export default function App() {
       cardArtDisplay: settings.cardArtDisplay,
       cardThemePacks: settings.cardThemePacks,
     });
-  }, [settings.language, settings.fontSizePreset, settings.cardArtDisplay, settings.cardThemePacks, settings.reducedMotion, settings.compactMode]);
+  }, [settings.language, settings.fontSizePreset, settings.cardArtDisplay, settings.cardThemePacks, settings.reducedMotion, settings.compactMode, settings.buttonColorMode]);
 
   // ── Music ────────────────────────────────────────────────────────────
   // Volume slider drives the master music gain in real time. A value of 0

@@ -4,8 +4,10 @@ import { getCardSetColor, getCardSetLabel } from '@/data/elements';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
 import { getLiveCardFaceBackgroundStyle, getLiveCardShimmerClassName, getCardBackBackgroundStyle } from '@/ui/cardBackgrounds';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
-import { getCardFinishLabel, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
-import { warmTheme } from '@/ui/theme';
+import { getCardFinishKey, getCardFinishLabel, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
+import { getReadableUiColor, warmTheme } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
+import './CollectionViewer.css';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import type { CardDefinition } from '@/types/cards';
 import type { LegacyCosmeticCard } from '@/data/cards/eternalCards';
@@ -36,6 +38,8 @@ function findPacksForCard(cardId: string): Array<{ packId: string; packName: str
 }
 
 export default function CollectionCardDetail({ card, finish, owned, onClose, actionLabel, onAction, actionDisabled }: Props) {
+  useThemeVersion();
+  const lightBg = useStore(s => s.settings.buttonColorMode === 'light');
   const favoriteCollection = useStore(s => s.progress.favoriteCollection);
   const toggleFavoriteCard = useStore(s => s.toggleFavoriteCard);
   const [favoriteFeedback, setFavoriteFeedback] = useState<string | null>(null);
@@ -44,11 +48,11 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
   const displayCard = isLegacyInfinite
     ? { ...card, type: 'Light' } as unknown as CardDefinition
     : card;
-  const isFavorite = favoriteCollection[`${card.definitionId}:${finish}`] ?? false;
+  const isFavorite = favoriteCollection[getCardFinishKey(card.definitionId, finish)] ?? false;
   const isRevealed = owned > 0;
   const packs = findPacksForCard(card.definitionId);
-  const elementColor = getCardSetColor(card.definitionId);
-  const rarityColor = RARITY_COLORS[card.rarity] ?? '#888';
+  const elementColor = getReadableUiColor(getCardSetColor(card.definitionId), warmTheme.surfaceStrong);
+  const rarityColor = getReadableUiColor(RARITY_COLORS[card.rarity] ?? '#888', warmTheme.surfaceStrong);
   const finishLabel = isLegacyInfinite || isHoloOnlyCard(card) ? 'Intrinsic Foil' : getCardFinishLabel(finish);
   const flavorObtain = card.rarity === 'Infinite'
     ? 'Crafted through Infinitude recipes.'
@@ -74,10 +78,14 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
 
   return (
     <div
+      className="collection-detail"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${card.name} collection details`}
       style={{
         position: 'absolute',
         inset: 0,
-        background: 'rgba(0, 0, 0, 0.75)',
+        background: warmTheme.backdrop,
         zIndex: 80,
         display: 'flex',
         alignItems: 'center',
@@ -89,8 +97,8 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
     >
       {/* Detail card container */}
       <div
+        className="collection-detail-panel"
         style={{
-          background: 'radial-gradient(circle at 18% 10%, rgba(236, 192, 128, 0.14) 0%, rgba(236, 192, 128, 0) 38%), linear-gradient(180deg, #0c0f15 0%, #10151e 100%)',
           border: `1px solid ${warmTheme.border}`,
           borderRadius: 16,
           display: 'flex',
@@ -100,12 +108,12 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
           maxHeight: 700,
           overflow: 'hidden',
           pointerEvents: 'auto',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8)',
         }}
         onClick={e => e.stopPropagation()}
       >
         {/* Left: Large card art */}
         <div
+          className="collection-detail-art"
           style={{
             flex: '0 0 320px',
             borderRight: `1px solid ${warmTheme.border}`,
@@ -133,19 +141,21 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
 
         {/* Right: Info panel */}
         <div
+          className="collection-detail-info"
           style={{
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
             padding: '32px 28px',
             overflowY: 'auto',
-            color: '#ead9c0',
+            color: 'var(--profile-text)',
             fontFamily: 'Georgia, serif',
             gap: 16,
           }}
         >
           {/* Close button */}
           <button
+            aria-label="Close card details"
             onClick={onClose}
             style={{
               position: 'absolute',
@@ -154,9 +164,9 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
               width: 32,
               height: 32,
               borderRadius: 999,
-              background: 'rgba(255, 237, 213, 0.1)',
+              background: 'var(--profile-surface-muted)',
               border: `1px solid ${warmTheme.border}`,
-              color: '#ead9c0',
+              color: 'var(--profile-text)',
               fontSize: 18,
               cursor: 'pointer',
               display: 'flex',
@@ -166,12 +176,10 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
               zIndex: 10,
             }}
             onMouseEnter={e => {
-              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255, 237, 213, 0.2)';
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 8px rgba(255, 237, 213, 0.3)';
+              e.currentTarget.style.background = 'var(--profile-surface)';
             }}
             onMouseLeave={e => {
-              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255, 237, 213, 0.1)';
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
+              e.currentTarget.style.background = 'var(--profile-surface-muted)';
             }}
           >
             X
@@ -179,13 +187,14 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
 
           {/* Card name */}
           <div>
-            <div style={{ fontSize: 32, fontWeight: 'bold', color: '#f0bd78', letterSpacing: 2, lineHeight: 1.2 }}>
+            <div className="ui-title-glow collection-detail-title" style={{ fontSize: 32, fontWeight: 'bold', letterSpacing: 2, lineHeight: 1.2 }}>
               {card.name}
             </div>
           </div>
 
           {/* Type & Element */}
           <div
+            className="collection-detail-fields"
             style={{
               display: 'flex',
               gap: 16,
@@ -194,15 +203,15 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
             }}
           >
             <div>
-              <div style={{ fontSize: 10, color: '#aaa', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
+              <div style={{ fontSize: 10, color: 'var(--profile-text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
                 Card Type
               </div>
-              <div style={{ fontSize: 14, color: '#ead9c0', fontWeight: 500 }}>
+              <div style={{ fontSize: 14, color: 'var(--profile-text)', fontWeight: 500 }}>
                 {isLegacyInfinite ? 'Archived Infinite' : getDisplayCardTypeLabel(card.type)}
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 10, color: '#aaa', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
+              <div style={{ fontSize: 10, color: 'var(--profile-text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
                 Element
               </div>
               <div style={{ fontSize: 14, color: elementColor, fontWeight: 500 }}>
@@ -210,10 +219,10 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 10, color: '#aaa', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
+              <div style={{ fontSize: 10, color: 'var(--profile-text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
                 Finish
               </div>
-              <div style={{ fontSize: 14, color: '#ead9c0', fontWeight: 500 }}>
+              <div style={{ fontSize: 14, color: 'var(--profile-text)', fontWeight: 500 }}>
                 {finishLabel}
               </div>
             </div>
@@ -221,6 +230,7 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
 
           {/* Rarity & Owned */}
           <div
+            className="collection-detail-fields"
             style={{
               display: 'flex',
               gap: 16,
@@ -229,7 +239,7 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
             }}
           >
             <div>
-              <div style={{ fontSize: 10, color: '#aaa', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
+              <div style={{ fontSize: 10, color: 'var(--profile-text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
                 Rarity
               </div>
               <div style={{ fontSize: 14, color: rarityColor, fontWeight: 'bold', textTransform: 'uppercase' }}>
@@ -237,10 +247,10 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 10, color: '#aaa', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
+              <div style={{ fontSize: 10, color: 'var(--profile-text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
                 Owned
               </div>
-              <div style={{ fontSize: 14, color: owned > 0 ? '#a8d86d' : '#888', fontWeight: 500 }}>
+              <div style={{ fontSize: 14, color: 'var(--profile-text)', fontWeight: 500 }}>
                 {owned > 0 ? `x${owned}` : 'Not owned'}
               </div>
             </div>
@@ -248,30 +258,31 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
 
           {/* Full stats and abilities */}
           <div>
-            <div style={{ fontSize: 10, color: '#aaa', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
+            <div style={{ fontSize: 10, color: 'var(--profile-text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
               Card Rules
             </div>
             {isRevealed && isLegacyInfinite ? (
-              <div style={{ fontSize: 12, lineHeight: 1.5, color: 'rgba(234, 217, 192, 0.92)', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, padding: '10px 12px' }}>
+              <div style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--profile-text-soft)', background: 'var(--profile-surface-muted)', border: '1px solid var(--profile-border)', borderRadius: 8, padding: '10px 12px' }}>
                 Archived Infinite collection record. This legacy card is not playable in the current card registry.
               </div>
             ) : isRevealed ? (
               <CardRulesDigest
                 card={displayCard}
                 variant="detail"
-                labelColor="rgba(234, 217, 192, 0.52)"
-                textColor="rgba(234, 217, 192, 0.92)"
-                sectionBackground="rgba(255,255,255,0.03)"
-                sectionBorder="rgba(255,255,255,0.12)"
+                lightBg={lightBg}
+                labelColor="var(--profile-text-muted)"
+                textColor="var(--profile-text-soft)"
+                sectionBackground="var(--profile-surface-muted)"
+                sectionBorder="var(--profile-border)"
               />
             ) : (
               <div
                 style={{
                   fontSize: 11,
                   lineHeight: 1.5,
-                  color: 'rgba(234, 217, 192, 0.92)',
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.12)',
+                  color: 'var(--profile-text-soft)',
+                  background: 'var(--profile-surface-muted)',
+                  border: '1px solid var(--profile-border)',
                   borderRadius: 8,
                   padding: '10px 12px',
                 }}
@@ -289,7 +300,7 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
               borderTop: `1px solid ${warmTheme.border}`,
             }}
           >
-            <div style={{ fontSize: 10, color: '#aaa', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
+            <div style={{ fontSize: 10, color: 'var(--profile-text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
               How to Obtain
             </div>
             {packs.length > 0 ? (
@@ -306,11 +317,11 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
                     }}
                     style={{
                       fontSize: 12,
-                      color: '#ffd86b',
+                      color: 'var(--profile-text)',
                       padding: '6px 10px',
-                      background: 'rgba(212, 175, 143, 0.12)',
+                      background: 'var(--profile-surface-muted)',
                       borderRadius: 4,
-                      border: '1px solid rgba(212, 175, 143, 0.4)',
+                      border: '1px solid var(--profile-border)',
                       cursor: 'pointer',
                       textAlign: 'left',
                       fontFamily: 'Georgia, serif',
@@ -322,12 +333,12 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
                     title="Jump to this pack in the store"
                   >
                     <span>{p.packName}</span>
-                    <span style={{ fontSize: 10, color: '#caa57a' }}>→ Store</span>
+                    <span style={{ fontSize: 10, color: 'var(--profile-text-muted)' }}>→ Store</span>
                   </button>
                 ))}
               </div>
             ) : (
-              <div style={{ fontSize: 12, color: '#888', fontStyle: 'italic' }}>
+              <div style={{ fontSize: 12, color: 'var(--profile-text-muted)', fontStyle: 'italic' }}>
                 {flavorObtain ?? '(Obtained through other means)'}
               </div>
             )}
@@ -336,6 +347,7 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
           {/* Action CTA (e.g. Summon Angel) — only shown when caller provides it */}
           {actionLabel && onAction && (
             <button
+              className="menu-tactile-btn"
               onClick={() => { onAction(); onClose(); }}
               disabled={actionDisabled}
               style={{
@@ -343,31 +355,26 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
                 padding: '12px 16px',
                 borderRadius: 10,
                 marginBottom: 10,
-                background: actionDisabled
-                  ? 'rgba(244,244,248,0.05)'
-                  : 'linear-gradient(180deg, rgba(50,50,80,0.98) 0%, rgba(18,18,32,0.98) 100%)',
-                border: actionDisabled
-                  ? '1px solid rgba(244,244,248,0.15)'
-                  : '1px solid rgba(200,180,255,0.6)',
-                color: actionDisabled ? 'rgba(244,244,248,0.3)' : 'rgba(244,244,248,0.98)',
+                background: actionDisabled ? 'var(--profile-surface-muted)' : 'var(--profile-button)',
+                border: '1px solid var(--profile-border-strong)',
+                color: 'var(--profile-text)',
                 fontSize: 13,
                 fontFamily: 'Georgia, serif',
                 cursor: actionDisabled ? 'not-allowed' : 'pointer',
                 letterSpacing: 2.5,
                 textTransform: 'uppercase',
-                boxShadow: actionDisabled
-                  ? 'none'
-                  : '0 0 22px rgba(180,160,255,0.28), 0 4px 16px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08)',
+                boxShadow: actionDisabled ? 'none' : warmTheme.glow,
                 transition: 'box-shadow 0.15s, border-color 0.15s',
               }}
             >
-              {actionLabel}
+              <span className="ui-button-title">{actionLabel}</span>
             </button>
           )}
 
           {/* Favorite button */}
           {owned > 0 && (
             <button
+              aria-pressed={isFavorite}
               onClick={handleFavoriteToggle}
               style={{
                 width: '100%',
@@ -375,12 +382,10 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
                 marginTop: 12,
                 borderRadius: 6,
                 border: isFavorite
-                  ? '1px solid rgba(255, 215, 100, 0.9)'
-                  : '1px solid rgba(255, 238, 212, 0.5)',
-                background: isFavorite
-                  ? 'rgba(120, 84, 36, 0.6)'
-                  : 'rgba(42, 27, 14, 0.5)',
-                color: isFavorite ? '#ffd86b' : 'rgba(255, 241, 220, 0.8)',
+                  ? '1px solid var(--profile-accent)'
+                  : '1px solid var(--profile-border)',
+                background: 'var(--profile-surface-muted)',
+                color: 'var(--profile-text)',
                 fontSize: 12,
                 fontFamily: 'Georgia, serif',
                 cursor: 'pointer',
@@ -392,17 +397,13 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
                 fontWeight: isFavorite ? 'bold' : 'normal',
               }}
               onMouseEnter={e => {
-                (e.currentTarget as HTMLButtonElement).style.background = isFavorite
-                  ? 'rgba(120, 84, 36, 0.8)'
-                  : 'rgba(42, 27, 14, 0.7)';
+                (e.currentTarget as HTMLButtonElement).style.background = 'var(--profile-surface)';
                 (e.currentTarget as HTMLButtonElement).style.boxShadow = isFavorite
                   ? '0 0 12px rgba(255, 215, 100, 0.4)'
                   : 'none';
               }}
               onMouseLeave={e => {
-                (e.currentTarget as HTMLButtonElement).style.background = isFavorite
-                  ? 'rgba(120, 84, 36, 0.6)'
-                  : 'rgba(42, 27, 14, 0.5)';
+                (e.currentTarget as HTMLButtonElement).style.background = 'var(--profile-surface-muted)';
                 (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
               }}
             >
@@ -416,7 +417,7 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
               style={{
                 marginTop: 8,
                 fontSize: 11,
-                color: favoriteFeedback.includes('Added') ? '#a8d86d' : '#f0bd78',
+                color: 'var(--profile-text)',
                 textAlign: 'center',
                 letterSpacing: 0.4,
               }}

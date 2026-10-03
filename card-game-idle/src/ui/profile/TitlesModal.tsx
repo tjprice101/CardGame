@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useStore, selectProfile, selectProgress } from '@/state/store';
-import { warmTheme } from '@/ui/theme';
+import { getReadableUiColor, warmTheme, type UiPalette } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 import { TITLE_BADGES, type TitleBadgeGroup } from '@/data/profile/titleBadges';
 
 interface Props {
   onClose: () => void;
   onApply?: () => void;
+  palette?: UiPalette;
 }
 
 type FilterGroup = 'all' | TitleBadgeGroup;
@@ -17,6 +19,7 @@ const GROUP_LABELS: Record<TitleBadgeGroup, string> = {
   boss: 'Boss',
   infinite: 'Infinite Card',
   set: 'Set Completion',
+  background: 'Background',
 };
 
 const FILTER_GROUPS: { value: FilterGroup; label: string }[] = [
@@ -25,6 +28,7 @@ const FILTER_GROUPS: { value: FilterGroup; label: string }[] = [
   { value: 'boss', label: 'Boss' },
   { value: 'infinite', label: 'Infinite' },
   { value: 'set', label: 'Set' },
+  { value: 'background', label: 'Backgrounds' },
 ];
 
 const FILTER_STATUSES: { value: FilterStatus; label: string }[] = [
@@ -39,7 +43,8 @@ const SORT_MODES: { value: SortMode; label: string }[] = [
   { value: 'alpha', label: 'A–Z' },
 ];
 
-export default function TitlesModal({ onClose, onApply }: Props) {
+export default function TitlesModal({ onClose, onApply, palette = warmTheme }: Props) {
+  useThemeVersion();
   const profile = useStore(selectProfile);
   const progress = useStore(selectProgress);
   const setTitleId = useStore(s => s.setTitleId);
@@ -80,8 +85,7 @@ export default function TitlesModal({ onClose, onApply }: Props) {
         return au - bu || a.group.localeCompare(b.group) || a.text.localeCompare(b.text);
       });
     } else {
-      // group order: milestone → boss → infinite → set
-      const order: TitleBadgeGroup[] = ['milestone', 'boss', 'infinite', 'set'];
+      const order: TitleBadgeGroup[] = ['milestone', 'boss', 'infinite', 'set', 'background'];
       list = [...list].sort((a, b) => {
         const ag = order.indexOf(a.group);
         const bg = order.indexOf(b.group);
@@ -95,7 +99,7 @@ export default function TitlesModal({ onClose, onApply }: Props) {
     <div
       style={{
         position: 'fixed', inset: 0,
-        background: 'rgba(4,2,1,0.88)',
+        background: warmTheme.backdrop,
         backdropFilter: 'blur(8px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         zIndex: 120, pointerEvents: 'auto',
@@ -106,12 +110,12 @@ export default function TitlesModal({ onClose, onApply }: Props) {
       <div
         className="ui-panel-intro"
         style={{
-          background: 'linear-gradient(160deg, #0e0603 0%, #080302 60%, #060202 100%)',
-          border: '1px solid rgba(200,128,58,0.30)',
+          background: 'var(--profile-surface-strong)',
+          border: '1px solid var(--profile-border-strong)',
           borderRadius: 18,
           width: '100%', maxWidth: 700, maxHeight: '90vh',
           display: 'flex', flexDirection: 'column',
-          boxShadow: '0 24px 80px rgba(0,0,0,0.72), 0 0 0 1px rgba(200,128,58,0.08)',
+          boxShadow: 'var(--profile-shadow), var(--profile-glow)',
           overflow: 'hidden',
         }}
       >
@@ -121,7 +125,7 @@ export default function TitlesModal({ onClose, onApply }: Props) {
           style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             padding: '20px 26px 16px',
-            borderBottom: '1px solid rgba(200,128,58,0.16)',
+            borderBottom: '1px solid var(--profile-border)',
             flexShrink: 0,
           }}
         >
@@ -129,13 +133,13 @@ export default function TitlesModal({ onClose, onApply }: Props) {
             <div style={{
               fontFamily: '"Cinzel", "Cormorant Garamond", Georgia, serif',
               fontSize: 20, fontWeight: 300, letterSpacing: 5, textTransform: 'uppercase',
-              color: '#daa058', textShadow: '0 2px 22px rgba(218,160,88,0.38)',
+              color: 'var(--profile-text)',
             }}>
               Titles
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
-              <div style={{ height: 1, width: 60, background: 'linear-gradient(90deg, rgba(200,128,58,0.5) 0%, transparent 100%)' }} />
-              <span style={{ fontSize: 9, letterSpacing: 3.5, textTransform: 'uppercase', color: 'rgba(218,160,88,0.40)' }}>
+              <div style={{ height: 1, width: 60, background: 'linear-gradient(90deg, var(--profile-accent) 0%, transparent 100%)' }} />
+              <span style={{ fontSize: 9, letterSpacing: 3.5, textTransform: 'uppercase', color: 'var(--profile-text-muted)' }}>
                 {unlockedCount} of {TITLE_BADGES.length} unlocked
               </span>
             </div>
@@ -144,9 +148,9 @@ export default function TitlesModal({ onClose, onApply }: Props) {
             onClick={onClose}
             style={{
               width: 38, height: 38, borderRadius: '50%',
-              border: '1px solid rgba(200,128,58,0.32)',
-              background: 'rgba(200,128,58,0.06)',
-              color: 'rgba(218,160,88,0.65)',
+              border: '1px solid var(--profile-border-strong)',
+              background: 'var(--profile-surface)',
+              color: 'var(--profile-text)',
               fontSize: 13, cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontFamily: 'inherit', lineHeight: 1, padding: 0,
@@ -159,7 +163,7 @@ export default function TitlesModal({ onClose, onApply }: Props) {
         {/* ── Filters + Sort ── */}
         <div style={{
           padding: '12px 26px',
-          borderBottom: '1px solid rgba(200,128,58,0.12)',
+          borderBottom: '1px solid var(--profile-border)',
           flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 10,
         }}>
           <input
@@ -169,9 +173,9 @@ export default function TitlesModal({ onClose, onApply }: Props) {
             onChange={e => setSearch(e.target.value)}
             style={{
               width: '100%', padding: '8px 13px', borderRadius: 8,
-              border: '1px solid rgba(200,128,58,0.22)',
-              background: 'rgba(200,128,58,0.05)',
-              color: '#f0dfc0',
+              border: '1px solid var(--profile-border)',
+              background: 'var(--profile-surface-muted)',
+              color: 'var(--profile-text)',
               fontFamily: 'Georgia, serif', fontSize: 12,
               outline: 'none', boxSizing: 'border-box',
             }}
@@ -187,12 +191,12 @@ export default function TitlesModal({ onClose, onApply }: Props) {
                   style={{
                     padding: '4px 11px', borderRadius: 999,
                     border: filterGroup === f.value
-                      ? '1px solid rgba(200,128,58,0.60)'
-                      : '1px solid rgba(200,128,58,0.18)',
+                      ? '1px solid var(--profile-border-strong)'
+                      : '1px solid var(--profile-border)',
                     background: filterGroup === f.value
-                      ? 'rgba(200,128,58,0.16)' : 'rgba(200,128,58,0.04)',
+                      ? 'var(--profile-surface-muted)' : 'transparent',
                     color: filterGroup === f.value
-                      ? '#daa058' : 'rgba(218,160,88,0.45)',
+                      ? 'var(--profile-text)' : 'var(--profile-text-muted)',
                     fontSize: 9.5, letterSpacing: 0.8, cursor: 'pointer',
                     fontFamily: 'Georgia, serif', textTransform: 'uppercase',
                   }}
@@ -212,12 +216,12 @@ export default function TitlesModal({ onClose, onApply }: Props) {
                     style={{
                       padding: '4px 9px', borderRadius: 6,
                       border: filterStatus === f.value
-                        ? '1px solid rgba(200,128,58,0.50)'
-                        : '1px solid rgba(200,128,58,0.14)',
+                        ? '1px solid var(--profile-border-strong)'
+                        : '1px solid var(--profile-border)',
                       background: filterStatus === f.value
-                        ? 'rgba(200,128,58,0.12)' : 'rgba(200,128,58,0.03)',
+                        ? 'var(--profile-surface-muted)' : 'transparent',
                       color: filterStatus === f.value
-                        ? '#daa058' : 'rgba(218,160,88,0.40)',
+                        ? 'var(--profile-text)' : 'var(--profile-text-muted)',
                       fontSize: 9.5, cursor: 'pointer', fontFamily: 'Georgia, serif',
                     }}
                   >
@@ -232,9 +236,9 @@ export default function TitlesModal({ onClose, onApply }: Props) {
                 onChange={e => setSortMode(e.target.value as SortMode)}
                 style={{
                   padding: '5px 8px', borderRadius: 6,
-                  border: '1px solid rgba(200,128,58,0.20)',
-                  background: 'rgba(8,4,1,0.8)',
-                  color: 'rgba(218,160,88,0.60)',
+                  border: '1px solid var(--profile-border)',
+                  background: 'var(--profile-surface-muted)',
+                  color: 'var(--profile-text)',
                   fontFamily: 'Georgia, serif', fontSize: 9.5, cursor: 'pointer',
                 }}
               >
@@ -249,13 +253,13 @@ export default function TitlesModal({ onClose, onApply }: Props) {
         {/* ── Results count ── */}
         <div style={{
           padding: '6px 26px 0',
-          fontSize: 9.5, color: 'rgba(218,160,88,0.36)',
+          fontSize: 9.5, color: 'var(--profile-text-muted)',
           flexShrink: 0, letterSpacing: 1,
         }}>
           {filtered.length} title{filtered.length !== 1 ? 's' : ''} shown
           {activeTitle && (
-            <span style={{ marginLeft: 12, color: 'rgba(218,160,88,0.60)' }}>
-              Equipped: <strong style={{ color: '#daa058' }}>
+            <span style={{ marginLeft: 12, color: 'var(--profile-text-muted)' }}>
+              Equipped: <strong style={{ color: 'var(--profile-text)' }}>
                 {TITLE_BADGES.find(t => t.id === activeTitle)?.text ?? 'Unknown'}
               </strong>
             </span>
@@ -273,6 +277,7 @@ export default function TitlesModal({ onClose, onApply }: Props) {
               text="— None —" description="Display no title."
               group={null} unlocked={true}
               active={selectedTitle === null}
+              surfaceColor={palette.surfaceStrong}
               onEquip={() => setSelectedTitle(null)}
             />
           )}
@@ -280,7 +285,7 @@ export default function TitlesModal({ onClose, onApply }: Props) {
           {filtered.length === 0 ? (
             <div style={{
               textAlign: 'center',
-              color: 'rgba(218,160,88,0.38)',
+              color: 'var(--profile-text-muted)',
               fontSize: 13, padding: '32px 0', fontStyle: 'italic',
             }}>
               No titles match your filters.
@@ -293,6 +298,7 @@ export default function TitlesModal({ onClose, onApply }: Props) {
                 <TitleCard
                   key={t.id} text={t.text} description={t.description}
                   group={t.group} unlocked={unlocked} active={active}
+                  surfaceColor={palette.surfaceStrong}
                   onEquip={() => unlocked && setSelectedTitle(t.id)}
                 />
               );
@@ -303,11 +309,11 @@ export default function TitlesModal({ onClose, onApply }: Props) {
         {/* ── Footer ── */}
         <div style={{
           padding: '10px 26px',
-          borderTop: '1px solid rgba(200,128,58,0.12)',
+          borderTop: '1px solid var(--profile-border)',
           display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0,
         }}>
-          <div style={{ height: 1, flex: 1, background: 'linear-gradient(90deg, transparent, rgba(200,128,58,0.18) 50%, transparent 100%)' }} />
-          <div style={{ fontSize: 9.5, color: 'rgba(218,160,88,0.35)', letterSpacing: 1, textAlign: 'center' }}>
+          <div style={{ height: 1, flex: 1, background: 'linear-gradient(90deg, transparent, var(--profile-border) 50%, transparent 100%)' }} />
+          <div style={{ fontSize: 9.5, color: 'var(--profile-text-muted)', letterSpacing: 1, textAlign: 'center' }}>
             Titles unlock as you earn milestones · Select a title and apply it
           </div>
           <button
@@ -318,9 +324,9 @@ export default function TitlesModal({ onClose, onApply }: Props) {
             }}
             className="menu-tactile-btn"
             style={{
-              border: '1px solid rgba(200,128,58,0.36)',
-              background: 'rgba(200,128,58,0.11)',
-              color: '#e8c793',
+              border: '1px solid var(--profile-border-strong)',
+              background: 'var(--profile-surface)',
+              color: 'var(--profile-text)',
               borderRadius: 8,
               padding: '6px 12px',
               fontFamily: 'Georgia, serif',
@@ -332,7 +338,7 @@ export default function TitlesModal({ onClose, onApply }: Props) {
           >
             Apply Title
           </button>
-          <div style={{ height: 1, flex: 1, background: 'linear-gradient(90deg, transparent, rgba(200,128,58,0.18) 50%, transparent 100%)' }} />
+          <div style={{ height: 1, flex: 1, background: 'linear-gradient(90deg, transparent, var(--profile-border) 50%, transparent 100%)' }} />
         </div>
       </div>
     </div>
@@ -344,10 +350,11 @@ const GC: Record<TitleBadgeGroup, { text: string; border: string }> = {
   boss:      { text: '#c07070', border: 'rgba(192,112,112,0.35)' },
   infinite:  { text: '#7aabf8', border: 'rgba(122,171,248,0.35)' },
   set:       { text: '#6ec878', border: 'rgba(110,200,120,0.35)' },
+  background: { text: '#f276aa', border: 'rgba(242,118,170,0.35)' },
 };
 
 function TitleCard({
-  text, description, group, unlocked, active, onEquip,
+  text, description, group, unlocked, active, onEquip, surfaceColor,
 }: {
   text: string;
   description: string;
@@ -355,6 +362,7 @@ function TitleCard({
   unlocked: boolean;
   active: boolean;
   onEquip: () => void;
+  surfaceColor: string;
 }) {
   return (
     <button
@@ -364,20 +372,16 @@ function TitleCard({
         display: 'flex', alignItems: 'center', gap: 13,
         padding: '10px 14px', borderRadius: 10,
         border: active
-          ? '1px solid rgba(200,128,58,0.60)'
+          ? '1px solid var(--profile-border-strong)'
           : unlocked
-            ? '1px solid rgba(200,128,58,0.16)'
-            : '1px solid rgba(200,128,58,0.06)',
-        background: active
-          ? 'rgba(200,128,58,0.10)'
-          : unlocked
-            ? 'rgba(200,128,58,0.04)'
-            : 'rgba(0,0,0,0.12)',
+            ? '1px solid var(--profile-border)'
+            : '1px dashed var(--profile-border)',
+        background: 'var(--profile-surface-strong)',
         cursor: unlocked ? 'pointer' : 'default',
         textAlign: 'left', fontFamily: 'Georgia, serif',
         width: '100%',
-        borderLeft: active ? '3px solid rgba(200,128,58,0.80)' : undefined,
-        filter: unlocked ? undefined : 'grayscale(0.55) opacity(0.52)',
+        borderLeft: active ? '3px solid var(--profile-accent)' : undefined,
+        boxShadow: active ? 'var(--profile-glow)' : 'none',
         transition: 'background 120ms ease, border-color 120ms ease',
         paddingLeft: active ? 11 : 14,
       }}
@@ -386,7 +390,7 @@ function TitleCard({
       <div style={{
         width: 18, flexShrink: 0,
         fontSize: 12, lineHeight: 1, textAlign: 'center',
-        color: active ? '#c8803a' : unlocked ? 'rgba(218,160,88,0.45)' : 'rgba(200,128,58,0.20)',
+        color: active ? 'var(--profile-text)' : 'var(--profile-text-muted)',
       }}>
         {active ? '✦' : unlocked ? '○' : '⊘'}
       </div>
@@ -395,14 +399,14 @@ function TitleCard({
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
           fontSize: 13, fontWeight: active ? 600 : 400,
-          color: unlocked ? (active ? '#daa058' : '#f0dfc0') : 'rgba(218,160,88,0.40)',
+          color: 'var(--profile-text)',
           letterSpacing: 0.3,
         }}>
           {text}
         </div>
         <div style={{
           fontSize: 10, lineHeight: 1.35,
-          color: unlocked ? 'rgba(218,160,88,0.48)' : 'rgba(200,128,58,0.22)',
+          color: 'var(--profile-text-muted)',
           marginTop: 2,
         }}>
           {description}
@@ -414,9 +418,9 @@ function TitleCard({
         <div style={{
           flexShrink: 0, padding: '3px 8px', borderRadius: 999,
           fontSize: 9, letterSpacing: 0.8, textTransform: 'uppercase',
-          color: GC[group].text,
+          color: getReadableUiColor(GC[group].text, surfaceColor),
           border: `1px solid ${GC[group].border}`,
-          background: 'rgba(0,0,0,0.18)',
+          background: 'var(--profile-surface-strong)',
         }}>
           {GROUP_LABELS[group]}
         </div>
@@ -424,5 +428,3 @@ function TitleCard({
     </button>
   );
 }
-
-void warmTheme;

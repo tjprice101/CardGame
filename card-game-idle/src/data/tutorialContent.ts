@@ -2,7 +2,8 @@
  * tutorialContent.ts
  *
  * Section metadata and rarity reference data for the in-game tutorial.
- * TutorialModal.tsx owns the section body copy and presentation.
+ * TutorialModal.tsx owns the section body copy and the responsive
+ * Codex presentation: grouped topic search, reading pane, and heading index.
  *
  * Structure mirrors the existing tutorial sections (id = stable key used
  * by TutorialModal for navigation, label = tab label, title/subtitle for
@@ -85,7 +86,7 @@ export const TUTORIAL_SECTIONS: TutorialSection[] = [
   { id: 'rarities',       label: 'Rarities',          title: 'Rarity Tiers',             subtitle: 'How each card rarity is earned.' },
   { id: 'modes',          label: 'Modes',             title: 'Wake, Infinitude & Packs', subtitle: 'Boss fights, crafting, and the store.' },
   { id: 'card-born-tier', label: 'Card-born Tier',    title: 'Card-born Tier',           subtitle: 'Card-light mastery, Resonance, and Collection Power.' },
-  { id: 'progression',    label: 'Progression',       title: 'Progression & Cosmetics',  subtitle: 'Shards, holofoils, profile, and themes.' },
+  { id: 'progression',    label: 'Progression',       title: 'Progression & Cosmetics',  subtitle: 'Achievements, profile, appearance, background rewards, and collection.' },
   { id: 'forge',          label: 'Forge',             title: 'Forge of Transcendence',   subtitle: 'The endgame gallery for Transcendent cards.' },
 ];
 

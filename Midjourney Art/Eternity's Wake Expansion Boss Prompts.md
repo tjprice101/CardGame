@@ -1,5 +1,7 @@
 # Eternity's Wake - Expansion Boss Art Prompts
 
+> Legacy/proposed expansion art catalog. Current playable Wake categories are Neutrality and Causality; concepts below are not a live boss roster. The old Pyroabyss set prompt brief is superseded by [Intensity Set Prompts](./Intensity%20Set%20Prompts.md), whose five Eternal concepts are not registered bosses or drops.
+
 Visual Identity: Expansion bosses keep the Eternal spectacle baseline but shift palette and architecture by category. Neutrality remains monochrome plus prismatic crystal refraction. Pyroabyss favors abyssal cinder fire and volcanic void architecture. Heavenly Light favors sanctified ember-radiance and silver thorn divinity. Thornbound Plains favors scarlet roads, briar cathedrals, and funerary war processions. Mechanical Dreams favors blackglass machine cathedrals, ivory alloy saints, and furnace-yellow reactor halos. Prismatic Accord favors Vorthum graphite, mirror silver, cyan-violet-gold refraction, white beam-light, mirror plains, fracture roads, and storm-canopy shardborn majesty.
 Parameters on every prompt: --ar 2:3 --niji 6 --stylize 900
 

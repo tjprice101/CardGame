@@ -494,7 +494,7 @@ const CORE_UI_THEMES: UiThemeDefinition[] = [
   {
     id: DEFAULT_UI_THEME_ID,
     name: 'Pantheon Default',
-    description: 'Midnight surfaces with luminous cyan and violet accents.',
+    description: 'Neutral surfaces with crisp monochrome and silver accents.',
     palette: WARM_DEFAULT,
     group: 'core',
     isUnlocked: () => true,
@@ -550,7 +550,7 @@ const CORE_UI_THEMES: UiThemeDefinition[] = [
   {
     id: 'theme-arctic-mist',
     name: 'Arctic Mist',
-    description: 'Icy cyan highlights over deep polar blues.',
+    description: 'Icy cyan and deep polar-blue decorative accents.',
     palette: SNOWBOUND,
     group: 'core',
     isUnlocked: () => true,
@@ -566,7 +566,7 @@ const CORE_UI_THEMES: UiThemeDefinition[] = [
   {
     id: 'theme-copper-forge',
     name: 'Copper Forge',
-    description: 'Molten copper energy over grounded dark basalt.',
+    description: 'Molten copper and basalt-inspired decorative accents.',
     palette: ABYSSAL_FORGE,
     group: 'core',
     isUnlocked: () => true,

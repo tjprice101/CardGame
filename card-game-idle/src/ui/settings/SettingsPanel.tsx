@@ -48,7 +48,7 @@ export default function SettingsPanel({ onClose }: Props) {
     borderRadius: 10,
     border: `1px solid ${theme.borderStrong}`,
     background: theme.button,
-    color: theme.text,
+    color: theme.accentDeep,
     fontSize: 12,
     fontWeight: 700,
     letterSpacing: 0.8,
@@ -79,7 +79,7 @@ export default function SettingsPanel({ onClose }: Props) {
     borderRadius: 10,
     border: `1px solid ${theme.borderStrong}`,
     background: theme.button,
-    color: theme.text,
+    color: theme.accentDeep,
     fontSize: 12,
     cursor: 'pointer',
     fontWeight: 700,
@@ -258,12 +258,19 @@ export default function SettingsPanel({ onClose }: Props) {
               </div>
             </PanelCard>
 
-            <PanelCard title="Preferences" subtitle="Language and text size" palette={theme}>
+            <PanelCard title="Preferences" subtitle="Language, text size, and button appearance" palette={theme}>
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))',
                 gap: 12,
               }}>
+                <SelectRow
+                  label="Light Mode or Dark Mode"
+                  value={draft.buttonColorMode ?? settings.buttonColorMode ?? 'dark'}
+                  options={[{ value: 'dark', label: 'Dark Mode' }, { value: 'light', label: 'Light Mode' }]}
+                  onChange={v => patchDraft({ buttonColorMode: v === 'light' ? 'light' : 'dark' })}
+                  palette={theme}
+                />
                 <SelectRow
                   label={t('fontSizePreset')}
                   value={draft.fontSizePreset ?? settings.fontSizePreset}
@@ -278,6 +285,12 @@ export default function SettingsPanel({ onClose }: Props) {
                   onChange={v => patchDraft({ language: v as typeof settings.language })}
                   palette={theme}
                 />
+              </div>
+              <div style={{ marginTop: 10, color: theme.textMuted, fontSize: 12 }}>
+                Dark Mode keeps dark button and screen gradients with light text; Light Mode swaps
+                them to white surfaces with deep black text gradients. Transparent controls keep
+                their shape; artwork and special text colors are retained.
+                Artwork stays unchanged; your profile colors keep rotating. Save Settings to apply.
               </div>
               <div style={{ marginTop: 14, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <button onClick={handleSaveSettings} style={actionPrimaryButton}>

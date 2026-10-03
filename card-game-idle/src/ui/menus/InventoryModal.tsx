@@ -3,6 +3,7 @@ import { useStore, selectProgress } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { GARDEN_MATERIAL_METADATA } from '@/data/dungeons/gardenDungeonDefinitions';
 import { uiTypography, warmTheme } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 
 interface Props {
   onClose: () => void;
@@ -36,6 +37,7 @@ function CurrencyTile(props: { name: string; value: string; description: string;
  * Cards' local material tab so it covers the whole game's holdings.
  */
 export default function InventoryModal({ onClose }: Props) {
+  useThemeVersion();
   const progress = useStore(selectProgress);
 
   const ownedMaterials = useMemo(() => {
@@ -63,7 +65,7 @@ export default function InventoryModal({ onClose }: Props) {
   return (
     <div style={{
       position: 'absolute', inset: 0, zIndex: 50,
-      background: 'radial-gradient(circle at 50% 0%, rgba(255,255,255,0.1), transparent 45%), linear-gradient(145deg, rgba(6,7,12,0.99), rgba(10,12,20,0.99))',
+      background: warmTheme.appBackground,
       color: warmTheme.text, fontFamily: uiTypography.body, display: 'flex', flexDirection: 'column', overflow: 'hidden',
     }}>
       <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '16px 32px', borderBottom: `1px solid ${warmTheme.border}`, flexShrink: 0 }}>

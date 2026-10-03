@@ -1,7 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useStore, selectProgress } from '@/state/store';
 import { uiTypography, warmTheme } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 import { listAchievements, summarizeAchievements } from '@/systems/progression/achievements';
+import { ACHIEVEMENT_CATEGORIES, getAchievementCategory, type AchievementCategoryId } from '@/systems/progression/achievementCategories';
+import './AchievementsModal.css';
 
 interface Props {
   onClose: () => void;
@@ -12,7 +15,6 @@ function getThemePalette() {
     typeof value === 'string' && value.trim().length > 0 ? value : fallback
   );
 
-  const surfaceMuted = safe(warmTheme.surfaceMuted, 'rgba(32, 18, 24, 0.92)');
   const surface = safe(warmTheme.surface, 'rgba(44, 20, 30, 0.94)');
   const surfaceStrong = safe(warmTheme.surfaceStrong, 'rgba(56, 26, 38, 0.96)');
   const border = safe(warmTheme.border, 'rgba(255, 182, 202, 0.28)');
@@ -26,7 +28,7 @@ function getThemePalette() {
   const success = safe(warmTheme.success, '#6ecf7c');
 
   return {
-    bg: `linear-gradient(155deg, ${surfaceMuted} 0%, ${surface} 50%, ${surfaceStrong} 100%)`,
+    bg: warmTheme.appBackground,
     glow: `radial-gradient(ellipse 60% 35% at 50% 0%, ${withAlpha(accent, 0.2)} 0%, transparent 60%)`,
     panel: surface,
     panelStrong: surfaceStrong,
@@ -51,63 +53,50 @@ function getThemePalette() {
   };
 }
 
-const GROUP_LABEL: Record<string, string> = {
-  all: 'All Achievements',
-  milestone: 'Milestones',
-  boss: "Eternity's Wake",
-  infinite: 'Infinity Crafted',
-  set: 'Set Completion',
-};
-
-const GROUP_ICON: Record<string, string> = {
-  all: '✦',
-  milestone: '◈',
-  boss: '☽',
-  infinite: '∞',
-  set: '✦',
-};
-
-const GROUP_DESCRIPTION: Record<string, string> = {
-  all: 'Every milestone, boss, crafted-card, and set-completion achievement.',
-  milestone: 'Core gameplay milestones — cards played, packs opened, turns completed, and collection thresholds reached.',
-  boss: "Defeat Eternity's Wake bosses.",
-  infinite: 'Cards crafted through the Infinity menu using the Infinitude system.',
-  set: 'Collect every card in a complete set, including all Eternal rarities.',
-};
-
 type AchievementEntry = ReturnType<typeof listAchievements>[number];
+type AchievementStatus = 'all' | 'claimable' | 'locked' | 'claimed';
 
 export default function AchievementsModal({ onClose }: Props) {
+  useThemeVersion();
   const P = getThemePalette();
   const progress = useStore(selectProgress);
   const claimAchievement = useStore(s => s.claimAchievement);
   const claimAllAchievements = useStore(s => s.claimAllAchievements);
-  const groupColors: Record<string, string> = {
-    all: warmTheme.accent,
-    milestone: warmTheme.accent,
-    boss: warmTheme.danger,
-    infinite: warmTheme.accentSoft,
-    set: warmTheme.success,
-  };
-
   const summary = useMemo(() => summarizeAchievements(progress), [progress]);
   const allAchievements = useMemo(() => listAchievements(progress), [progress]);
   const grouped = useMemo(() => {
-    const out: Record<string, typeof allAchievements> = {};
+    const out = new Map<AchievementCategoryId, AchievementEntry[]>();
     for (const a of allAchievements) {
-      (out[a.group] ??= []).push(a);
+      const category = getAchievementCategory(a);
+      const entries = out.get(category) ?? [];
+      entries.push(a);
+      out.set(category, entries);
     }
     return out;
   }, [allAchievements]);
 
-  const [activeGroup, setActiveGroup] = useState<string>('all');
-  const groups = ['all', ...Object.keys(grouped)];
-  useEffect(() => {
-    if (activeGroup !== 'all' && !grouped[activeGroup]) setActiveGroup('all');
-  }, [activeGroup, grouped]);
-
-  const effectiveGroup = activeGroup === 'all' || grouped[activeGroup] ? activeGroup : 'all';
-  const items = effectiveGroup === 'all' ? allAchievements : grouped[effectiveGroup] ?? [];
+  const [activeGroup, setActiveGroup] = useState<AchievementCategoryId | 'all'>('all');
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState<AchievementStatus>('all');
+  const activeCategory = ACHIEVEMENT_CATEGORIES.find(category => category.id === activeGroup);
+  const items = activeGroup === 'all' ? allAchievements : grouped.get(activeGroup) ?? [];
+  const query = search.trim().toLowerCase();
+  const visibleSections = ACHIEVEMENT_CATEGORIES
+    .filter(category => activeGroup === 'all' || category.id === activeGroup)
+    .map(category => ({
+      ...category,
+      entries: (grouped.get(category.id) ?? []).filter(achievement => {
+        const matchesSearch = `${achievement.text} ${achievement.description} ${achievement.backgroundReward?.name ?? ''} ${category.label} ${category.section}`
+          .toLowerCase().includes(query);
+        const matchesStatus = status === 'all'
+          || (status === 'claimable' && achievement.unlocked && !achievement.claimed)
+          || (status === 'locked' && !achievement.unlocked)
+          || (status === 'claimed' && achievement.claimed);
+        return matchesSearch && matchesStatus;
+      }),
+    }))
+    .filter(category => category.entries.length > 0);
+  const visibleCount = visibleSections.reduce((count, category) => count + category.entries.length, 0);
   const unlockedInGroup = items.filter(a => a.unlocked).length;
   const accentTriplet = toRgbTriplet(P.accent) ?? [58, 142, 200];
   const accentSoftTriplet = toRgbTriplet(P.accentGold) ?? [90, 171, 218];
@@ -115,7 +104,7 @@ export default function AchievementsModal({ onClose }: Props) {
   return (
     <div
       onClick={onClose}
-      className="ui-panel-intro"
+      className="ui-panel-intro achievements-modal"
       style={{
         position: 'absolute', inset: 0, zIndex: 50, pointerEvents: 'auto',
         background: P.bg,
@@ -124,10 +113,10 @@ export default function AchievementsModal({ onClose }: Props) {
       }}
     >
       {/* Atmospheric washes — Warm Hearth */}
-      <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: '70%', height: '85%', background: `radial-gradient(ellipse, ${withAlpha(P.accent, 0.28)} 0%, ${withAlpha(P.accentDeep, 0.12)} 42%, transparent 68%)`, filter: 'blur(80px)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', bottom: '-18%', right: '-8%', width: '60%', height: '70%', background: `radial-gradient(ellipse, ${withAlpha(P.accentGold, 0.22)} 0%, transparent 65%)`, filter: 'blur(90px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: '70%', height: '85%', background: `radial-gradient(ellipse, ${withAlpha(P.accent, 0.05)} 0%, transparent 68%)`, filter: 'blur(80px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: '-18%', right: '-8%', width: '60%', height: '70%', background: `radial-gradient(ellipse, ${withAlpha(P.accentGold, 0.03)} 0%, transparent 65%)`, filter: 'blur(90px)', pointerEvents: 'none' }} />
       <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% 44%, transparent 22%, ${P.overlayVeil} 100%)`, pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', inset: 0, background: `repeating-linear-gradient(0deg, transparent, transparent 3px, ${P.stripe} 3px, ${P.stripe} 4px)`, pointerEvents: 'none' }} />
+      <div className="achievements-scanlines" style={{ position: 'absolute', inset: 0, background: `repeating-linear-gradient(0deg, transparent, transparent 3px, ${P.stripe} 3px, ${P.stripe} 4px)`, pointerEvents: 'none' }} />
 
       {/* Ornamental top accent */}
       <div style={{
@@ -137,13 +126,13 @@ export default function AchievementsModal({ onClose }: Props) {
       }} />
 
       <div onClick={e => e.stopPropagation()} style={{
-        display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden',
+        position: 'relative', display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden',
         ['--ui-accent' as any]: `${accentTriplet[0]}, ${accentTriplet[1]}, ${accentTriplet[2]}`,
         ['--ui-accent-soft' as any]: `${accentSoftTriplet[0]}, ${accentSoftTriplet[1]}, ${accentSoftTriplet[2]}`,
       } as React.CSSProperties}>
 
         {/* ── Header ── */}
-        <div className="ui-shimmer-band" style={{
+        <div className="ui-shimmer-band ui-artwork-header achievements-header" style={{
           position: 'relative',
           padding: '22px 32px 18px',
           borderBottom: `1px solid ${P.border}`,
@@ -152,7 +141,7 @@ export default function AchievementsModal({ onClose }: Props) {
           backgroundPosition: 'right center', backgroundSize: 'cover',
           boxShadow: `0 8px 28px rgba(0,0,0,0.32), inset 0 -1px 0 ${P.accentGlowColor}`,
         }}>
-          <div style={{ flex: 1 }}>
+          <div data-ui-artwork-copy style={{ flex: 1 }}>
             <div style={{
               fontSize: 10, letterSpacing: 3.5, textTransform: 'uppercase',
               color: P.accentGold, fontFamily: uiTypography.display, marginBottom: 6,
@@ -177,7 +166,7 @@ export default function AchievementsModal({ onClose }: Props) {
           </div>
 
           {/* Hero stats — emblem pillars */}
-          <div style={{ display: 'flex', alignItems: 'center', padding: '7px 8px 7px 16px', borderLeft: `1px solid ${P.borderStrong}`, borderRadius: 10, background: 'rgba(8,4,12,0.68)', boxShadow: '0 6px 18px rgba(0,0,0,0.28)', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', padding: '7px 8px 7px 16px', borderLeft: `1px solid ${P.borderStrong}`, borderRadius: 10, background: P.panelStrong, boxShadow: warmTheme.shadow, flexShrink: 0 }}>
             <AchievStat icon="❖" label="Unlocked" value={`${summary.unlocked}`} sub={`/ ${summary.total}`} accent={P.accent} />
             <div style={{ width: 1, height: 30, background: P.border, flexShrink: 0 }} />
             <AchievStat icon="✓" label="Rewards Claimed" value={`${summary.claimed}`} sub="collected" accent={P.success} />
@@ -195,7 +184,7 @@ export default function AchievementsModal({ onClose }: Props) {
               onClick={claimAllAchievements}
               style={{
                 height: 38, padding: '0 16px', borderRadius: 7, cursor: 'pointer',
-                border: `1px solid ${P.borderStrong}`, background: P.accentDeep,
+                border: `1px solid ${P.borderStrong}`, background: warmTheme.button,
                 color: P.text, fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 0.8,
               }}
             >
@@ -207,7 +196,7 @@ export default function AchievementsModal({ onClose }: Props) {
             onClick={onClose}
             style={{
               width: 42, height: 42, borderRadius: '50%', cursor: 'pointer',
-              background: 'rgba(8,4,12,0.72)', border: `1px solid ${P.borderStrong}`,
+              background: P.panelStrong, border: `1px solid ${P.borderStrong}`,
               color: '#fff2f5', fontSize: 16, display: 'flex', alignItems: 'center',
               justifyContent: 'center', flexShrink: 0, transition: 'all 0.18s ease', padding: 0,
             }}
@@ -217,10 +206,10 @@ export default function AchievementsModal({ onClose }: Props) {
         </div>
 
         {/* ── Body: sidebar + main ── */}
-        <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        <div className="achievements-body" style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
           {/* Left: group navigation */}
-          <div style={{
+          <nav aria-label="Achievement categories" className="achievements-categories" style={{
             width: 240, flexShrink: 0,
             borderRight: `1px solid ${P.border}`,
             background: P.overlayStrong,
@@ -233,19 +222,28 @@ export default function AchievementsModal({ onClose }: Props) {
               fontSize: 9, letterSpacing: 2.5, textTransform: 'uppercase',
               color: P.textFaint, fontFamily: uiTypography.display, marginBottom: 6, paddingLeft: 6,
             }}>Categories</div>
-            {groups.map(g => {
-              const gItems = g === 'all' ? allAchievements : grouped[g] ?? [];
+            {[{ id: 'all' as const, section: '', label: 'All Achievements' }, ...ACHIEVEMENT_CATEGORIES].map((category, index, categories) => {
+              const g = category.id;
+              const gItems = g === 'all' ? allAchievements : grouped.get(g) ?? [];
               const gUnlocked = gItems.filter(a => a.unlocked).length;
-              const isActive = g === effectiveGroup;
-              const gc = groupColors[g] ?? P.accent;
+              const isActive = g === activeGroup;
+              const gc = P.accent;
               return (
+                <div key={g} className="achievements-category-option">
+                  {category.section && category.section !== categories[index - 1]?.section && (
+                    <div className="achievements-category-section" style={{ color: P.textMuted }}>
+                      {category.section}
+                    </div>
+                  )}
                 <button
-                  key={g}
                   onClick={() => setActiveGroup(g)}
+                  aria-label={category.label}
+                  aria-pressed={isActive}
                   style={{
-                    textAlign: 'left', padding: '12px 14px', borderRadius: 10, cursor: 'pointer',
-                    background: isActive ? withAlpha(gc, 0.12) : 'transparent',
-                    border: `1px solid ${isActive ? withAlpha(gc, 0.35) : withAlpha(P.text, 0.12)}`,
+                    width: '100%', textAlign: 'left', padding: '10px 12px', borderRadius: 10, cursor: 'pointer',
+                    background: isActive ? P.panelStrong : 'transparent',
+                    border: `1px solid ${isActive ? P.borderStrong : withAlpha(P.text, 0.12)}`,
+                    boxShadow: isActive ? warmTheme.glow : undefined,
                     display: 'flex', alignItems: 'center', gap: 10,
                     transition: 'all 0.15s',
                   }}
@@ -257,14 +255,14 @@ export default function AchievementsModal({ onClose }: Props) {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 14, color: isActive ? gc : P.textMuted,
                   }}>
-                    {GROUP_ICON[g] ?? '◇'}
+                    {g === 'infinite' ? '∞' : '◇'}
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{
+                    <div className="ui-button-title" style={{
                       fontSize: 12, fontWeight: 700, color: isActive ? gc : P.textMuted,
                       fontFamily: uiTypography.display, letterSpacing: 0.3,
                     }}>
-                      {GROUP_LABEL[g] ?? g}
+                      {category.label}
                     </div>
                     <div style={{ fontSize: 10, color: P.textFaint, marginTop: 1 }}>
                       {gUnlocked}/{gItems.length} unlocked
@@ -276,18 +274,19 @@ export default function AchievementsModal({ onClose }: Props) {
                       background: P.accentGold,
                       boxShadow: `0 0 8px ${P.goldGlowColor}`,
                       flexShrink: 0,
-                    }} />
+                    }} role="img" aria-label="Rewards ready to claim" />
                   )}
                 </button>
+                </div>
               );
             })}
-          </div>
+          </nav>
 
           {/* Right: achievement list */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
             {/* Group header */}
-            <div style={{
+            <div className="achievements-list-header" style={{
               padding: '18px 28px 14px',
               borderBottom: `1px solid ${P.border}`,
               flexShrink: 0,
@@ -296,46 +295,83 @@ export default function AchievementsModal({ onClose }: Props) {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <span style={{
-                  fontSize: 22, color: groupColors[effectiveGroup] ?? P.accent,
-                  textShadow: `0 0 20px ${withAlpha(groupColors[effectiveGroup] ?? P.accent, 0.4)}`,
+                  fontSize: 22, color: P.accent,
+                  textShadow: `0 0 20px ${P.accentGlowColor}`,
                 }}>
-                  {GROUP_ICON[effectiveGroup] ?? '◇'}
+                  ◇
                 </span>
                 <div style={{ flex: 1 }}>
                   <div style={{
-                    fontSize: 18, fontWeight: 700, color: groupColors[effectiveGroup] ?? P.accent,
+                    fontSize: 18, fontWeight: 700, color: P.accent,
                     fontFamily: uiTypography.display, letterSpacing: 1,
                   }}>
-                    {GROUP_LABEL[effectiveGroup] ?? effectiveGroup}
+                    {activeCategory?.label ?? 'All Achievements'}
                   </div>
                   <div style={{ fontSize: 11, color: P.textMuted, marginTop: 2 }}>
-                    {GROUP_DESCRIPTION[effectiveGroup] ?? ''}
+                    {activeCategory?.description ?? 'Browse achievements by gameplay, collection, battles, progression, social, and cosmetics.'}
                   </div>
                 </div>
                 <div style={{
                   padding: '6px 14px', borderRadius: 20,
                   background: unlockedInGroup === items.length && items.length > 0
-                    ? P.successBg : withAlpha(groupColors[effectiveGroup] ?? P.accent, 0.1),
-                  border: `1px solid ${unlockedInGroup === items.length && items.length > 0 ? withAlpha(P.success, 0.4) : withAlpha(groupColors[effectiveGroup] ?? P.accent, 0.28)}`,
+                    ? P.successBg : P.panelStrong,
+                  border: `1px solid ${unlockedInGroup === items.length && items.length > 0 ? withAlpha(P.success, 0.4) : P.border}`,
                   fontSize: 12, fontWeight: 700,
-                  color: unlockedInGroup === items.length && items.length > 0 ? P.success : (groupColors[effectiveGroup] ?? P.accent),
+                  color: unlockedInGroup === items.length && items.length > 0 ? P.success : P.accent,
                   fontFamily: uiTypography.display,
                 }}>
                   {unlockedInGroup}/{items.length}
+                </div>
+                <div className="achievements-filters">
+                  <input
+                    type="search"
+                    aria-label="Search achievements"
+                    placeholder="Search titles, requirements, or rewards..."
+                    value={search}
+                    onChange={event => setSearch(event.target.value)}
+                    style={{ color: P.text, background: P.panelStrong, border: `1px solid ${P.border}` }}
+                  />
+                  <label style={{ color: P.textMuted }}>
+                    Status
+                    <select
+                      aria-label="Achievement status"
+                      value={status}
+                      onChange={event => setStatus(event.target.value as AchievementStatus)}
+                      style={{ color: P.text, background: P.panelStrong, border: `1px solid ${P.border}` }}
+                    >
+                      <option value="all">All statuses</option>
+                      <option value="claimable">Ready to claim</option>
+                      <option value="locked">Locked</option>
+                      <option value="claimed">Claimed</option>
+                    </select>
+                  </label>
+                  <span role="status" style={{ fontSize: 11, color: P.textMuted }}>{visibleCount} shown</span>
                 </div>
               </div>
             </div>
 
             {/* Achievement rows */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '16px 28px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {items.map(a => (
-                <AchievementRow
-                  key={a.id}
-                  achievement={a}
-                  onClaim={() => claimAchievement(a.id)}
-                  groupColor={groupColors[effectiveGroup] ?? P.accent}
-                />
+            <div className="achievements-list" style={{ flex: 1, overflowY: 'auto', padding: '16px 28px' }}>
+              {visibleSections.map(category => (
+                <section key={category.id} aria-label={`${category.label} achievements`} style={{ marginBottom: 24 }}>
+                  <h2 style={{ color: P.accent, fontFamily: uiTypography.display, fontSize: 14, margin: '0 0 12px' }}>
+                    {category.section} / {category.label}
+                  </h2>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {category.entries.map(a => (
+                      <AchievementRow
+                        key={a.id}
+                        achievement={a}
+                        onClaim={() => claimAchievement(a.id)}
+                        groupColor={P.accent}
+                      />
+                    ))}
+                  </div>
+                </section>
               ))}
+              {visibleCount === 0 && (
+                <p style={{ color: P.textMuted }}>No achievements match these filters. Try another search or status.</p>
+              )}
             </div>
           </div>
         </div>
@@ -399,7 +435,7 @@ function AchievStat({ icon, label, value, sub, accent, pulse }: {
         fontFamily: uiTypography.display,
       }}>
         {value}
-        {sub && <span style={{ fontSize: 12, fontWeight: 400, marginLeft: 3, color: withAlpha(accent, 0.58), fontFamily: uiTypography.body }}>{sub}</span>}
+        {sub && <span style={{ fontSize: 12, fontWeight: 400, marginLeft: 3, color: '#b9efc1', fontFamily: uiTypography.body }}>{sub}</span>}
       </div>
     </div>
   );
@@ -411,9 +447,9 @@ function AchievementRow({ achievement: a, onClaim, groupColor }: {
   const P = getThemePalette();
   const gc = groupColor;
   const stateBg = a.claimed
-    ? withAlpha(P.text, 0.06)
+    ? P.panelStrong
     : a.unlocked
-      ? withAlpha(gc, 0.06)
+      ? P.panelStrong
       : P.panel;
   const stateBorder = a.claimed
     ? withAlpha(P.success, 0.2)
@@ -422,13 +458,12 @@ function AchievementRow({ achievement: a, onClaim, groupColor }: {
       : withAlpha(P.text, 0.12);
 
   return (
-    <div style={{
+    <article aria-label={a.text} data-achievement-id={a.id} className="achievement-row" style={{
       display: 'flex', alignItems: 'center', gap: 14,
       padding: '12px 16px',
       background: stateBg,
       border: `1px solid ${stateBorder}`,
       borderRadius: 12,
-      opacity: !a.unlocked ? 0.55 : a.claimed ? 0.70 : 1,
       boxShadow: a.unlocked && !a.claimed ? `0 2px 16px ${withAlpha(gc, 0.14)}` : 'none',
       transition: 'all 0.2s',
     }}>
@@ -455,6 +490,12 @@ function AchievementRow({ achievement: a, onClaim, groupColor }: {
         <div style={{ fontSize: 11, color: P.textMuted, marginTop: 2, lineHeight: 1.4, fontFamily: uiTypography.body }}>
           {a.description}
         </div>
+        {a.backgroundReward && (
+          <div style={{ fontSize: 11, color: 'var(--profile-text-soft)', marginTop: 5, lineHeight: 1.4 }}>
+            {a.backgroundReward.rarity} main menu background: {a.backgroundReward.name}
+            <div style={{ color: 'var(--profile-text-muted)' }}>Automatically unlocked when earned; equip it in your profile once its artwork is installed.</div>
+          </div>
+        )}
       </div>
 
       {/* Reward badge */}
@@ -465,7 +506,8 @@ function AchievementRow({ achievement: a, onClaim, groupColor }: {
         flexShrink: 0, fontFamily: uiTypography.display,
         display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2,
       }}>
-        <span>+{a.shardReward} ◈</span>
+        {a.backgroundReward && <span style={{ color: 'var(--profile-text)' }}>Background + Title</span>}
+        {a.shardReward > 0 && <span>+{a.shardReward} ◈</span>}
         {a.divineLightReward > 0 && (
           <span style={{ fontSize: 11, color: withAlpha(P.accentGold, 0.9), fontFamily: uiTypography.body }}>+{a.divineLightReward.toLocaleString()} Divine Light</span>
         )}
@@ -492,6 +534,6 @@ function AchievementRow({ achievement: a, onClaim, groupColor }: {
       >
         {a.claimed ? '✓ Done' : a.unlocked ? 'Claim' : 'Locked'}
       </button>
-    </div>
+    </article>
   );
 }

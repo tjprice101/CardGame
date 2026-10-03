@@ -61,7 +61,7 @@ export default function EnigmaModal({ onClose }: Props) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: `1px solid ${warmTheme.border}`, paddingBottom: 18, marginBottom: 18 }}>
           <div>
             <div style={{ color: warmTheme.accent, fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 3 }}>✦ COSMIC PATTERNS</div>
-            <h1 style={{ margin: '6px 0 4px', color: warmTheme.text, fontFamily: uiTypography.display, fontSize: 32, letterSpacing: 1.5 }}>Enigma</h1>
+            <h1 className="ui-title-glow" style={{ margin: '6px 0 4px', color: warmTheme.text, fontFamily: uiTypography.display, fontSize: 32, letterSpacing: 1.5 }}>Enigma</h1>
             <div style={{ color: warmTheme.textMuted, fontSize: 13 }}>Find hidden manuscripts, unlock their trials, and claim their Enigmatic rewards.</div>
           </div>
           <button
@@ -147,7 +147,7 @@ export default function EnigmaModal({ onClose }: Props) {
                   border: `1px solid ${selected ? accent.accent : warmTheme.border}`,
                   backgroundImage: `linear-gradient(135deg, color-mix(in srgb, ${warmTheme.surfaceMuted} 95%, transparent), color-mix(in srgb, ${warmTheme.surfaceStrong} 72%, transparent)), url("${getEnigmaArtUrl(definition.id)}")`,
                   backgroundPosition: 'center', backgroundSize: 'cover', boxShadow: selected ? `0 0 18px ${accent.glow}` : 'none',
-                }}><div style={{ color: accent.accent, fontFamily: uiTypography.display, fontSize: 9, letterSpacing: 1.4, textTransform: 'uppercase' }}>{selected ? 'Locked On' : complete ? 'Completed' : 'Select Focus'}</div><div style={{ color: warmTheme.text, fontFamily: uiTypography.display, fontSize: 15, marginTop: 7, lineHeight: 1.15 }}>{definition.title}</div><div style={{ color: warmTheme.textMuted, fontSize: 10, marginTop: 8 }}>{definition.setId} · {definition.steps.length} steps</div></button>;
+                }}><div style={{ color: accent.accent, fontFamily: uiTypography.display, fontSize: 9, letterSpacing: 1.4, textTransform: 'uppercase' }}>{selected ? 'Locked On' : complete ? 'Completed' : 'Select Focus'}</div><div className="ui-button-title" style={{ color: warmTheme.text, fontFamily: uiTypography.display, fontSize: 15, fontWeight: 700, marginTop: 7, lineHeight: 1.15 }}>{definition.title}</div><div style={{ color: warmTheme.textMuted, fontSize: 10, marginTop: 8 }}>{definition.setId} · {definition.steps.length} steps</div></button>;
               })}
             </div>
           ) : <div style={{ color: warmTheme.textMuted, fontSize: 12, padding: '14px 0' }}>Unlock a manuscript by meeting its discovery requirements.</div>}
@@ -181,7 +181,7 @@ export default function EnigmaModal({ onClose }: Props) {
                     <div style={{ color: warmTheme.textMuted, fontSize: 10, letterSpacing: 0.7 }}>{getUniqueOwnedCardsForSet(progress, entry.setId)}/5 unique cards</div>
                   </div>
                 )}
-              <section onClick={() => { if (canLockOn) setActiveEnigma(definition.id); if (!locked) setExpandedId(expanded ? null : definition.id); }} style={{ border: `1px solid ${isActive ? warmTheme.borderStrong : warmTheme.border}`, background: locked ? warmTheme.surfaceMuted : warmTheme.surfaceStrong, padding: 18, borderRadius: 12, cursor: canLockOn ? 'pointer' : 'default', opacity: locked ? 0.72 : 1 }}>
+              <section onClick={() => { if (canLockOn) setActiveEnigma(definition.id); if (!locked) setExpandedId(expanded ? null : definition.id); }} style={{ border: `1px solid ${isActive ? warmTheme.borderStrong : warmTheme.border}`, background: locked ? warmTheme.surfaceMuted : warmTheme.surfaceStrong, padding: 18, borderRadius: 12, cursor: canLockOn ? 'pointer' : 'default' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
                   <div><div style={{ color: warmTheme.text, fontFamily: uiTypography.display, fontSize: 20 }}>{definition.title}</div><div style={{ color: warmTheme.textMuted, marginTop: 4 }}>{!discovered ? definition.hintText : foundButLocked ? (definition.unlockHintText ?? definition.hintText) : status === 'completed' ? 'All Enigma steps complete. Reward claimed.' : currentStep?.description ?? definition.hintText}</div>{currentTrackedValue !== null && <div style={{ color: warmTheme.accent, fontSize: 11, marginTop: 7 }}>{currentStep?.progressCounterLabel}: {Math.min(currentTrackedValue, currentTrackedTarget).toLocaleString()} / {currentTrackedTarget.toLocaleString()}</div>}</div>
                   <div style={{
@@ -227,7 +227,7 @@ export default function EnigmaModal({ onClose }: Props) {
                         boxShadow: progress.divineLight < divineLightCost ? 'none' : `0 4px 14px color-mix(in srgb, ${warmTheme.accent} 35%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.5)`,
                       }}
                     >
-                      Sacrifice {divineLightCost.toLocaleString()} Divine Light
+                      <span className="ui-button-title ui-button-title-on-light">Sacrifice {divineLightCost.toLocaleString()} Divine Light</span>
                     </button>
                   )}
                   {canClaim && (
@@ -249,7 +249,7 @@ export default function EnigmaModal({ onClose }: Props) {
                         boxShadow: `0 6px 20px color-mix(in srgb, ${warmTheme.accent} 35%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.6)`,
                       }}
                     >
-                      ✦ Claim Reward
+                      <span className="ui-button-title ui-button-title-on-light">✦ Claim Reward</span>
                     </button>
                   )}
                 </div></div>}

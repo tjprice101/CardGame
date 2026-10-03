@@ -313,6 +313,7 @@ const defaultSettings: SettingsState = {
   sfxVolume: 0.8,
   particlesEnabled: true,
   reducedMotion: false,
+  buttonColorMode: 'dark',
   language: 'en',
   fontSizePreset: 'standard',
   cardArtDisplay: 'both',
@@ -5316,6 +5317,7 @@ export const useStore = create<Store>()(
         if (typeof settings['sfxVolume'] !== 'number') settings['sfxVolume'] = defaultSettings.sfxVolume;
         if (typeof settings['particlesEnabled'] !== 'boolean') settings['particlesEnabled'] = defaultSettings.particlesEnabled;
         if (typeof settings['reducedMotion'] !== 'boolean') settings['reducedMotion'] = defaultSettings.reducedMotion;
+        if (settings['buttonColorMode'] !== 'light' && settings['buttonColorMode'] !== 'dark') settings['buttonColorMode'] = defaultSettings.buttonColorMode;
         if (settings['language'] === undefined) settings['language'] = defaultSettings.language;
         if (settings['fontSizePreset'] === undefined) settings['fontSizePreset'] = defaultSettings.fontSizePreset;
         if (settings['cardArtDisplay'] === undefined) settings['cardArtDisplay'] = defaultSettings.cardArtDisplay;
@@ -5677,7 +5679,6 @@ export const selectAchievementClaims = (s: Store) => s.progress.achievementClaim
 export const selectCardPlayCounts = (s: Store) => s.progress.cardPlayCounts;
 export const selectCanEmbraceInfinite = (s: Store): boolean => canEmbraceInfinite(s);
 export const selectRadiance = (s: Store): number => s.turn.radiance;
-
 
 
 

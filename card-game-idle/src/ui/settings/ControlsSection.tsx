@@ -14,7 +14,7 @@ const C = {
   surface: `var(--profile-surface, ${warmTheme.surface})`,
   surfaceMuted: `var(--profile-surface-muted, ${warmTheme.surfaceMuted})`,
   button: `var(--profile-button, ${warmTheme.button})`,
-  buttonText: `var(--profile-button-text, ${warmTheme.text})`,
+  buttonText: `var(--profile-button-text, ${warmTheme.accentDeep})`,
 } as const;
 
 const MAIN_MENU_CONTROL_IDS: KeybindActionId[] = [

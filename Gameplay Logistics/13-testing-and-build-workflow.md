@@ -31,6 +31,21 @@ npm test -- --run src/tests/unit/systems/CardRuntimeWiring.test.ts
 - `SpectrumLevel.test.ts`: rarity floors, rarity/origin attack ordering, unique Light Soph effects, level-up costs, play/summon gates, Phantom Matrix allowance, and Light-bound Abyss resets.
 - `AbilityRuntime.test.ts`: materialized ability ownership, purchase costs, activation effects, and set-isolation for Transcendent abilities.
 
+## Recent UI And Cosmetic Regression Coverage
+
+- `ProfilePaletteRotation.test.ts`: rotation timing, reduced motion, neutral surfaces across catalogs/swatches/fades, hue retention, and text/gradient/pill contrast.
+- `PlayerInformationLayout.test.ts`: ceremonial layout, real identity limits, appearance controls, pickers, theme saving, signature cards, saving, and wipe confirmations in both modes.
+- `SurfaceTextRoles.test.ts`: mode-aware text/surface roles across actual profile, deck, inventory, challenge, and picker components.
+- `CollectionAppearance.test.ts`: browsing, filters, sorting, favorites, art/finish preservation, and detail behavior in both modes.
+- `TutorialModal.test.ts`: searchable Codex topics, heading index, navigation, registry-driven data, and current player instructions.
+- `AchievementCategories.test.ts`: exhaustive category assignment, grouped list/search/status interactions, cosmetic isolation, and unchanged claim payouts.
+- `CustomMainMenuBackgrounds.test.ts`: exact unlock gates, permanent unlocks, zero-currency cosmetic claims, prompt mapping, bundled PNGs, missing-art honesty, imported overrides, and resolver gates.
+- `BackgroundAchievementUi.test.ts`: installed preview/locked state, equipping every earned image, canonical saved IDs, and missing-art/import behavior in both modes.
+
+Installed-art tests must use real bundled images. Tests of artwork-pending behavior should explicitly mock missing art rather than assume the folder is empty. Production validation should confirm that all seven canonical `forge-*.png` images are emitted and load successfully. Isolate React save-indicator timers in tests so callbacks do not run after environment teardown.
+
+Record the command and scope of each validation pass. A green focused UI/art suite is not proof that the full legacy gameplay suite passes. Run focused selectors from `card-game-idle`, then test type-check/build for TS changes; manual prompt-only edits need structural/content verification rather than a gameplay build.
+
 ## Gameplay Test Rules
 
 1. Resolve definitions through `CardRegistry` when testing live behavior.

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { CardRegistry } from '@/cards/CardRegistry';
-import { warmTheme } from '@/ui/theme';
+import { getReadableUiColor, warmTheme } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 import type { DeckEntry, ExtraDeckEntry } from '@/types/game';
 import type { DeckDpsProjection } from '@/systems/cards/DeckDpsCalculator';
 
@@ -40,16 +41,16 @@ function renderSection(label: string, rows: CardRow[], accent: string): React.Re
     return ri !== 0 ? ri : a.name.localeCompare(b.name);
   });
   return (
-    <div key={label} style={{ marginBottom: 14 }}>
+    <div key={label} style={{ marginBottom: 14, background: 'var(--profile-surface-strong)', padding: 8, borderRadius: 8 }}>
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, paddingBottom: 4,
         borderBottom: `1px solid ${accent}33`,
       }}>
         <div style={{ width: 3, height: 14, borderRadius: 2, background: accent, flexShrink: 0 }} />
-        <span style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: accent, fontWeight: 'bold' }}>
+        <span style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: getReadableUiColor(accent, warmTheme.surfaceStrong), fontWeight: 'bold' }}>
           {label}
         </span>
-        <span style={{ fontSize: 9, color: 'rgba(190,215,245,0.40)', marginLeft: 'auto' }}>
+        <span style={{ fontSize: 9, color: 'var(--profile-text-muted)', marginLeft: 'auto' }}>
           {rows.reduce((s, r) => s + r.count, 0)} cards
         </span>
       </div>
@@ -58,10 +59,10 @@ function renderSection(label: string, rows: CardRow[], accent: string): React.Re
           display: 'flex', alignItems: 'center', gap: 6, padding: '3px 4px', borderRadius: 4,
         }}>
           <div style={{ width: 5, height: 5, borderRadius: '50%', flexShrink: 0, background: RARITY_COLORS[row.rarity] ?? '#777' }} />
-          <span style={{ fontSize: 10.5, color: 'rgba(205,228,255,0.80)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: 10.5, color: 'var(--profile-text)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {row.name}{row.finish === 'holo' ? ' ✦' : ''}
           </span>
-          <span style={{ fontSize: 10, color: '#7dd4f8', fontWeight: 'bold', flexShrink: 0 }}>×{row.count}</span>
+          <span style={{ fontSize: 10, color: 'var(--profile-text)', fontWeight: 'bold', flexShrink: 0 }}>×{row.count}</span>
         </div>
       ))}
     </div>
@@ -74,6 +75,7 @@ function renderSection(label: string, rows: CardRow[], accent: string): React.Re
  * section so they stay one click away without needing a dedicated tab.
  */
 export default function DeckBuilderAnalyzeTab({ deckList, extraDeckList, totalCards, deckStats, deckId, currentNotes, setDeckNotes, dpsProjection }: Props) {
+  useThemeVersion();
   const [notesOpen, setNotesOpen] = useState(false);
   const [draft, setDraft] = useState(currentNotes);
   const isDirty = draft !== currentNotes;
@@ -110,7 +112,7 @@ export default function DeckBuilderAnalyzeTab({ deckList, extraDeckList, totalCa
   if (totalCards === 0 && extraDeckList.length === 0 && !deckId) {
     return (
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ fontSize: 13, color: 'rgba(165,205,245,0.45)', fontStyle: 'italic', fontFamily: 'Georgia, serif' }}>
+        <div style={{ fontSize: 13, color: 'var(--profile-text-muted)', fontStyle: 'italic', fontFamily: 'Georgia, serif' }}>
           Add cards to see deck statistics.
         </div>
       </div>
@@ -153,14 +155,14 @@ export default function DeckBuilderAnalyzeTab({ deckList, extraDeckList, totalCa
           <div style={{ fontSize: 22, fontWeight: 'bold', color: totalCards === 50 ? '#80e860' : '#7dd4f8', lineHeight: 1 }}>
             {totalCards}
           </div>
-          <div style={{ fontSize: 9, color: 'rgba(190,215,245,0.50)', letterSpacing: 1, marginTop: 2 }}>Main / 50</div>
+          <div style={{ fontSize: 9, color: 'rgba(190,215,245,0.85)', letterSpacing: 1, marginTop: 2 }}>Main / 50</div>
         </div>
         <div style={{ width: 1, background: 'rgba(72,128,190,0.22)', flexShrink: 0 }} />
         <div style={{ textAlign: 'center', minWidth: 40 }}>
           <div style={{ fontSize: 22, fontWeight: 'bold', color: '#70c890', lineHeight: 1 }}>
             {extraDeckList.length}
           </div>
-          <div style={{ fontSize: 9, color: 'rgba(190,215,245,0.50)', letterSpacing: 1, marginTop: 2 }}>Extra / 10</div>
+          <div style={{ fontSize: 9, color: 'rgba(190,215,245,0.85)', letterSpacing: 1, marginTop: 2 }}>Extra / 10</div>
         </div>
         <div style={{ width: 1, background: 'rgba(72,128,190,0.22)', flexShrink: 0 }} />
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
@@ -231,7 +233,7 @@ export default function DeckBuilderAnalyzeTab({ deckList, extraDeckList, totalCa
           style={{
             width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '6px 2px', background: 'transparent', border: 'none', cursor: deckId ? 'pointer' : 'not-allowed',
-            color: 'rgba(190,215,245,0.60)', fontFamily: 'Georgia, serif',
+            color: 'var(--profile-text-muted)', fontFamily: 'Georgia, serif',
           }}
         >
           <span style={{ fontSize: 9, letterSpacing: 2.5, textTransform: 'uppercase' }}>
@@ -241,7 +243,7 @@ export default function DeckBuilderAnalyzeTab({ deckList, extraDeckList, totalCa
         </button>
         {notesOpen && (
           !deckId ? (
-            <div style={{ fontSize: 12, color: 'rgba(165,205,245,0.45)', fontStyle: 'italic', marginTop: 8 }}>
+            <div style={{ fontSize: 12, color: 'var(--profile-text-muted)', fontStyle: 'italic', marginTop: 8 }}>
               Load a saved deck to edit its notes.
             </div>
           ) : (
@@ -256,9 +258,9 @@ export default function DeckBuilderAnalyzeTab({ deckList, extraDeckList, totalCa
                   boxSizing: 'border-box',
                   padding: 12,
                   borderRadius: 8,
-                  background: 'rgba(2,5,12,0.75)',
+                  background: 'var(--profile-surface-muted)',
                   border: `1px solid ${isDirty ? 'rgba(200,155,72,0.45)' : 'rgba(72,128,190,0.30)'}`,
-                  color: '#e8f4ff',
+                  color: 'var(--profile-text)',
                   fontFamily: 'Georgia, serif',
                   fontSize: 12,
                   lineHeight: 1.6,
@@ -268,7 +270,7 @@ export default function DeckBuilderAnalyzeTab({ deckList, extraDeckList, totalCa
                 }}
               />
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ fontSize: 10, color: 'rgba(190,215,245,0.40)' }}>
+                <div style={{ fontSize: 10, color: 'var(--profile-text-muted)' }}>
                   {draft.length} / 2000
                 </div>
                 <button
@@ -278,7 +280,7 @@ export default function DeckBuilderAnalyzeTab({ deckList, extraDeckList, totalCa
                     background: isDirty
                       ? 'linear-gradient(180deg, #c09040 0%, #8a5e10 50%, #6a4408 100%)'
                       : 'rgba(72,128,190,0.08)',
-                    color: isDirty ? '#fff8ea' : 'rgba(190,215,245,0.40)',
+                    color: isDirty ? '#fff8ea' : 'var(--profile-text-muted)',
                     cursor: isDirty ? 'pointer' : 'not-allowed',
                     fontFamily: 'Georgia, serif', fontSize: 11, letterSpacing: 1,
                     transition: 'all 0.2s',

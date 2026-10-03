@@ -1,10 +1,12 @@
 import type { ProgressState } from '@/types/game';
 import { TITLE_BADGES, type TitleBadgeDefinition } from '@/data/profile/titleBadges';
+import { CUSTOM_MAIN_MENU_BACKGROUND_REWARDS } from '@/data/profile/customMainMenuBackgrounds';
+import { CROWN_BACKGROUND_REWARDS } from '@/data/profile/crownBackgroundRewards';
 
 /**
  * Achievement tracker — derives a list of claimable achievements from the
- * existing title-badge registry. Each unlocked title can be claimed once for
- * a small shard reward. Claim state is persisted under
+ * existing title-badge registry. Each unlocked title can be claimed once;
+ * background achievements are cosmetic-only. Claim state is persisted under
  * `progress.achievementClaims` (added in save v11 alongside quests).
  *
  * Pure module — no state, no side effects.
@@ -15,6 +17,7 @@ const SHARDS_BY_GROUP: Record<TitleBadgeDefinition['group'], number> = {
   boss: 25,
   infinite: 75,
   set: 100,
+  background: 0,
 };
 
 const DIVINE_LIGHT_BY_GROUP: Record<TitleBadgeDefinition['group'], number> = {
@@ -22,6 +25,7 @@ const DIVINE_LIGHT_BY_GROUP: Record<TitleBadgeDefinition['group'], number> = {
   boss: 2_500,
   infinite: 10_000,
   set: 15_000,
+  background: 0,
 };
 
 export interface AchievementView {
@@ -34,6 +38,7 @@ export interface AchievementView {
   shardReward: number;
   divineLightReward: number;
   imageAssetKey?: string;
+  backgroundReward?: { name: string; rarity: 'Eternal' | 'Infinite' | 'Transcendent' };
 }
 
 export function getAchievementShardReward(group: TitleBadgeDefinition['group']): number {
@@ -55,6 +60,8 @@ export function listAchievements(progress: ProgressState): AchievementView[] {
   const claims = progress.achievementClaims ?? {};
   return TITLE_BADGES.map(badge => {
     const unlocked = isAchievementUnlocked(progress, badge.id);
+    const background = CUSTOM_MAIN_MENU_BACKGROUND_REWARDS.find(entry => entry.achievementId === badge.id)
+      ?? CROWN_BACKGROUND_REWARDS.find(entry => entry.achievementId === badge.id);
     return {
       id: badge.id,
       text: badge.text,
@@ -65,6 +72,7 @@ export function listAchievements(progress: ProgressState): AchievementView[] {
       shardReward: getAchievementShardReward(badge.group),
       divineLightReward: getAchievementDivineLightReward(badge.group),
       imageAssetKey: badge.imageAssetKey,
+      backgroundReward: background ? { name: background.name, rarity: background.rarity } : undefined,
     };
   });
 }

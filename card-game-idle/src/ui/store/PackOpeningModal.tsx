@@ -195,7 +195,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontFamily: 'Georgia, serif',
   },
   panel: {
-    background: warmTheme.surfaceStrong,
+    background: 'var(--profile-surface-strong)',
     border: `1px solid ${warmTheme.borderStrong}`,
     borderRadius: 18,
     padding: '28px 32px',
@@ -211,7 +211,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   title: {
     fontSize: 15,
-    color: warmTheme.accentDeep,
+    color: 'var(--profile-text)',
     letterSpacing: 3,
     textTransform: 'uppercase',
   },

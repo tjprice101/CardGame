@@ -44,7 +44,7 @@ const RARITY_ORDER = { Common: 0, Rare: 1, Epic: 2, Legendary: 3 };
 // Built lazily per render so theme switches reflect immediately.
 function getSectionColors(): Record<string, string> {
   return {
-    'Ain Soph Aur': warmTheme.accentDeep,
+    'Ain Soph Aur': warmTheme.accentSoft,
     Light: warmTheme.accent,
     Dark: warmTheme.accentSoft,
   };
@@ -93,7 +93,7 @@ const styles: Record<string, React.CSSProperties> = {
     borderColor: 'rgba(184, 90, 79, 0.4)', color: '#e07060',
     background: 'rgba(184, 90, 79, 0.08)',
   },
-  toolbarBtnDisabled: { opacity: 0.35, cursor: 'not-allowed' },
+  toolbarBtnDisabled: { borderStyle: 'dashed', cursor: 'not-allowed' },
   validationBanner: {
     padding: '8px 10px', fontSize: 11, flexShrink: 0,
     display: 'flex', alignItems: 'center', gap: 8,
@@ -191,7 +191,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontFamily: 'Georgia, serif',
   },
   copyCountBtnDisabled: {
-    opacity: 0.3, cursor: 'not-allowed',
+    borderStyle: 'dashed', cursor: 'not-allowed',
   },
   extraStripWrap: {
     padding: '10px 14px', borderBottom: '1px solid var(--profile-border)', flexShrink: 0,
@@ -262,7 +262,7 @@ const styles: Record<string, React.CSSProperties> = {
     background: 'var(--profile-button)',
     color: 'var(--profile-accent-deep)', fontSize: 13,
     cursor: 'pointer', letterSpacing: 2, fontFamily: 'Georgia, serif',
-    textShadow: '0 1px 4px rgba(0,0,0,0.7)',
+    textShadow: 'none',
     boxShadow: '0 2px 14px color-mix(in srgb, var(--profile-accent) 38%, transparent), inset 0 1px 0 rgba(255,255,255,0.14)',
     textTransform: 'uppercase',
     transition: 'box-shadow 0.25s, transform 0.15s',
@@ -824,8 +824,10 @@ export default function DeckBuilder({ onClose }: Props) {
           ] as const).map(([id, label]) => (
             <button key={id} type="button" className="menu-tactile-btn" onClick={() => setSurface(id)} style={{
               padding: '7px 14px', border: '1px solid transparent', borderRadius: 999,
-              background: surface === id ? 'linear-gradient(180deg, #d7b260, #a87a32)' : 'transparent',
-              color: surface === id ? '#20180e' : 'rgba(205,194,218,0.7)',
+              background: surface === id ? 'var(--profile-surface-strong)' : 'transparent',
+              color: surface === id ? 'var(--profile-accent)' : 'var(--profile-text-muted)',
+              borderColor: surface === id ? 'var(--profile-border-strong)' : 'transparent',
+              boxShadow: surface === id ? 'var(--profile-glow)' : 'none',
               fontFamily: 'Georgia, serif', fontSize: 10, fontWeight: 700, letterSpacing: 0.6,
               textTransform: 'uppercase', cursor: 'pointer', whiteSpace: 'nowrap',
             }}>{label}</button>
@@ -834,13 +836,13 @@ export default function DeckBuilder({ onClose }: Props) {
         <div className="deck-builder-metrics" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 14, flexWrap: 'wrap', minWidth: 0 }}>
           <div style={{
             display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
-            padding: '5px 12px', borderRadius: 8, background: 'rgba(5,14,24,0.65)', border: '1px solid rgba(78,160,220,0.25)',
+            padding: '5px 12px', borderRadius: 8, background: 'var(--profile-surface)', border: '1px solid var(--profile-border)',
           }}>
-            <div style={{ fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', color: 'rgba(200,223,242,0.6)' }}>
+            <div style={{ fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', color: 'var(--profile-text-muted)' }}>
               Est. 3-Min Damage
             </div>
-            <div style={{ fontFamily: 'Georgia, serif', fontSize: 13, color: '#f7c04a', fontWeight: 700 }}>
-              {liveDpsProjection.threeMinuteDamage.toLocaleString()} <span style={{ fontSize: 10, color: '#7dd4f8', fontWeight: 400 }}>({liveDpsProjection.dps.toLocaleString()} DL/s)</span>
+            <div style={{ fontFamily: 'Georgia, serif', fontSize: 13, color: 'var(--profile-accent-soft)', fontWeight: 700 }}>
+              {liveDpsProjection.threeMinuteDamage.toLocaleString()} <span style={{ fontSize: 10, color: 'var(--profile-accent)', fontWeight: 400 }}>({liveDpsProjection.dps.toLocaleString()} DL/s)</span>
             </div>
           </div>
           <ProgressRing
@@ -859,7 +861,7 @@ export default function DeckBuilder({ onClose }: Props) {
           onChange={event => setCardSearch(event.target.value)}
           placeholder="Search cards, effects, rarity, keywords..."
           aria-label="Search cards"
-          style={{ flex: '1 1 260px', minWidth: 220, maxWidth: 390, height: 28, boxSizing: 'border-box', padding: '0 10px', borderRadius: 7, border: '1px solid rgba(244,207,107,0.34)', background: 'rgba(5,10,20,0.78)', color: '#f4f0e8', fontFamily: 'Georgia, serif', fontSize: 11, outline: 'none' }}
+          style={{ flex: '1 1 260px', minWidth: 220, maxWidth: 390, height: 28, boxSizing: 'border-box', padding: '0 10px', borderRadius: 7, border: '1px solid var(--profile-border-strong)', background: 'var(--profile-surface)', color: 'var(--profile-text)', fontFamily: 'Georgia, serif', fontSize: 11, outline: 'none' }}
         />
         <button className="menu-tactile-btn"
           style={{ ...styles.filterBtn, ...(elementFilter === null ? styles.filterBtnActive : {}) }}
@@ -872,9 +874,9 @@ export default function DeckBuilder({ onClose }: Props) {
               ...styles.filterBtn,
               ...(elementFilter === el ? {
                 ...styles.filterBtnActive,
-                color: SET_ACCENT,
-                borderColor: SET_ACCENT,
-                background: `${(SET_ACCENT)}14`,
+                color: 'var(--profile-accent)',
+                borderColor: 'var(--profile-border-strong)',
+                background: 'var(--profile-surface-strong)',
               } : {}),
             }}
             onClick={() => setElementFilter(el === elementFilter ? null : el)}
@@ -885,7 +887,7 @@ export default function DeckBuilder({ onClose }: Props) {
             {el}
           </button>
         ))}
-        <span style={{ color: 'rgba(205,228,255,0.48)', fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase', marginLeft: 8 }}>Spectrum</span>
+        <span style={{ color: 'var(--profile-text-muted)', fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase', marginLeft: 8 }}>Spectrum</span>
         {[null, 0, 1, 2, 3, 4, 5].map(level => (
           <button className="menu-tactile-btn"
             key={level ?? 'all'}
@@ -1110,7 +1112,7 @@ export default function DeckBuilder({ onClose }: Props) {
                           </div>
                           <button className="menu-tactile-btn" style={styles.entryBtn} onClick={event => { event.stopPropagation(); removeCard(entry.definitionId, entry.finish); }}>−</button>
                           <div style={styles.entryCount}>×{entry.copies}</div>
-                          <button className="menu-tactile-btn" style={{ ...styles.entryBtn, opacity: entry.copies >= owned || totalForDefinition >= cap ? 0.3 : 1 }} onClick={event => { event.stopPropagation(); addCard(entry.definitionId, entry.finish); }}>+</button>
+                          <button className="menu-tactile-btn" disabled={entry.copies >= owned || totalForDefinition >= cap} style={{ ...styles.entryBtn, ...(entry.copies >= owned || totalForDefinition >= cap ? styles.copyCountBtnDisabled : {}) }} onClick={event => { event.stopPropagation(); addCard(entry.definitionId, entry.finish); }}>+</button>
                         </div>
                       );
                     })}
@@ -1167,10 +1169,11 @@ export default function DeckBuilder({ onClose }: Props) {
         <div style={{ display: 'flex', gap: 10 }}>
           <button className="menu-tactile-btn" style={styles.closeBtn} onClick={onClose}>Close</button>
           <button className={`menu-tactile-btn${validation.valid ? ' deck-play-btn-ready' : ''}`}
-            style={{ ...styles.startBtn, opacity: validation.valid ? 1 : 0.38, cursor: validation.valid ? 'pointer' : 'not-allowed' }}
+            disabled={!validation.valid}
+            style={{ ...styles.startBtn, borderStyle: validation.valid ? 'solid' : 'dashed', cursor: validation.valid ? 'pointer' : 'not-allowed' }}
             onClick={validation.valid ? handleStart : undefined}
           >
-            Reshuffle & Play
+            <span className="ui-button-title ui-button-title-on-light">Reshuffle &amp; Play</span>
           </button>
         </div>
       </div>

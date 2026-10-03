@@ -44,6 +44,7 @@ const C = {
   accentDeep: `var(--profile-accent-deep, ${warmTheme.accentDeep})`,
   panel: 'var(--profile-accent-glass, rgba(0,0,0,0.05))',
   surface: 'var(--profile-surface, rgba(0,0,0,0.06))',
+  surfaceStrong: `var(--profile-surface-strong, ${warmTheme.surfaceStrong})`,
   danger: '#b86060',
 };
 
@@ -304,7 +305,7 @@ function AddByCode() {
         style={{ ...inputStyle, fontFamily: 'monospace', letterSpacing: 2 }}
       />
       {localError && <div style={{ fontSize: 10, color: C.danger, marginBottom: 6 }}>{localError}</div>}
-      {success && <div style={{ fontSize: 10, color: C.accentDeep, marginBottom: 6 }}>{success}</div>}
+      {success && <div style={{ fontSize: 10, color: C.text, marginBottom: 6 }}>{success}</div>}
       <button
         disabled={busy || code.length !== 8}
         onClick={() => void submit()}
@@ -372,7 +373,7 @@ function TabBtn({
       style={{
         padding: '4px 8px',
         fontSize: 10,
-        background: active ? C.accentSoft : 'transparent',
+        background: active ? C.surfaceStrong : 'transparent',
         border: `1px solid ${active ? C.accent : C.border}`,
         borderRadius: 6,
         color: C.text,
@@ -454,7 +455,7 @@ const primaryBtn: React.CSSProperties = {
   background: C.accentSoft,
   border: `1px solid ${C.accent}`,
   borderRadius: 6,
-  color: C.accentDeep,
+  color: 'var(--profile-accent-soft-text)',
   cursor: 'pointer',
   fontFamily: 'Georgia, serif',
   minWidth: 72,

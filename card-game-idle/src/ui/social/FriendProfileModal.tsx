@@ -147,7 +147,7 @@ export default function FriendProfileModal({ profile, online, currentActivity, o
               {viewedProfile.displayName}
             </div>
             {titleText && (
-              <div style={{ fontSize: 11, fontStyle: 'italic', color: warmTheme.accentDeep, marginTop: 2 }}>
+              <div style={{ fontSize: 11, fontStyle: 'italic', color: warmTheme.textMuted, marginTop: 2 }}>
                 · {titleText} ·
               </div>
             )}

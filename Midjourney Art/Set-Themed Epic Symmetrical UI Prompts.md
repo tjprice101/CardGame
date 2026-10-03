@@ -1,5 +1,7 @@
 # Set-Themed Epic Symmetrical UI Prompts
 
+> Concept artwork, not the current ordinary-screen styling contract. Player-selected palettes decorate accents, outlines, glows, and readable heading/button-title gradients; ordinary surfaces stay predominantly white or black by appearance mode. Select palettes in Player Information, not Settings. Artwork and special experiences may retain their own composition. The installed achievement background guide is [Custom Main Menu Backgrounds](./Custom%20Main%20Menu%20Backgrounds.md); Intensity's separate proposed identity is in [Intensity Set Prompts](./Intensity%20Set%20Prompts.md).
+
 Use these for UI concept art, custom backgrounds, locked-card backs, and set-tied color themes.
 Recommended params on all prompts: `--ar 16:9 --niji 6 --stylize 900`
 

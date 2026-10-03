@@ -2,7 +2,8 @@
 import { useStore } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { SET_ACCENT, CARD_SET_COLORS } from '@/data/elements';
-import { uiTypography } from '@/ui/theme';
+import { getReadableUiColor, uiTypography, warmTheme } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 import { calculateDeckDpsProjection } from '@/systems/cards/DeckDpsCalculator';
 import { computeGlobalResonanceScore } from '@/systems/progression/cardMastery';
 import { formatNumber } from '@/utils/bignum';
@@ -12,21 +13,21 @@ import type { SavedDeck } from '@/types/game';
 
 // ── Design palette ────────────────────────────────────────────────────────────
 const P = {
-  bg: 'linear-gradient(162deg, #040a15 0%, #060e1c 50%, #030810 100%)',
-  glow: 'radial-gradient(ellipse 55% 40% at 50% 0%, rgba(78,158,220,0.18) 0%, transparent 55%)',
-  panel: 'rgba(4,10,24,0.78)',
-  panelActive: 'rgba(78,160,220,0.14)',
-  border: 'rgba(110,160,215,0.30)',
-  borderStrong: 'rgba(72,128,190,0.54)',
-  accent: '#72caf5',
-  accentDeep: '#1e5890',
-  accentGold: '#6ec8f5',
-  accentGlow: 'rgba(88,180,235,0.45)',
-  success: '#7de88a',
-  successBg: 'rgba(90,175,100,0.14)',
-  text: '#f0f6ff',
-  textMuted: 'rgba(205,228,255,0.78)',
-  textFaint: 'rgba(165,205,245,0.52)',
+  bg: 'var(--profile-app-background)',
+  glow: 'radial-gradient(ellipse 55% 30% at 50% 0%, color-mix(in srgb, var(--profile-accent) 5%, transparent), transparent 55%)',
+  panel: 'var(--profile-surface)',
+  panelActive: 'var(--profile-surface-strong)',
+  border: 'var(--profile-border)',
+  borderStrong: 'var(--profile-border-strong)',
+  accent: 'var(--profile-accent)',
+  accentDeep: 'var(--profile-accent-deep)',
+  accentGold: 'var(--profile-accent-soft)',
+  accentGlow: 'color-mix(in srgb, var(--profile-accent) 28%, transparent)',
+  success: 'var(--profile-success)',
+  successBg: 'var(--profile-surface-strong)',
+  text: 'var(--profile-text)',
+  textMuted: 'var(--profile-text-muted)',
+  textFaint: 'var(--profile-text-faint)',
 };
 
 const RARITY_COLORS: Record<string, string> = {
@@ -74,6 +75,7 @@ type PreviewSection = {
 interface Props { onClose: () => void; onOpenDeckBuilder: () => void }
 
 export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
+  useThemeVersion();
   const savedDecks = useStore(s => s.progress.savedDecks);
   const activeDeckId = useStore(s => s.progress.activeDeckId);
   const progress = useStore(s => s.progress);
@@ -156,24 +158,21 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
       {/* Ambient glow */}
       <div style={{ position: 'absolute', inset: 0, background: P.glow, pointerEvents: 'none' }} />
       {/* Atmospheric washes */}
-      <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: '70%', height: '85%', background: 'radial-gradient(ellipse, rgba(78,165,225,0.28) 0%, rgba(25,88,170,0.12) 42%, transparent 68%)', filter: 'blur(80px)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', bottom: '-18%', right: '-8%', width: '60%', height: '70%', background: 'radial-gradient(ellipse, rgba(22,65,200,0.22) 0%, transparent 65%)', filter: 'blur(90px)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 44%, transparent 22%, rgba(0,0,0,0.65) 100%)', pointerEvents: 'none' }} />
       <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px)', pointerEvents: 'none' }} />
 
       {/* Header */}
       <div
-        className="ui-shimmer-band"
+        className="ui-shimmer-band ui-artwork-header"
         style={{
           position: 'relative', flexShrink: 0,
           padding: 'clamp(18px,2vw,28px) clamp(28px,3vw,52px) clamp(14px,1.6vw,20px)',
           borderBottom: `1px solid ${P.borderStrong}`,
           display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
           background: `linear-gradient(90deg, rgba(2,6,14,0.96) 0%, rgba(4,10,22,0.78) 58%, rgba(4,10,22,0.42) 100%), url("${import.meta.env.BASE_URL}assets/menu-banners/updated/deck-viewer-archive.png") right center / cover`,
-          boxShadow: '0 8px 28px rgba(0,0,0,0.36), inset 0 -1px 0 rgba(114,202,245,0.12)',
+          boxShadow: warmTheme.glow,
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+        <div data-ui-artwork-copy style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
           <div
             className="ui-title-glow"
             style={{
@@ -186,9 +185,9 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
             <span style={{ display: 'block', fontSize: 9, letterSpacing: 3, marginBottom: 6, color: P.accentDeep }}>MANUSCRIPT ARCHIVE</span>DECK VIEWER
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ height: 1, width: 60, background: `linear-gradient(90deg, ${P.accentDeep}80, transparent)` }} />
-            <span style={{ fontSize: 11, color: `${P.accentDeep}99` }}>❖</span>
-            <div style={{ fontSize: 9, letterSpacing: 4, textTransform: 'uppercase', color: `${P.accentDeep}88`, fontWeight: 400 }}>
+            <div style={{ height: 1, width: 60, background: `linear-gradient(90deg, ${P.accent}, transparent)` }} />
+            <span style={{ fontSize: 11, color: P.accent }}>❖</span>
+            <div style={{ fontSize: 9, letterSpacing: 4, textTransform: 'uppercase', color: P.textMuted, fontWeight: 400 }}>
               {savedDecks.length} Saved Deck{savedDecks.length !== 1 ? 's' : ''}
             </div>
           </div>
@@ -198,7 +197,7 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
           onClick={onClose}
           style={{
             width: 42, height: 42, borderRadius: '50%', cursor: 'pointer',
-            background: 'rgba(200,128,58,0.08)', border: `1px solid ${P.border}`,
+            background: P.panel, border: `1px solid ${P.border}`,
             color: P.textMuted, fontSize: 16, display: 'flex', alignItems: 'center',
             justifyContent: 'center', flexShrink: 0, transition: 'all 0.18s ease', padding: 0,
           }}
@@ -214,7 +213,7 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
         <div style={{
           width: 260, flexShrink: 0, borderRight: `1px solid ${P.border}`,
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
-          background: 'rgba(5,10,20,0.60)',
+          background: P.panel,
           backdropFilter: 'blur(8px)',
         }}>
           <div style={{
@@ -258,7 +257,7 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
                     {isActive && (
                       <div style={{
                         fontSize: 9, padding: '2px 6px', borderRadius: 8,
-                        border: `1px solid ${P.success}44`, color: P.success, letterSpacing: 1,
+                        border: `1px solid color-mix(in srgb, ${P.success} 35%, transparent)`, color: warmTheme.success, letterSpacing: 1,
                       }}>
                         ACTIVE
                       </div>
@@ -266,7 +265,7 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, color: P.textMuted, marginTop: 2 }}>
                     <span>{cardCount} cards</span>
-                    <span style={{ color: '#f7c04a', fontSize: 10 }}>~{formatNumber(proj.threeMinuteDamage)} (3m)</span>
+                    <span style={{ color: P.accentGold, fontSize: 10 }}>~{formatNumber(proj.threeMinuteDamage)} (3m)</span>
                   </div>
                 </div>
               );
@@ -281,8 +280,8 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
               style={{
                 width: '100%', padding: '9px 0', borderRadius: 8,
                 border: `1px solid ${P.borderStrong}`,
-                background: 'linear-gradient(180deg, #5aabdc 0%, #3888c4 100%)',
-                color: '#0c1e34',
+                background: warmTheme.button,
+                color: P.text,
                 fontSize: 12, cursor: 'pointer', fontFamily: uiTypography.display, letterSpacing: 2,
                 fontWeight: 700, textTransform: 'uppercase',
                 boxShadow: `0 4px 16px ${P.accentGlow}`,
@@ -303,7 +302,7 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
                 {/* Preview header */}
                 <div style={{
                   padding: '14px 20px', borderBottom: `1px solid ${P.border}`, flexShrink: 0,
-                  background: 'rgba(0,0,0,0.2)',
+                  background: P.panel,
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                     <div style={{ fontSize: 18, fontWeight: 700, color: P.accent, flex: 1 }}>
@@ -313,11 +312,11 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
                     {selectedProjection && (
                       <div style={{
                         display: 'flex', alignItems: 'center', gap: 6, padding: '3px 10px', borderRadius: 6,
-                        background: 'rgba(5,14,24,0.65)', border: '1px solid rgba(110,185,240,0.3)',
+                        background: P.panelActive, border: `1px solid ${P.border}`,
                       }}>
-                        <span style={{ fontSize: 9.5, color: 'rgba(200,223,242,0.7)', letterSpacing: 1, textTransform: 'uppercase' }}>3m DMG:</span>
-                        <span style={{ color: '#f7c04a', fontWeight: 700, fontSize: 12 }}>{selectedProjection.threeMinuteDamage.toLocaleString()}</span>
-                        <span style={{ color: '#7dd4f8', fontSize: 10 }}>({selectedProjection.dps.toLocaleString()} DL/s)</span>
+                        <span style={{ fontSize: 9.5, color: P.textMuted, letterSpacing: 1, textTransform: 'uppercase' }}>3m DMG:</span>
+                        <span style={{ color: P.accentGold, fontWeight: 700, fontSize: 12 }}>{selectedProjection.threeMinuteDamage.toLocaleString()}</span>
+                        <span style={{ color: P.accent, fontSize: 10 }}>({selectedProjection.dps.toLocaleString()} DL/s)</span>
                       </div>
                     )}
                     {!selectedDeck.isStarter && !isActive && (
@@ -341,8 +340,8 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
                         style={{
                           padding: '5px 18px', borderRadius: 6,
                           border: `1px solid ${P.borderStrong}`,
-                          background: 'linear-gradient(180deg, #5aabdc 0%, #3888c4 100%)',
-                          color: '#0c1e34',
+                          background: warmTheme.button,
+                          color: P.text,
                           fontSize: 12, cursor: 'pointer', fontFamily: uiTypography.display,
                           letterSpacing: 1, fontWeight: 700,
                           boxShadow: `0 4px 14px ${P.accentGlow}`,
@@ -354,7 +353,7 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
                     {isActive && (
                       <div style={{
                         fontSize: 11, padding: '4px 10px', borderRadius: 6,
-                        border: `1px solid ${P.success}44`, color: P.success,
+                        border: `1px solid color-mix(in srgb, ${P.success} 35%, transparent)`, color: warmTheme.success,
                       }}>
                         Active Deck
                       </div>
@@ -368,10 +367,10 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
                       onChange={event => setCardSearch(event.target.value)}
                       placeholder="Search cards, effects, rarity..."
                       aria-label="Search deck cards"
-                      style={{ flex: '1 1 220px', minWidth: 190, maxWidth: 300, padding: '5px 9px', borderRadius: 7, border: `1px solid ${P.borderStrong}`, background: 'rgba(2,6,14,0.78)', color: P.text, fontSize: 11, outline: 'none' }}
+                      style={{ flex: '1 1 220px', minWidth: 190, maxWidth: 300, padding: '5px 9px', borderRadius: 7, border: `1px solid ${P.borderStrong}`, background: P.panelActive, color: P.text, fontSize: 11, outline: 'none' }}
                     />
                     {(['All', 'Neutrality', 'Causality'] as const).map(setName => (
-                      <button key={setName} onClick={() => setSetFilter(setName)} style={{ padding: '3px 9px', borderRadius: 20, border: `1px solid ${setFilter === setName ? '#d66a52' : P.border}`, background: setFilter === setName ? 'rgba(214,106,82,0.16)' : 'transparent', color: setFilter === setName ? '#f0a080' : P.textMuted, fontSize: 11, cursor: 'pointer' }}>{setName}</button>
+                      <button key={setName} onClick={() => setSetFilter(setName)} style={{ padding: '3px 9px', borderRadius: 20, border: `1px solid ${setFilter === setName ? P.borderStrong : P.border}`, background: setFilter === setName ? P.panelActive : 'transparent', color: setFilter === setName ? P.accent : P.textMuted, fontSize: 11, cursor: 'pointer' }}>{setName}</button>
                     ))}
                     {[...elements].map(el => (
                       <div key={el} style={{
@@ -402,7 +401,7 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
                           background: `${(RARITY_COLORS[rarity] ?? '#888')}11`,
                           fontSize: 11,
                         }}>
-                          <span style={{ color: RARITY_COLORS[rarity] ?? '#aaa' }}>
+                          <span style={{ color: getReadableUiColor(RARITY_COLORS[rarity] ?? '#aaa', warmTheme.surfaceStrong) }}>
                             {RARITY_GLYPH[rarity] ?? '?'}
                           </span>
                           <span style={{ color: P.textMuted }}>{count}</span>
@@ -424,7 +423,7 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
                           <div style={{ width: 3, height: 14, borderRadius: 2, background: TYPE_ACCENT[section.type], flexShrink: 0 }} />
                           <span style={{
                             fontSize: 9, letterSpacing: 2.5, textTransform: 'uppercase',
-                            color: TYPE_ACCENT[section.type], fontWeight: 600,
+                            color: getReadableUiColor(TYPE_ACCENT[section.type], warmTheme.surfaceStrong), fontWeight: 600,
                             fontFamily: uiTypography.display,
                           }}>
                             {section.label} ({section.entries.reduce((s, e) => s + e.copies, 0)})
@@ -439,15 +438,15 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
                           }}
                         >
                           <span style={{
-                            fontSize: 13, color: RARITY_COLORS[entry.def.rarity] ?? '#aaa',
-                            marginRight: 7, opacity: 0.85,
+                            fontSize: 13, color: getReadableUiColor(RARITY_COLORS[entry.def.rarity] ?? '#aaa', warmTheme.surfaceStrong),
+                            marginRight: 7,
                           }}>
                             {RARITY_GLYPH[entry.def.rarity] ?? '?'}
                           </span>
                           <span style={{ flex: 1, fontSize: 12, color: P.text }}>
                             {entry.def.name}
                           </span>
-                          <span style={{ fontSize: 11, color: P.accentDeep, minWidth: 28, textAlign: 'right' }}>
+                          <span style={{ fontSize: 11, color: P.textMuted, minWidth: 28, textAlign: 'right' }}>
                             ×{entry.copies}
                           </span>
                         </div>
@@ -476,4 +475,3 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
     </div>
   );
 }
-

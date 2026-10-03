@@ -16,6 +16,7 @@ The application lives in `card-game-idle/`.
 ## `src/`
 
 - `app/`: top-level React composition.
+- `assets/main-menu-backgrounds/`: seven bundled custom achievement background PNGs, discovered by Vite's asset glob. Their canonical stems match `data/profile/customMainMenuBackgrounds.ts`; do not leave supplied images in the repository root.
 - `audio/`: music, radio, and SFX.
 - `cards/`: card registry and lookup.
 - `core/`: engine primitives and event loop support.
@@ -42,3 +43,11 @@ The application lives in `card-game-idle/`.
 - Main-menu navigation: `src/ui/menu/MainMenuHub.tsx` owns the responsive Play / Collection / Progress Command Deck, contextual feature artwork, lock messaging, profile identity, resources, and event banner.
 - Live card rendering: `src/ui/cardBackgrounds.ts` owns `getLiveCardFaceBackgroundStyle` and `getLiveCardShimmerClassName`; all in-turn card surfaces use these instead of composing their own art or foil layers.
 - Save issues: `src/save/SaveManager.ts`.
+- Profile/appearance: `src/ui/player/PlayerInformationPage.tsx` and its scoped CSS; shared display-mode palette and CSS roles in `src/ui/theme.ts`; palette definitions/unlocks in `src/data/profile/uiThemes.ts`.
+- Achievement presentation: `src/systems/progression/achievementCategories.ts` and `src/ui/menus/AchievementsModal.tsx`. Reward groups and payouts remain in `achievements.ts`, independent of navigation categories.
+- Background rewards: `src/data/profile/customMainMenuBackgrounds.ts` owns names, filename stems, and gates; `mainMenuBackgrounds.ts` owns loading, imported overrides, availability, and main-menu resolution.
+- In-game reference: `src/data/tutorialContent.ts` owns stable section metadata; `src/ui/menus/TutorialModal.tsx` owns Codex body copy and renders shared ability/background registries.
+
+## Art Briefs
+
+The repository's `Midjourney Art/` folder contains prompt documents, not automatic runtime registrations. `Custom Main Menu Backgrounds.md` describes the seven installed Forge cosmetics. `Intensity Set Prompts.md` is the new 29-card white/black/gold volcanic proposal replacing the old Pyroabyss prompt document; it does not implement a pack, card set, boss roster, or recipe. Preserve this distinction when updating player-facing information.
