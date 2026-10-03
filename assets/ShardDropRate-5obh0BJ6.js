@@ -1,0 +1,1 @@
+import{j as r}from"./vendor-react-8Ub0Pjx2.js";function n({label:a,fontSize:e=11,style:s}){return r.jsx("span",{className:"shard-drop-rate",style:{fontSize:e,...s},title:"Shard of Transcendence drop rate",children:r.jsx("span",{className:"shard-drop-rate__text",children:a})})}export{n as S};
