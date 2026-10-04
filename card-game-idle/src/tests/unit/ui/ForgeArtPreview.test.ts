@@ -27,4 +27,13 @@ describe('Forge complete artwork preview', () => {
       expect(getLiveCardShimmerClassName(card, 'holo', 'front')).toBe('live-card-shimmer live-card-shimmer-transcendent');
     }
   });
+
+  it('keeps sidebar banner text readable with a dark art scrim under forced white art-button text', () => {
+    const source = readFileSync(join(process.cwd(), 'src', 'ui', 'forge', 'ForgeOfTranscendence.tsx'), 'utf8');
+    const nav = source.slice(source.indexOf('className="forge-lore-nav-card"'), source.indexOf('</nav>'));
+    expect(nav).toContain('linear-gradient(90deg, rgba(10,6,18,');
+    expect(nav).not.toContain('rgba(255,255,255,${isSelected');
+    expect(nav).toContain("color: '#ffffff'");
+    expect(nav).not.toContain("color: '#15101c'");
+  });
 });

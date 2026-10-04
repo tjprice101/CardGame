@@ -4,14 +4,15 @@ import { CardRegistry } from '@/cards/CardRegistry';
 import { GARDEN_MATERIAL_METADATA } from '@/data/dungeons/gardenDungeonDefinitions';
 import { uiTypography, warmTheme } from '@/ui/theme';
 import { useThemeVersion } from '@/ui/useThemeVersion';
+import { originalItemIconUrl } from '@/ui/originalItemIcons';
 
 interface Props {
   onClose: () => void;
 }
 
-const resourceIcon = (fileName: string) => `${import.meta.env.BASE_URL}assets/resource-icons/${fileName}`;
-const materialIcon = (assetKey: string) => `${import.meta.env.BASE_URL}assets/dungeons/items/${assetKey}.png`;
-const forgeIcon = (fileName: string) => `${import.meta.env.BASE_URL}assets/forge/${fileName}`;
+const resourceIcon = (fileName: string) => originalItemIconUrl(`resource-icons/${fileName}`);
+const materialIcon = (assetKey: string) => originalItemIconUrl(`dungeons/items/${assetKey}.png`);
+const forgeIcon = (fileName: string) => originalItemIconUrl(`forge/${fileName}`);
 
 function CurrencyTile(props: { name: string; value: string; description: string; iconUrl?: string; glyph?: string; glyphStyle?: React.CSSProperties }) {
   return (

@@ -2835,7 +2835,7 @@ html.reduced-motion .arena-flash-active {
 .login-wheel-stage { position: relative; width: min(440px, 40vw, 54vh); margin: 0 auto; filter: drop-shadow(0 0 24px rgba(122,92,192,0.35)); }
 .login-wheel-svg { display: block; width: 100%; height: auto; }
 .login-wheel-rotor { transform-origin: 112px 112px; transition: transform 4.6s cubic-bezier(0.12,0.7,0.1,1); }
-.login-wheel-pointer { position: absolute; z-index: 2; top: -3px; left: 50%; width: 24px; height: 34px; transform: translateX(-50%); background: linear-gradient(#f3d98f, #b48a3c); clip-path: polygon(0 0, 100% 0, 50% 100%); filter: drop-shadow(0 2px 3px #000); }
+.login-wheel-pointer { position: absolute; z-index: 3; top: -4.5%; left: 50%; width: 9%; min-width: 28px; height: auto; transform: translateX(-50%); transform-origin: 50% 30%; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.7)) drop-shadow(0 0 8px rgba(242,212,139,0.45)); }
 .login-wheel-spin-count { margin-top: 8px; color: #f3d98f; font-size: 32px; font-weight: 700; }
 .login-wheel-spin-count span { color: rgba(221,214,231,0.64); font-size: 13px; font-style: italic; font-weight: 400; }
 .login-wheel-controls p { color: rgba(221,214,231,0.68); font-size: 12px; line-height: 1.4; }
@@ -2906,7 +2906,7 @@ html.reduced-motion .arena-flash-active {
 .login-streak-card.is-ready { border-color: var(--calendar-accent); box-shadow: 0 0 20px color-mix(in srgb,var(--calendar-accent) 18%,transparent); }
 .login-streak-meter { background: var(--calendar-surface-strong); }
 .login-wheel-stage { filter: drop-shadow(0 0 24px color-mix(in srgb,var(--calendar-accent) 35%,transparent)); }
-.login-wheel-pointer { background: linear-gradient(var(--calendar-accent-soft),var(--calendar-accent)); }
+
 .login-wheel-result { color: var(--calendar-success); }
 .login-wheel-prize-number { border-color: var(--calendar-border-strong); color: var(--calendar-accent-soft); }
 .login-wheel-prize-row strong { color: var(--calendar-text); font-size: 13px; font-weight: 600; }
@@ -2915,7 +2915,52 @@ html.reduced-motion .arena-flash-active {
 .login-wheel-history .login-calendar-next { font-size: 12px; line-height: 1.4; }
 .login-wheel-controls p { font-size: 13px; }
 
-html.reduced-motion .login-wheel-rotor { transition-duration: 0.01ms; }
+html.reduced-motion .login-wheel-rotor { transition-duration: 0.01ms !important; }
+
+/* Wheel of Transcendence — gilded presentation */
+.login-wheel-stage { isolation: isolate; filter: drop-shadow(0 18px 28px rgba(0,0,0,0.45)) drop-shadow(0 0 22px rgba(226,184,92,0.28)); }
+.login-wheel-svg { position: relative; z-index: 1; }
+.login-wheel-rotor { transition-property: transform; transition-timing-function: cubic-bezier(0.1, 0.72, 0.08, 1); will-change: transform; }
+.login-wheel-aura { position: absolute; z-index: 0; inset: -9%; border-radius: 50%; pointer-events: none; opacity: 0.55; background: conic-gradient(from 0deg, rgba(226,184,92,0), rgba(226,184,92,0.38), rgba(178,128,255,0.32), rgba(114,217,198,0.26), rgba(255,140,190,0.3), rgba(226,184,92,0)); filter: blur(18px); animation: login-wheel-aura-turn 18s linear infinite; transition: opacity 0.6s ease, inset 0.6s ease; }
+.login-wheel-view.is-spinning .login-wheel-aura { opacity: 0.95; inset: -12%; animation-duration: 3.2s; }
+.login-wheel-bulb { fill: #fff3cf; opacity: 0.55; filter: drop-shadow(0 0 1.6px #ffd77a); }
+.login-wheel-view.is-spinning .login-wheel-bulb { animation: login-wheel-bulb-chase 0.72s ease-in-out infinite; }
+.login-wheel-view.is-revealed:not(.is-spinning) .login-wheel-bulb { animation: login-wheel-bulb-chase 1.6s ease-in-out 2; }
+.login-wheel-hub-star { fill: #f2d48b; filter: drop-shadow(0 0 3px rgba(255,220,140,0.85)); }
+.login-wheel-view.is-spinning .login-wheel-hub-star { animation: login-wheel-hub-pulse 0.9s ease-in-out infinite; }
+.login-wheel-pointer-gem { fill: #b280ff; filter: drop-shadow(0 0 3px #d9c2ff); }
+.login-wheel-view.is-spinning .login-wheel-pointer { animation: login-wheel-pointer-tick 0.16s ease-in-out infinite alternate; }
+.login-wheel-winner-glow { fill: rgba(255,248,220,0.28); stroke: #fff3cf; stroke-width: 2.4; filter: drop-shadow(0 0 6px rgba(255,236,180,0.95)); animation: login-wheel-winner-flash 1.4s ease-in-out infinite; }
+.login-wheel-reveal-slot { min-height: 66px; margin: 12px 0; display: grid; align-items: center; }
+.login-wheel-turning { display: flex; align-items: center; gap: 10px; color: var(--calendar-accent-soft, #f3d98f); font-size: 14px; font-style: italic; }
+.login-wheel-turning i { width: 18px; height: 18px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: login-wheel-aura-turn 0.8s linear infinite; }
+.login-wheel-reveal { --prize-color: #e2b85c; position: relative; display: flex; align-items: center; gap: 12px; padding: 10px 14px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--prize-color) 70%, #f2d48b); border-radius: 12px; background: linear-gradient(120deg, color-mix(in srgb, var(--prize-color) 30%, rgba(12,8,18,0.92)), rgba(12,8,18,0.9) 70%); box-shadow: 0 0 0 1px rgba(255,240,200,0.08) inset, 0 0 24px color-mix(in srgb, var(--prize-color) 45%, transparent); animation: login-wheel-reveal-in 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+.login-wheel-reveal::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.32) 48%, transparent 64%); transform: translateX(-120%); animation: login-wheel-reveal-sheen 1.3s 0.3s ease-out both; }
+.login-wheel-reveal img { width: 44px; height: 44px; flex: 0 0 44px; object-fit: contain; animation: login-wheel-reveal-icon 0.8s 0.1s cubic-bezier(0.2, 1.6, 0.4, 1) both; }
+.login-wheel-reveal span { display: grid; gap: 2px; min-width: 0; }
+.login-wheel-reveal small { color: #f2d48b; font-size: 10px; font-style: italic; letter-spacing: 0.12em; text-transform: uppercase; }
+.login-wheel-reveal strong { color: #ffffff; font-size: 17px; line-height: 1.2; text-shadow: 0 1px 2px rgba(0,0,0,0.8), 0 0 12px color-mix(in srgb, var(--prize-color) 70%, transparent); }
+.login-wheel-prize-row.is-winner { border-color: #f2d48b; box-shadow: 0 0 0 1px rgba(242,212,139,0.5) inset, 0 0 14px rgba(242,212,139,0.3); animation: login-wheel-row-glow 1.6s ease-in-out 2; }
+.login-calendar-claim.is-wheel:disabled { cursor: progress; }
+@keyframes login-wheel-aura-turn { to { transform: rotate(360deg); } }
+@keyframes login-wheel-bulb-chase { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+@keyframes login-wheel-hub-pulse { 0%, 100% { opacity: 0.75; } 50% { opacity: 1; } }
+@keyframes login-wheel-pointer-tick { from { transform: translateX(-50%) rotate(-7deg); } to { transform: translateX(-50%) rotate(5deg); } }
+@keyframes login-wheel-winner-flash { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+@keyframes login-wheel-reveal-in { from { opacity: 0; transform: translateY(8px) scale(0.92); } to { opacity: 1; transform: none; } }
+@keyframes login-wheel-reveal-sheen { to { transform: translateX(120%); } }
+@keyframes login-wheel-reveal-icon { from { opacity: 0; transform: scale(0.4) rotate(-20deg); } to { opacity: 1; transform: none; } }
+@keyframes login-wheel-row-glow { 50% { box-shadow: 0 0 0 1px rgba(242,212,139,0.9) inset, 0 0 22px rgba(242,212,139,0.55); } }
+html.reduced-motion .login-wheel-aura,
+html.reduced-motion .login-wheel-bulb,
+html.reduced-motion .login-wheel-hub-star,
+html.reduced-motion .login-wheel-pointer,
+html.reduced-motion .login-wheel-winner-glow,
+html.reduced-motion .login-wheel-reveal,
+html.reduced-motion .login-wheel-reveal::after,
+html.reduced-motion .login-wheel-reveal img,
+html.reduced-motion .login-wheel-turning i,
+html.reduced-motion .login-wheel-prize-row.is-winner { animation: none !important; }
 @media (max-width: 1080px) {
   .login-calendar-content { grid-template-columns: minmax(0, 1fr); }
   .login-calendar-inspector { display: grid; grid-template-columns: 170px minmax(0,1fr); }

@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useStore, selectProgress } from '@/state/store';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useStore, selectProgress, type ForgeWheelSpinResult } from '@/state/store';
+import { useTranscendentUnlockStore } from '@/state/transcendentUnlockStore';
 import { warmTheme } from '@/ui/theme';
 import { useThemeVersion } from '@/ui/useThemeVersion';
 import {
@@ -13,6 +14,7 @@ import {
 import { formatQuestCountdown } from '@/systems/progression/quests';
 import ShardDropRate from '@/ui/components/ShardDropRate';
 import GameEmblem from '@/ui/components/GameEmblem';
+import { originalItemIconUrl } from '@/ui/originalItemIcons';
 import {
   FORGE_CALENDAR_BONUS_DAYS,
   FORGE_STREAK_MILESTONES,
@@ -29,6 +31,29 @@ interface Props {
 
 type CalendarTab = 'calendar' | 'streak' | 'wheel';
 type WheelPrize = typeof FORGE_WHEEL_PRIZES[number];
+
+const WHEEL_SPIN_MS = 5200;
+
+function wheelPrizeLabel(result: ForgeWheelSpinResult): string {
+  return result.prize.kind === 'divine_light' ? `+${result.amount.toLocaleString()} Divine Light` : result.prize.label;
+}
+
+/** Announces an already-committed wheel prize once the wheel has visually stopped. */
+function presentWheelReward(result: ForgeWheelSpinResult): void {
+  useStore.getState().enqueueToast(result.toastMessage, 'reward', 4200);
+  if (result.prize.kind === 'shards_of_transcendence' && result.shardsOfTranscendenceTotal !== undefined) {
+    useTranscendentUnlockStore.getState().enqueue({ kind: 'shards', amount: result.amount, totalOwned: result.shardsOfTranscendenceTotal });
+  }
+}
+
+function shadeHex(color: string, amount: number): string {
+  const channels = colorToRgbChannels(color).split(',').map(value => Number(value.trim()));
+  const target = amount >= 0 ? 255 : 0;
+  const mix = Math.abs(amount);
+  return `rgb(${channels.map(channel => Math.round(channel + (target - channel) * mix)).join(', ')})`;
+}
+
+const WHEEL_BULB_COUNT = 24;
 
 const WHEEL_SEGMENTS = (() => {
   let angle = -90;
@@ -74,8 +99,13 @@ export default function DailyRewardModal({ onClose, onOpenForge }: Props) {
   const [activeTab, setActiveTab] = useState<CalendarTab>('calendar');
   const [selectedDay, setSelectedDay] = useState(() => new Date().getDate());
   const [wheelRotation, setWheelRotation] = useState(0);
-  const [wheelResult, setWheelResult] = useState<{ prize: WheelPrize; amount: number } | null>(null);
+  const [wheelResult, setWheelResult] = useState<ForgeWheelSpinResult | null>(null);
+  const [wheelSpinning, setWheelSpinning] = useState(false);
+  const [frozenWallet, setFrozenWallet] = useState<{ aberratedShards: number; shardsOfTranscendence: number; divineLight: number } | null>(null);
   const [recentSpins, setRecentSpins] = useState<string[]>([]);
+  const pendingWheelReveal = useRef<ForgeWheelSpinResult | null>(null);
+  const wheelRevealTimer = useRef<number | undefined>(undefined);
+  const reducedMotion = useStore(state => state.settings.reducedMotion) === true;
 
   useEffect(() => {
     const timer = window.setInterval(() => setNowTick(Date.now()), 1000);
@@ -133,17 +163,17 @@ export default function DailyRewardModal({ onClose, onOpenForge }: Props) {
   };
 
   const rewardIcon = (reward: typeof track[number]['reward']) => {
-    if (reward.kind === 'shards') return `${import.meta.env.BASE_URL}assets/resource-icons/aberrated-shards.png`;
-    if (reward.kind === 'divine_light') return `${import.meta.env.BASE_URL}assets/resource-icons/divine-light.png`;
-    if (reward.kind === 'transcendent_shards') return `${import.meta.env.BASE_URL}assets/forge/shards-of-transcendence.png`;
-    return `${import.meta.env.BASE_URL}assets/resource-icons/card-light-shards.png`;
+    if (reward.kind === 'shards') return originalItemIconUrl('resource-icons/aberrated-shards.png');
+    if (reward.kind === 'divine_light') return originalItemIconUrl('resource-icons/divine-light.png');
+    if (reward.kind === 'transcendent_shards') return originalItemIconUrl('forge/shards-of-transcendence.png');
+    return originalItemIconUrl('resource-icons/card-light-shards.png');
   };
 
   const wheelPrizeIcon = (prize: WheelPrize) => {
-    if (prize.kind === 'aberrated_shards') return `${import.meta.env.BASE_URL}assets/resource-icons/aberrated-shards.png`;
-    if (prize.kind === 'card_light_all') return `${import.meta.env.BASE_URL}assets/resource-icons/card-light-shards.png`;
-    if (prize.kind === 'shards_of_transcendence') return `${import.meta.env.BASE_URL}assets/forge/shards-of-transcendence.png`;
-    return `${import.meta.env.BASE_URL}assets/resource-icons/divine-light.png`;
+    if (prize.kind === 'aberrated_shards') return originalItemIconUrl('resource-icons/aberrated-shards.png');
+    if (prize.kind === 'card_light_all') return originalItemIconUrl('resource-icons/card-light-shards.png');
+    if (prize.kind === 'shards_of_transcendence') return originalItemIconUrl('forge/shards-of-transcendence.png');
+    return originalItemIconUrl('resource-icons/divine-light.png');
   };
 
   function handleClaim() {
@@ -152,22 +182,56 @@ export default function DailyRewardModal({ onClose, onOpenForge }: Props) {
   }
 
   function handleWheelSpin() {
-    const result = spinForgeWheel();
+    if (wheelSpinning) return;
+    const balancesBeforeSpin = {
+      aberratedShards: progress.aberratedShards,
+      shardsOfTranscendence: progress.shardsOfTranscendence ?? 0,
+      divineLight: progress.divineLight,
+    };
+    const result = spinForgeWheel({ deferPresentation: true });
     if (!result) return;
-    setWheelResult(result);
+    pendingWheelReveal.current = result;
+    setFrozenWallet(balancesBeforeSpin);
+    setWheelResult(null);
+    setWheelSpinning(true);
     const segment = WHEEL_SEGMENTS.find(item => item.prize.id === result.prize.id);
     if (segment) {
+      const sweep = segment.endAngle - segment.startAngle;
+      const landingAngle = segment.middleAngle + (Math.random() - 0.5) * sweep * 0.6;
       setWheelRotation(previous => {
         const current = ((previous % 360) + 360) % 360;
-        const target = ((-90 - segment.middleAngle - current) % 360 + 360) % 360;
-        return previous + 360 * 5 + target;
+        const target = ((-90 - landingAngle - current) % 360 + 360) % 360;
+        return previous + 360 * 6 + target;
       });
     }
-    const label = result.prize.kind === 'divine_light'
-      ? `+${result.amount.toLocaleString()} Divine Light`
-      : result.prize.label;
-    setRecentSpins(previous => [label, ...previous].slice(0, 5));
+    window.clearTimeout(wheelRevealTimer.current);
+    wheelRevealTimer.current = window.setTimeout(revealWheelResult, reducedMotion ? 50 : WHEEL_SPIN_MS + 120);
   }
+
+  function revealWheelResult() {
+    window.clearTimeout(wheelRevealTimer.current);
+    const result = pendingWheelReveal.current;
+    if (!result) return;
+    pendingWheelReveal.current = null;
+    presentWheelReward(result);
+    setWheelResult(result);
+    setWheelSpinning(false);
+    setFrozenWallet(null);
+    setRecentSpins(previous => [wheelPrizeLabel(result), ...previous].slice(0, 5));
+  }
+
+  useEffect(() => () => {
+    // Leaving mid-spin still announces the already-granted reward.
+    window.clearTimeout(wheelRevealTimer.current);
+    if (pendingWheelReveal.current) presentWheelReward(pendingWheelReveal.current);
+    pendingWheelReveal.current = null;
+  }, []);
+
+  const wallet = frozenWallet ?? {
+    aberratedShards: progress.aberratedShards,
+    shardsOfTranscendence: progress.shardsOfTranscendence ?? 0,
+    divineLight: progress.divineLight,
+  };
 
   const selectedIcon = rewardIcon(selectedReward);
   const upcomingSpecials = track
@@ -203,9 +267,9 @@ export default function DailyRewardModal({ onClose, onOpenForge }: Props) {
         </div>
         <div className="login-calendar-header-stats">
           <div className="login-calendar-wallet" aria-label="Current balances">
-            <span title="Aberrated Shards"><img src={`${import.meta.env.BASE_URL}assets/resource-icons/aberrated-shards.png`} alt="" />{progress.aberratedShards.toLocaleString()}</span>
-            <span title="Shards of Transcendence" className="is-violet"><img src={`${import.meta.env.BASE_URL}assets/forge/shards-of-transcendence.png`} alt="" />{(progress.shardsOfTranscendence ?? 0).toLocaleString()}</span>
-            <span title="Divine Light" className="is-gold"><img src={`${import.meta.env.BASE_URL}assets/resource-icons/divine-light.png`} alt="" />{Math.floor(progress.divineLight).toLocaleString()}</span>
+            <span title="Aberrated Shards"><img src={originalItemIconUrl('resource-icons/aberrated-shards.png')}             alt="" />{wallet.aberratedShards.toLocaleString()}</span>
+                        <span title="Shards of Transcendence" className="is-violet"><img src={originalItemIconUrl('forge/shards-of-transcendence.png')} alt="" />{wallet.shardsOfTranscendence.toLocaleString()}</span>
+                        <span title="Divine Light" className="is-gold"><img src={originalItemIconUrl('resource-icons/divine-light.png')} alt="" />{Math.floor(wallet.divineLight).toLocaleString()}</span>
           </div>
           <div className="login-calendar-month">
             <strong>{monthLabel}</strong>
@@ -306,7 +370,7 @@ export default function DailyRewardModal({ onClose, onOpenForge }: Props) {
                         <h2>{milestone.label}</h2>
                         <p>{Math.min(currentStreak, milestone.day)} / {milestone.day} consecutive days</p>
                       </div>
-                      <img className="login-streak-icon" src={milestone.kind === 'aberrated_shards' ? `${import.meta.env.BASE_URL}assets/resource-icons/aberrated-shards.png` : `${import.meta.env.BASE_URL}assets/forge/shards-of-transcendence.png`} alt="" />
+                      <img className="login-streak-icon" src={milestone.kind === 'aberrated_shards' ? originalItemIconUrl('resource-icons/aberrated-shards.png') : originalItemIconUrl('forge/shards-of-transcendence.png')} alt="" />
                     </div>
                     <div className="login-streak-meter"><i style={{ width: `${Math.min(100, currentStreak / milestone.day * 100)}%` }} /></div>
                     <button type="button" className="login-calendar-claim" disabled={!isReady} onClick={() => claimDailyStreakMilestone(milestone.day as 3 | 14)}>
@@ -321,36 +385,91 @@ export default function DailyRewardModal({ onClose, onOpenForge }: Props) {
 
         {activeTab === 'wheel' && (
           forgeUnlocked ? (
-            <section className="login-wheel-view">
+            <section className={`login-wheel-view${wheelSpinning ? ' is-spinning' : ''}${wheelResult ? ' is-revealed' : ''}`}>
               <div className="login-wheel-stage">
-                <div className="login-wheel-pointer" />
+                <div className="login-wheel-aura" aria-hidden="true" />
+                <svg className="login-wheel-pointer" viewBox="0 0 40 52" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="login-wheel-pointer-gold" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0" stopColor="#fff4cf" /><stop offset="0.45" stopColor="#e2b85c" /><stop offset="1" stopColor="#7c5419" />
+                    </linearGradient>
+                  </defs>
+                  <path d="M20 50 4 14a16 16 0 1 1 32 0Z" fill="url(#login-wheel-pointer-gold)" stroke="#3b2608" strokeWidth="1.2" />
+                  <circle cx="20" cy="16" r="7" fill="#1a0f22" stroke="#fff1c7" strokeWidth="1" />
+                  <circle cx="20" cy="16" r="3.6" className="login-wheel-pointer-gem" />
+                </svg>
                 <svg className="login-wheel-svg" viewBox="0 0 224 224" role="img" aria-label="Wheel of Transcendence prize wheel">
-                  <circle cx="112" cy="112" r="108" fill="var(--calendar-surface-muted)" stroke="var(--calendar-border-strong)" strokeWidth="2" />
-                  <g className="login-wheel-rotor" style={{ transform: `rotate(${wheelRotation}deg)` }}>
+                  <defs>
+                    <linearGradient id="login-wheel-gold" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0" stopColor="#fff2c6" /><stop offset="0.28" stopColor="#d9ab4f" /><stop offset="0.55" stopColor="#80571a" /><stop offset="0.8" stopColor="#e8c370" /><stop offset="1" stopColor="#6d4813" />
+                    </linearGradient>
+                    <radialGradient id="login-wheel-shade" cx="0.5" cy="0.5" r="0.5">
+                      <stop offset="0" stopColor="#ffffff" stopOpacity="0.28" /><stop offset="0.45" stopColor="#ffffff" stopOpacity="0.04" /><stop offset="0.86" stopColor="#000000" stopOpacity="0.12" /><stop offset="1" stopColor="#000000" stopOpacity="0.42" />
+                    </radialGradient>
+                    <linearGradient id="login-wheel-sheen" x1="0.15" y1="0" x2="0.7" y2="1">
+                      <stop offset="0" stopColor="#ffffff" stopOpacity="0.3" /><stop offset="0.38" stopColor="#ffffff" stopOpacity="0.05" /><stop offset="0.6" stopColor="#ffffff" stopOpacity="0" />
+                    </linearGradient>
+                    {WHEEL_SEGMENTS.map(segment => (
+                      <radialGradient key={segment.prize.id} id={`login-wheel-segment-${segment.prize.id}`} cx="112" cy="112" r="102" gradientUnits="userSpaceOnUse">
+                        <stop offset="0.12" stopColor={shadeHex(segment.prize.color, 0.32)} /><stop offset="0.66" stopColor={segment.prize.color} /><stop offset="1" stopColor={shadeHex(segment.prize.color, -0.42)} />
+                      </radialGradient>
+                    ))}
+                  </defs>
+                  <circle cx="112" cy="112" r="111" fill="url(#login-wheel-gold)" />
+                  <circle cx="112" cy="112" r="106.5" fill="#0c0712" stroke="var(--calendar-border-strong)" strokeWidth="0.8" />
+                  {Array.from({ length: WHEEL_BULB_COUNT }, (_, index) => {
+                    const [x, y] = polarPoint(index / WHEEL_BULB_COUNT * 360 - 90, 108.8);
+                    return <circle key={index} className="login-wheel-bulb" cx={x} cy={y} r="1.5" style={{ animationDelay: `${(index % 6) * 0.12}s` }} />;
+                  })}
+                  <g className="login-wheel-rotor" style={{ transform: `rotate(${wheelRotation}deg)`, transitionDuration: `${reducedMotion ? 0 : WHEEL_SPIN_MS}ms` }}>
                     {WHEEL_SEGMENTS.map(segment => {
-                      const labelPosition = polarPoint(segment.middleAngle, 75);
+                      const labelPosition = polarPoint(segment.middleAngle, 80);
+                      const isWinner = wheelResult?.prize.id === segment.prize.id;
                       return (
-                        <g key={segment.prize.id}>
-                          <path d={wheelSegmentPath(segment.startAngle, segment.endAngle)} fill={segment.prize.color} stroke="var(--calendar-border-strong)" strokeWidth="0.8" />
-                          <text x={labelPosition[0]} y={labelPosition[1]} fill="#ffffff" stroke="#111111" strokeWidth="1.4" paintOrder="stroke" textAnchor="middle" dominantBaseline="middle" fontSize="9" fontWeight="700">
+                        <g key={segment.prize.id} className={isWinner ? 'is-winner' : undefined}>
+                          <path d={wheelSegmentPath(segment.startAngle, segment.endAngle)} fill={segment.prize.color} />
+                          <path d={wheelSegmentPath(segment.startAngle, segment.endAngle)} fill={`url(#login-wheel-segment-${segment.prize.id})`} />
+                          {isWinner && <path className="login-wheel-winner-glow" d={wheelSegmentPath(segment.startAngle, segment.endAngle)} />}
+                          <circle cx={labelPosition[0]} cy={labelPosition[1]} r="8.6" fill="rgba(12,7,18,0.68)" stroke="#f2d48b" strokeWidth="0.8" />
+                          <text x={labelPosition[0]} y={labelPosition[1] + 0.4} fill="#ffffff" textAnchor="middle" dominantBaseline="middle" fontSize="9" fontWeight="700" fontFamily="Georgia, 'Times New Roman', serif">
                             {segment.index}
                           </text>
                         </g>
                       );
                     })}
-                    <circle cx="112" cy="112" r="88" fill="none" stroke="rgba(248,232,199,0.42)" strokeWidth="0.7" />
+                    {WHEEL_SEGMENTS.map(segment => {
+                      const [x, y] = polarPoint(segment.startAngle, 102);
+                      const [pegX, pegY] = polarPoint(segment.startAngle, 97);
+                      return (
+                        <path key={`divider-${segment.prize.id}`} d={`M 112 112 L ${x} ${y} M ${pegX - 0.01} ${pegY} a 2.3 2.3 0 1 0 0.02 0`} stroke="#f2d48b" strokeWidth="1.1" fill="#fff3cf" strokeLinecap="round" />
+                      );
+                    })}
+                    <circle cx="112" cy="112" r="102" fill="url(#login-wheel-shade)" />
+                    <circle cx="112" cy="112" r="58" fill="none" stroke="rgba(255,240,200,0.32)" strokeWidth="0.6" strokeDasharray="1.2 3" />
+                    <circle cx="112" cy="112" r="101.5" fill="none" stroke="#f2d48b" strokeWidth="1.1" />
                   </g>
-                    <circle cx="112" cy="112" r="16" fill="var(--calendar-surface-strong)" stroke="var(--calendar-border-strong)" strokeWidth="2" />
-                    <path d="m112 103 8 9-8 9-8-9 8-9Z" fill="none" stroke="var(--calendar-accent-soft)" strokeWidth="1.4" />
-                    <circle cx="112" cy="112" r="2" fill="var(--calendar-success)" />
+                  <path d="M 30 70 A 90 90 0 0 1 150 26 L 112 112 Z" fill="url(#login-wheel-sheen)" pointerEvents="none" />
+                  <circle cx="112" cy="112" r="23" fill="url(#login-wheel-gold)" />
+                  <circle cx="112" cy="112" r="19" fill="#120a1a" stroke="#3a250a" strokeWidth="0.8" />
+                  <circle cx="112" cy="112" r="15.5" fill="none" stroke="rgba(242,212,139,0.45)" strokeWidth="0.6" strokeDasharray="1 2" />
+                  <path className="login-wheel-hub-star" d="m112 99 3.2 9.8 9.8 3.2-9.8 3.2-3.2 9.8-3.2-9.8-9.8-3.2 9.8-3.2Z" />
+                  <circle cx="112" cy="112" r="2.2" fill="#fff8e1" />
                 </svg>
               </div>
               <div className="login-wheel-controls">
                 <div className="login-calendar-eyebrow">Wheel of Transcendence</div>
                 <div className="login-wheel-spin-count">{spinsAvailable} <span>free {spinsAvailable === 1 ? 'spin' : 'spins'} available</span></div>
-                <p>One free spin accrues each local day while the Forge is open. Spins accumulate when you are away.</p>
-                {wheelResult && <div className="login-wheel-result" role="status">{wheelResult.prize.kind === 'divine_light' ? `+${wheelResult.amount.toLocaleString()} Divine Light` : wheelResult.prize.label}</div>}
-                <button type="button" className="login-calendar-claim is-wheel" disabled={spinsAvailable < 1} onClick={handleWheelSpin}>Spin the wheel</button>
+                <p>One free spin accrues each local day while the Forge is open. Spins accumulate when you are away. Each spin is spent and saved the instant you pull the wheel.</p>
+                <div className="login-wheel-reveal-slot" role="status" aria-live="polite">
+                  {wheelSpinning && <div className="login-wheel-turning"><i /><span>The wheel is turning&hellip;</span></div>}
+                  {!wheelSpinning && wheelResult && (
+                    <div className="login-wheel-reveal" key={`${wheelResult.prize.id}-${recentSpins.length}`} style={{ ['--prize-color' as string]: wheelResult.prize.color } as React.CSSProperties}>
+                      <img src={wheelPrizeIcon(wheelResult.prize)} alt="" />
+                      <span><small>Fate grants</small><strong>{wheelPrizeLabel(wheelResult)}</strong></span>
+                    </div>
+                  )}
+                </div>
+                <button type="button" className="login-calendar-claim is-wheel" disabled={spinsAvailable < 1 || wheelSpinning} onClick={handleWheelSpin}>{wheelSpinning ? 'Spinning' + '\u2026' : 'Spin the wheel'}</button>
                 <div className="login-wheel-history">
                   <h3>Recent spins</h3>
                   {recentSpins.length ? recentSpins.map((spin, index) => <div className="login-calendar-next" key={`${spin}-${index}`}><span>{spin}</span></div>) : <p className="login-calendar-muted">No spins yet.</p>}
@@ -359,7 +478,7 @@ export default function DailyRewardModal({ onClose, onOpenForge }: Props) {
               <div className="login-wheel-odds">
                 <h3>Prize odds</h3>
                 {FORGE_WHEEL_PRIZES.map((prize, index) => (
-                  <div className="login-calendar-next login-wheel-prize-row" key={prize.id}>
+                  <div className={`login-calendar-next login-wheel-prize-row${!wheelSpinning && wheelResult?.prize.id === prize.id ? ' is-winner' : ''}`} key={prize.id}>
                     <span><b className="login-wheel-prize-number" style={{ backgroundColor: prize.color, borderColor: prize.color, color: '#ffffff' }}>{index + 1}</b><img src={wheelPrizeIcon(prize)} alt="" /><strong>{prize.label}</strong></span>
                     <em>{(prize.weight / FORGE_WHEEL_TOTAL_WEIGHT * 100).toFixed(1)}%</em>
                   </div>

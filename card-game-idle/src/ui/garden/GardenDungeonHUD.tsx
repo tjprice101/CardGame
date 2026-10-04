@@ -1,8 +1,9 @@
 import { GARDEN_DUNGEONS, GARDEN_REWARD_LABELS } from '@/data/dungeons/gardenDungeonDefinitions';
 import { useStore } from '@/state/store';
 import { uiTypography } from '@/ui/theme';
+import { originalItemIconUrl } from '@/ui/originalItemIcons';
 
-const rewardIconUrl = (assetKey: string) => `${import.meta.env.BASE_URL}assets/dungeons/items/${assetKey}.png`;
+const rewardIconUrl = (assetKey: string) => originalItemIconUrl(`dungeons/items/${assetKey}.png`);
 
 export default function GardenDungeonHUD() {
   const dungeonState = useStore(state => state.gardenDungeon);

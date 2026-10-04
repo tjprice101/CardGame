@@ -6,6 +6,7 @@ import { getForgeCardLore } from '@/data/forge/forgeDefinitions';
 import { useTranscendentUnlockStore, type TranscendentUnlock } from '@/state/transcendentUnlockStore';
 import { getLiveCardFaceBackgroundStyle, getLiveCardShimmerClassName } from '@/ui/cardBackgrounds';
 import { getCardSetId } from '@/data/elements';
+import { originalItemIconUrl } from '@/ui/originalItemIcons';
 
 export function TranscendentUnlockCeremony({ unlock, onContinue }: { unlock: TranscendentUnlock; onContinue: () => void }) {
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -66,7 +67,7 @@ export function TranscendentUnlockCeremony({ unlock, onContinue }: { unlock: Tra
                 event.currentTarget.style.visibility = 'hidden';
               }
             }} />}
-          {shards && <img className="transcendent-unlock-ability" src={`${import.meta.env.BASE_URL}assets/forge/shards-of-transcendence.png`} alt="Shards of Transcendence" />}
+          {shards && <img className="transcendent-unlock-ability" src={originalItemIconUrl('forge/shards-of-transcendence.png')} alt="Shards of Transcendence" />}
           {(duplicate || shards || amount > 1) && <div className="transcendent-unlock-plus">+{amount}</div>}
         </div>
         <h2>{name}</h2>

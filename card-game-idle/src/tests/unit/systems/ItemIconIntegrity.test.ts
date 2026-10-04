@@ -39,4 +39,20 @@ describe('untouched currency and material artwork', () => {
       expect(block).toContain(`${rule} !important;`);
     }
   });
+
+  it('cache-busts every restored original icon URL so stale cut-out copies are never shown', () => {
+    const files = [
+      'ui/menus/InventoryModal.tsx', 'ui/profile/DailyRewardModal.tsx', 'ui/garden/GardenResultModal.tsx',
+      'ui/garden/GardenOfCards.tsx', 'ui/garden/GardenDungeonHUD.tsx', 'ui/forge/ForgeOfTranscendence.tsx',
+      'ui/components/TranscendentShardRewardBanner.tsx', 'ui/components/TranscendentUnlockScreen.tsx',
+    ];
+    const rawIconUrl = /BASE_URL\}assets\/(?:resource-icons\/|dungeons\/items\/|forge\/(?:key|shards)-of-transcendence\.png)/;
+    for (const file of files) {
+      const source = readFileSync(join(process.cwd(), 'src', file), 'utf8');
+      expect(source, file).toContain('originalItemIconUrl(');
+      expect(source, file).not.toMatch(rawIconUrl);
+    }
+    const helper = readFileSync(join(process.cwd(), 'src', 'ui', 'originalItemIcons.ts'), 'utf8');
+    expect(helper).toContain('?v=${ORIGINAL_ITEM_ICON_VERSION}');
+  });
 });

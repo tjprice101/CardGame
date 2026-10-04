@@ -4,8 +4,9 @@ import { GARDEN_DUNGEONS, GARDEN_REWARD_LABELS } from '@/data/dungeons/gardenDun
 import TranscendentShardRewardBanner from '@/ui/components/TranscendentShardRewardBanner';
 import { SfxManager } from '@/audio/SfxManager';
 import { uiTypography } from '@/ui/theme';
+import { originalItemIconUrl } from '@/ui/originalItemIcons';
 
-const rewardIconUrl = (assetKey: string) => `${import.meta.env.BASE_URL}assets/dungeons/items/${assetKey}.png`;
+const rewardIconUrl = (assetKey: string) => originalItemIconUrl(`dungeons/items/${assetKey}.png`);
 
 export default function GardenResultModal() {
   const gardenDungeon = useStore(selectGardenDungeon);

@@ -11,6 +11,7 @@ import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
 import { getLiveCardFaceBackgroundStyle, getLiveCardShimmerClassName } from '@/ui/cardBackgrounds';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import { uiTypography } from '@/ui/theme';
+import { originalItemIconUrl } from '@/ui/originalItemIcons';
 
 interface Props {
   onClose: () => void;
@@ -67,7 +68,7 @@ export default function ForgeOfTranscendence({ onClose }: Props) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <img src={`${import.meta.env.BASE_URL}assets/forge/shards-of-transcendence.png`} alt="" style={{ width: 36, height: 36, objectFit: 'contain' }} />
+            <img src={originalItemIconUrl('forge/shards-of-transcendence.png')} alt="" style={{ width: 36, height: 36, objectFit: 'contain' }} />
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontFamily: uiTypography.display, fontSize: 16 }}>{shards}</div>
               <div style={{ fontSize: 9, letterSpacing: 0.7, textTransform: 'uppercase', color: 'rgba(20,10,30,0.5)' }}>Shards of Transcendence</div>
@@ -128,17 +129,20 @@ export default function ForgeOfTranscendence({ onClose }: Props) {
                 <button
                   key={entry.definitionId}
                   type="button"
+                  className="forge-lore-nav-card"
                   onClick={() => setSelectedId(entry.definitionId)}
                   style={{
                     display: 'block', width: '100%', textAlign: 'left', padding: '12px 14px', marginBottom: 6,
-                    borderRadius: 8, border: isSelected ? '1px solid rgba(160,90,255,0.55)' : '1px solid transparent',
-                    backgroundImage: `linear-gradient(90deg, rgba(255,255,255,${isSelected ? 0.55 : 0.8}) 0%, rgba(255,255,255,${isSelected ? 0.4 : 0.72}) 62%, rgba(255,255,255,0.35) 100%), ${entry.navBannerImage}`,
+                    borderRadius: 8, border: isSelected ? '1px solid rgba(190,130,255,0.9)' : '1px solid rgba(20,10,30,0.18)',
+                    boxShadow: isSelected ? '0 0 0 1px rgba(190,130,255,0.35), 0 6px 18px rgba(80,30,140,0.28)' : 'none',
+                    backgroundImage: `linear-gradient(90deg, rgba(10,6,18,${isSelected ? 0.8 : 0.86}) 0%, rgba(10,6,18,${isSelected ? 0.66 : 0.74}) 62%, rgba(10,6,18,0.62) 100%), ${entry.navBannerImage}`,
                     backgroundSize: 'cover', backgroundPosition: 'center',
+                    color: '#ffffff', textShadow: '0 1px 3px rgba(0,0,0,0.95), 0 0 10px rgba(0,0,0,0.75)',
                     cursor: 'pointer', fontFamily: uiTypography.body,
                   }}
                 >
-                  <div style={{ fontSize: 13, fontWeight: isSelected ? 700 : 500, color: '#15101c' }}>{entry.displayName}</div>
-                  <div style={{ marginTop: 2, fontSize: 10, color: 'rgba(20,10,30,0.7)', lineHeight: 1.3 }}>{entry.tagline}</div>
+                  <div style={{ fontSize: 13, fontWeight: isSelected ? 800 : 700, color: '#ffffff' }}>{entry.displayName}</div>
+                  <div style={{ marginTop: 2, fontSize: 10.5, fontWeight: 600, color: 'rgba(255,255,255,0.9)', lineHeight: 1.3 }}>{entry.tagline}</div>
                 </button>
               );
             })}
@@ -217,7 +221,7 @@ export default function ForgeOfTranscendence({ onClose }: Props) {
                 cursor: canAcquire ? 'pointer' : 'not-allowed',
               }}
             >
-              <img src={`${import.meta.env.BASE_URL}assets/forge/shards-of-transcendence.png`} alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+              <img src={originalItemIconUrl('forge/shards-of-transcendence.png')} alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} />
               Acquire 1 Copy · {FORGE_CARD_SHARD_COST} Shards of Transcendence
             </button>
           </aside>

@@ -44,6 +44,7 @@ export class GameEngine {
       console.warn('Renderer failed to initialize; running without graphics.', err);
     }
     this.saveManager.startAutoSave();
+    eventBus.on('save:immediate', () => this.saveManager.save());
     this.syncRendering();
     this.registerVisualFeedbackListeners();
     document.addEventListener('visibilitychange', this.onVisibilityChange);

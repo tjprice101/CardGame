@@ -5,10 +5,11 @@ import { uiTypography } from '@/ui/theme';
 import ShardDropRate from '@/ui/components/ShardDropRate';
 import { areShardDropRatesVisible, formatShardDropChance } from '@/data/forge/forgeDefinitions';
 import type { GardenDungeonDefinition } from '@/types/dungeons';
+import { originalItemIconUrl } from '@/ui/originalItemIcons';
 
 interface Props { onClose: () => void; onEnterDungeon?: (dungeonId: string) => void }
 
-const rewardIconUrl = (assetKey: string) => `${import.meta.env.BASE_URL}assets/dungeons/items/${assetKey}.png`;
+const rewardIconUrl = (assetKey: string) => originalItemIconUrl(`dungeons/items/${assetKey}.png`);
 
 export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
   const progress = useStore(selectProgress);

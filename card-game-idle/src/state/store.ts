@@ -113,6 +113,13 @@ import { ABILITY_REGISTRY, getAbilityMaterialCost, meetsAbilityOwnershipGate } f
 
 const EMBRACE_INFINITE_MIN_HAND = 40;
 
+export interface ForgeWheelSpinResult {
+  prize: typeof FORGE_WHEEL_PRIZES[number];
+  amount: number;
+  toastMessage: string;
+  shardsOfTranscendenceTotal?: number;
+}
+
 const COOP_BOSS_HP_SCALE_BY_PARTY_SIZE: Record<number, number> = {
   1: 1,
   2: 1.68,
@@ -529,7 +536,7 @@ interface StoreActions {
   /** Claim the single final reward for clearing every Forge event boss. */
   claimForgeKeyReward: () => boolean;
   claimDailyStreakMilestone: (day: 3 | 14) => boolean;
-  spinForgeWheel: () => { prize: typeof FORGE_WHEEL_PRIZES[number]; amount: number } | null;
+  spinForgeWheel: (options?: { deferPresentation?: boolean }) => ForgeWheelSpinResult | null;
   /** Debug shortcut: marks every Forge event boss as defeated without fighting them. */
   debugMode: boolean;
   activateDebugMode: () => void;
@@ -3848,9 +3855,10 @@ export const useStore = create<Store>()(
       return true;
     },
 
-    spinForgeWheel: () => {
+    spinForgeWheel: (options) => {
       if (!get().progress.forgeOfTranscendenceUnlocked) return null;
-      let result: { prize: typeof FORGE_WHEEL_PRIZES[number]; amount: number } | null = null;
+      const deferPresentation = options?.deferPresentation === true;
+      let result: ForgeWheelSpinResult | null = null;
       set(s => {
         const progress = s.progress;
         if (!progress.forgeOfTranscendenceUnlocked) return;
@@ -3873,6 +3881,7 @@ export const useStore = create<Store>()(
         progress.forgeWheelSpins -= 1;
 
         let amount: number = prize.amount;
+        let shardsOfTranscendenceTotal: number | undefined;
         if (prize.kind === 'aberrated_shards') progress.aberratedShards += amount;
         else if (prize.kind === 'card_light_all') {
           for (const definitionId of Object.keys(progress.collection)) {
@@ -3881,13 +3890,21 @@ export const useStore = create<Store>()(
             }
           }
         } else if (prize.kind === 'shards_of_transcendence') {
-          awardTranscendenceShards(progress, amount);
+          if (deferPresentation) {
+            progress.shardsOfTranscendence = (progress.shardsOfTranscendence ?? 0) + amount;
+          } else {
+            awardTranscendenceShards(progress, amount);
+          }
+          shardsOfTranscendenceTotal = progress.shardsOfTranscendence ?? 0;
         } else {
           amount = grantPersistentDivineLight(s, amount);
         }
-        result = { prize, amount };
-        pushRewardToast(s, `Forge wheel: ${prize.kind === 'card_light_all' ? prize.label : `+${amount.toLocaleString()} ${prize.label.slice(1).replace(/^\d[\d,]*\s*/, '')}`}`);
+        const toastMessage = `Forge wheel: ${prize.kind === 'card_light_all' ? prize.label : `+${amount.toLocaleString()} ${prize.label.slice(1).replace(/^\d[\d,]*\s*/, '')}`}`;
+        result = { prize, amount, toastMessage, shardsOfTranscendenceTotal };
+        if (!deferPresentation) pushRewardToast(s, toastMessage);
       });
+      // The spin and prize are committed before any animation so a refresh cannot reroll or refund it.
+      if (result) eventBus.emit('save:immediate', { reason: 'forge-wheel-spin' });
       return result;
     },
 

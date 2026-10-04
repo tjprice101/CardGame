@@ -142,7 +142,7 @@ export default function QuestsModal({ onClose }: Props) {
           const quests = cadence === 'super' ? [] : view[cadence];
           const ready = quests.filter(q => isQuestComplete(q) && !q.claimed).length;
           return <button key={cadence} className={`trials-tab${tab === cadence ? ' is-active' : ''}`} aria-pressed={tab === cadence} aria-controls="trials-content" onClick={() => setTab(cadence)}>
-            {cadence === 'super' ? 'Super Weekly' : cadence === 'daily' ? 'Daily' : 'Weekly'}
+            <strong className={tab === cadence ? 'ui-button-title' : undefined} style={{ font: 'inherit' }}>{cadence === 'super' ? 'Super Weekly' : cadence === 'daily' ? 'Daily' : 'Weekly'}</strong>
             <span className={ready || (cadence === 'super' && superReady) ? 'is-ready' : ''}>{cadence === 'super' ? superCompleted ? 'Completed' : consumed ? 'Active' : superReady ? 'Ready' : 'Locked' : ready ? `${ready} ready` : `${quests.filter(isQuestComplete).length}/${quests.length}`}</span>
           </button>;
         })}

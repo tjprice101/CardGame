@@ -468,9 +468,9 @@ describe('live card face rendering', () => {
     expect(calendarSource).toContain('{segment.index}');
     expect(calendarSource).toContain('login-calendar-next login-wheel-prize-row');
     expect(calendarSource).toContain('<strong>{prize.label}</strong>');
-    expect(calendarSource).toContain('assets/resource-icons/divine-light.png');
-    expect(calendarSource).toContain('assets/resource-icons/aberrated-shards.png');
-    expect(calendarSource).toContain('assets/forge/shards-of-transcendence.png');
+    expect(calendarSource).toContain("originalItemIconUrl('resource-icons/divine-light.png')");
+    expect(calendarSource).toContain("originalItemIconUrl('resource-icons/aberrated-shards.png')");
+    expect(calendarSource).toContain("originalItemIconUrl('forge/shards-of-transcendence.png')");
     expect(calendarSource).not.toContain('wheelLabel(segment.prize)');
   });
 

@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { uiTypography } from '@/ui/theme';
+import { originalItemIconUrl } from '@/ui/originalItemIcons';
 
 interface Props {
   count: number;
@@ -10,7 +11,7 @@ interface Props {
 export default function TranscendentShardRewardBanner({ count, totalOwned, style }: Props) {
   if (count <= 0) return null;
 
-  const shardImgUrl = `${import.meta.env.BASE_URL}assets/forge/shards-of-transcendence.png`;
+  const shardImgUrl = originalItemIconUrl('forge/shards-of-transcendence.png');
 
   return (
     <div

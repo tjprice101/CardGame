@@ -19,4 +19,5 @@ export interface EventPayloads {
   'cherubim:expired': { backSlot: 0 | 1 | 2 | 3; definitionId: string };
   'milestone:reached': { threshold: number; label: string };
   'game:ready': Record<string, never>;
+  'save:immediate': { reason: string };
 }
