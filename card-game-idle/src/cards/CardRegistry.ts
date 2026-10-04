@@ -11,6 +11,8 @@ import { causalityCards } from '../data/cards/causalityCards';
 import { causalityInfiniteCards } from '../data/cards/causalityInfiniteCards';
 import { ScoreSystem } from '../systems/scoring/ScoreSystem';
 import { formatDisplayCardText } from '../ui/preferences';
+import { intensityCards } from '../data/cards/intensityCards';
+import { neutralityInfiniteCards } from '../data/cards/neutralityInfiniteCards';
 
 const registry = new Map<string, CardDefinition>();
 
@@ -30,6 +32,8 @@ const SOURCE_DEFINITIONS: CardDefinition[] = [
   ...(transcendentCardDefinitions as unknown as CardDefinition[]),
   ...(causalityCards as unknown as CardDefinition[]),
   ...(causalityInfiniteCards as unknown as CardDefinition[]),
+  ...intensityCards,
+  ...neutralityInfiniteCards,
 ];
 
 function applyNeutralityDocOverride(def: CardDefinition): CardDefinition {
@@ -116,4 +120,3 @@ export const CardRegistry = {
     _byType.get(type) ?? [],
   has: (id: string): boolean => registry.has(resolveCardId(id)),
 };
-

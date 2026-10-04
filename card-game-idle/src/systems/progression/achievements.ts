@@ -38,7 +38,7 @@ export interface AchievementView {
   shardReward: number;
   divineLightReward: number;
   imageAssetKey?: string;
-  backgroundReward?: { name: string; rarity: 'Eternal' | 'Infinite' | 'Transcendent' };
+  backgroundReward?: { name: string; rarity: 'Legendary' | 'Eternal' | 'Infinite' | 'Transcendent' };
 }
 
 export function getAchievementShardReward(group: TitleBadgeDefinition['group']): number {

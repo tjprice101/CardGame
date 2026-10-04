@@ -31,7 +31,8 @@ const RARITY_COLORS: Record<string, string> = {
 
 const faceMetrics = getCardFaceMetrics('grid');
 
-function getCardSet(definitionId: string): 'Neutrality' | 'Causality' | null {
+function getCardSet(definitionId: string): 'Neutrality' | 'Causality' | 'Intensity' | null {
+  if (definitionId.includes('intensity')) return 'Intensity';
   if (definitionId.includes('causality')) return 'Causality';
   if (definitionId.includes('neutral')) return 'Neutrality';
   return null;
@@ -46,7 +47,7 @@ export default function SignatureCardPickerModal({ slotIndex, onClose, onPick }:
   const progress = useStore(selectProgress);
   const [search, setSearch] = useState('');
   const [rarityFilter, setRarityFilter] = useState<string>('All');
-  const [setFilter, setSetFilter] = useState<'All' | 'Neutrality' | 'Causality'>('All');
+  const [setFilter, setSetFilter] = useState<'All' | 'Neutrality' | 'Causality' | 'Intensity'>('All');
   const gridViewportRef = useRef<HTMLDivElement | null>(null);
   const [gridViewportWidth, setGridViewportWidth] = useState(0);
 
@@ -187,7 +188,7 @@ export default function SignatureCardPickerModal({ slotIndex, onClose, onPick }:
               margin: '10px 12px 10px 0',
             }}
           />
-          {(['All', 'Neutrality', 'Causality'] as const).map(setName => (
+          {(['All', 'Neutrality', 'Causality', 'Intensity'] as const).map(setName => (
             <button
               key={setName}
               onClick={() => setSetFilter(setName)}

@@ -3,6 +3,9 @@ import type { BossCategory } from '@/types/bossFight';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
 import { infiniteCards } from '@/data/cards/infiniteCards';
 import { CardRegistry } from '@/cards/CardRegistry';
+import { getCardSetId } from '@/data/elements';
+import { ABILITY_DEFINITIONS } from '@/data/abilities/abilityDefinitions';
+import { INTENSITY_PROFILE_REWARDS } from './intensityProfileRewards';
 import { CUSTOM_MAIN_MENU_BACKGROUND_REWARDS, isCustomBackgroundRewardUnlocked } from './customMainMenuBackgrounds';
 import { CROWN_BACKGROUND_REWARDS, isCrownBackgroundUnlocked } from './crownBackgroundRewards';
 import {
@@ -741,6 +744,7 @@ const MILESTONE_TITLES: TitleBadgeDefinition[] = [
 const CATEGORY_TITLE_OVERRIDES: Record<BossCategory, { text: string; description: string }> = {
   'Neutrality': { text: 'Arbiter of Neutrality', description: 'Defeat every Neutrality boss in Eternity\'s Wake.' },
   'Causality': { text: 'Author Beyond Causality', description: 'Defeat every Causality boss in Eternity\'s Wake.' },
+  'Intensity': { text: 'Keeper of the Last Seam', description: 'Defeat every Intensity boss in Eternity\'s Wake.' },
 };
 
 function buildCategoryClearTitles(): TitleBadgeDefinition[] {
@@ -774,6 +778,11 @@ export function bossClearTitleId(bossId: string): string {
 // epithet tied to that boss's lore. Falls back to "Slayer of {name}" when an
 // id is missing (so future bosses keep generating valid titles).
 const BOSS_TITLE_OVERRIDES: Record<string, { text: string; description: string }> = {
+  'boss-intensity-drowned-cathedral': { text: 'The Cathedral Rekindled', description: 'Defeat The Drowned Cathedral and reclaim its volcanic hymn.' },
+  'boss-intensity-divided-crown': { text: 'Whole Beyond the Flame', description: 'Defeat The Divided Crown without yielding to its split dominion.' },
+  'boss-intensity-unbearable-noon': { text: 'Unbowed Before Noon', description: 'Defeat The Sovereign of Unbearable Noon.' },
+  'boss-intensity-distance-bell': { text: 'Beyond the Final Toll', description: 'Silence The Bell That Buries Distance.' },
+  'boss-intensity-last-dawn': { text: 'After the Last Dawn', description: 'Defeat The Arbiter After the Last Dawn.' },
   // Neutrality — legacy ladder
   'boss-hollow-king': { text: 'The Hollow Heir', description: 'Unseat the Hollow Queen at the threshold of Eternity\'s Wake.' },
   'boss-cherubim-sovereign': { text: 'Above the Tiered Throne', description: 'Topple the Cherubim Sovereign from its tiered throne.' },
@@ -815,19 +824,28 @@ export function infiniteCardTitleId(definitionId: string): string {
 // Infinite card a unique epithet tied to its in-fiction identity. Falls back
 // to "Wielder of {name}" for unmapped ids.
 const INFINITE_CARD_TITLE_OVERRIDES: Record<string, { text: string; description: string }> = {
+  'infinite-intensity-the-unfathomed-return': { text: 'Returned from the Unfathomed', description: 'Forge The Unfathomed Return.' },
+  'infinite-intensity-crown-with-no-final-king': { text: 'The Kingless Flame', description: 'Forge Crown With No Final King.' },
+  'infinite-intensity-daybreak-without-end': { text: 'Bearer of Endless Daybreak', description: 'Forge Daybreak Without End.' },
+  'infinite-intensity-a-furnace-outside-time': { text: 'Beyond the Furnace Hour', description: 'Forge A Furnace Outside Time.' },
+  'infinite-intensity-the-seam-that-holds-eternity': { text: 'Keeper of the Eternal Seam', description: 'Forge The Seam That Holds Eternity.' },
   // Neutrality core infinites
   'inf-oblivion-absolute': { text: 'The Final Zero', description: 'Forge The Absolute Null — the card that ends counting.' },
-  'inf-void-cascade': { text: 'Of the Cascading Nothing', description: 'Forge Void Cascade and channel the slope into the void.' },
-  'inf-genesis-throne': { text: 'Seated Before the Word', description: 'Forge Genesis Throne and seat yourself before the first word.' },
-  'inf-null-apex': { text: 'The Apex That Refuses', description: 'Forge Null Apex — the peak that disclaims itself.' },
-  'inf-entropic-crown': { text: 'Crowned in Unwinding', description: 'Forge the Entropic Crown and wear what unwinds.' },
-  'inf-annihilation-field': { text: 'The Drawn Perimeter', description: 'Forge Annihilation Field and draw its perimeter.' },
-  'inf-sovereign-void': { text: 'Sovereign of the Unwritten', description: 'Forge Sovereign Void and rule the unwritten page.' },
-  'inf-eternity-rupture': { text: 'Of the Cracked Thread', description: 'Forge Eternity Rupture and crack the long thread.' },
+  'inf-void-cascade': { text: 'Of the Cascading Nothing', description: 'Forge The Cascade of the Hollow Sky and channel the slope into the void.' },
+  'inf-genesis-throne': { text: 'Seated Before the Word', description: 'Forge The White Throne Before Beginning and seat yourself before the first word.' },
+  'inf-null-apex': { text: 'The Apex That Refuses', description: 'Forge The Apex of Nothing — the peak that disclaims itself.' },
+  'inf-entropic-crown': { text: 'Crowned in Unwinding', description: 'Forge The Crown of Unmaking and wear what unwinds.' },
+  'inf-annihilation-field': { text: 'The Drawn Perimeter', description: 'Forge The Garden of Annihilation and draw its perimeter.' },
+  'inf-sovereign-void': { text: 'Sovereign of the Unwritten', description: 'Forge The Sovereign Veil and rule the unwritten page.' },
+  'inf-eternity-rupture': { text: 'Of the Cracked Thread', description: 'Forge The Rift of Outer Silence and crack the long thread.' },
 };
 
 function buildInfiniteCardTitles(): TitleBadgeDefinition[] {
-  return infiniteCards.map((card) => {
+  const definitions = new Map(infiniteCards.map(card => [card.definitionId, { definitionId: card.definitionId, name: card.name }]));
+  for (const card of CardRegistry.getAll().filter(card => card.rarity === 'Infinite')) {
+    definitions.set(card.definitionId, card);
+  }
+  return [...definitions.values()].map((card) => {
     const ov = INFINITE_CARD_TITLE_OVERRIDES[card.definitionId];
     return {
       id: infiniteCardTitleId(card.definitionId),
@@ -850,6 +868,10 @@ interface SetSpec {
 }
 
 const SET_SPECS: SetSpec[] = [
+  {
+    category: 'Intensity', title: 'Of the Last Seam',
+    prefixes: ['light-intensity-', 'dark-intensity-', 'ain-soph-aur-intensity-', 'eternal-intensity-'],
+  },
   {
     category: 'Neutrality',
     title: 'Of the Quiet Center',
@@ -897,8 +919,39 @@ function buildSetCompletionTitles(): TitleBadgeDefinition[] {
   }));
 }
 
+const intensityPlays = (progress: ProgressState): number => progress.intensityCardsPlayed
+  ?? Object.entries(progress.cardPlayCounts ?? {})
+    .reduce((total, [id, count]) => total + (getCardSetId(id) === 'Intensity' ? count : 0), 0);
+const intensityAbilities = (progress: ProgressState): number => ABILITY_DEFINITIONS
+  .filter(ability => ability.setId === 'Intensity' && progress.ownedAbilities?.[ability.id] === true).length;
+
+const INTENSITY_MILESTONES: TitleBadgeDefinition[] = [
+  { id: 'title-intensity-first-spark', text: 'The First Living Spark', description: 'Play an Intensity card.', isUnlocked: p => intensityPlays(p) >= 1, group: 'milestone' },
+  { id: 'title-intensity-ashwalker', text: 'Walker of a Hundred Embers', description: 'Play 100 Intensity cards.', isUnlocked: p => intensityPlays(p) >= 100, group: 'milestone' },
+  { id: 'title-intensity-volcanic-script', text: 'Author of the Volcanic Script', description: 'Play 1,000 Intensity cards.', isUnlocked: p => intensityPlays(p) >= 1_000, group: 'milestone' },
+  { id: 'title-intensity-kindler', text: 'Kindler of the Deep', description: 'Generate 100 Limitless Inferno Stacks over your lifetime.', isUnlocked: p => (p.intensityInfernoGenerated ?? 0) >= 100, group: 'milestone' },
+  { id: 'title-intensity-unquenchable', text: 'The Unquenchable Manuscript', description: 'Generate 10,000 Limitless Inferno Stacks over your lifetime.', isUnlocked: p => (p.intensityInfernoGenerated ?? 0) >= 10_000, group: 'milestone' },
+  { id: 'title-intensity-eruption', text: 'Voice of the Eruption', description: 'Spend 100 Inferno through Soph attacks or Intensity abilities.', isUnlocked: p => (p.intensityInfernoSpent ?? 0) >= 100, group: 'milestone' },
+  { id: 'title-intensity-white-fire', text: 'Bearer of White Fire', description: 'Spend 1,000 Inferno through Soph attacks or Intensity abilities.', isUnlocked: p => (p.intensityInfernoSpent ?? 0) >= 1_000, group: 'milestone' },
+  { id: 'title-intensity-pressure', text: 'Pressure Beyond the Mountain', description: 'Generate 50 Inferno in a single turn. Spending does not reduce this record.', isUnlocked: p => (p.intensityBestTurnInferno ?? 0) >= 50, group: 'milestone' },
+  { id: 'title-intensity-crater', text: 'Returned from the Crater', description: 'Complete all four Crater of Flames encounters in one expedition.', isUnlocked: p => (p.intensityCraterClears ?? 0) >= 1, group: 'milestone' },
+  { id: 'title-intensity-crater-master', text: 'Master of the Molten Path', description: 'Complete 25 Crater of Flames expeditions.', isUnlocked: p => (p.intensityCraterClears ?? 0) >= 25, group: 'milestone' },
+  { id: 'title-intensity-materials', text: 'Keeper of Volcanic Relics', description: 'Hold Emberglass, Abyssal Cinder, Solar Slag, and Heart of the Inferno at the same time.', isUnlocked: p => p.emberglass > 0 && p.abyssalCinder > 0 && p.solarSlag > 0 && p.heartOfTheInferno > 0, group: 'milestone' },
+  { id: 'title-intensity-first-ability', text: 'The Flame Given Form', description: 'Materialize an Intensity ability.', isUnlocked: p => intensityAbilities(p) >= 1, group: 'milestone' },
+  { id: 'title-intensity-foundation', text: 'At the Volcanic Foundation', description: 'Materialize all three foundational Intensity abilities.', isUnlocked: p => ABILITY_DEFINITIONS.filter(a => a.setId === 'Intensity' && a.ownershipGate === 'allIntensityBase').every(a => p.ownedAbilities?.[a.id] === true), group: 'milestone' },
+  { id: 'title-intensity-arsenal', text: 'The Complete Infernal Arsenal', description: 'Materialize all seven Intensity abilities.', isUnlocked: p => intensityAbilities(p) >= 7, group: 'milestone' },
+  { id: 'title-intensity-ability-master', text: 'The Hundredfold Crucible', description: 'Successfully activate Intensity abilities 100 times.', isUnlocked: p => (p.intensityAbilityActivations ?? 0) >= 100, group: 'milestone' },
+];
+
 export const TITLE_BADGES: TitleBadgeDefinition[] = [
   ...MILESTONE_TITLES,
+  ...INTENSITY_MILESTONES,
+  ...INTENSITY_PROFILE_REWARDS.map(reward => ({
+    id: reward.achievementId, text: reward.name,
+    description: `Defeat ${BOSS_DEFINITIONS.find(boss => boss.id === reward.bossId)?.name ?? reward.bossId} to unlock this Intensity profile portrait. Artwork can be installed later without losing the unlock.`,
+    isUnlocked: (progress: ProgressState) => (progress.bossClearCounts[reward.bossId] ?? 0) > 0,
+    group: 'boss' as const,
+  })),
   ...buildCategoryClearTitles(),
   ...buildBossClearTitles(),
   ...buildInfiniteCardTitles(),

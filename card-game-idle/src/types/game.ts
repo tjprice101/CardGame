@@ -117,6 +117,12 @@ export interface TurnState {
   transcendentVaultHandLimitUntil?: number;
   transcendentConfluenceAttackBonus?: number;
   limitlessCosmosStacks?: number;
+  limitlessInfernoStacks?: number;
+  intensityInfernoGainedThisTurn?: number;
+  intensityInfernoSpentThisTurn?: number;
+  intensityNextGainMultiplier?: number;
+  intensityBankedEmbers?: number;
+  intensityAttackBonus?: number;
   causalityCardsPlayedThisTurn?: number;
   causalityDivineLightThisTurn?: number;
   divineLightEarnedThisTurn: number;
@@ -206,6 +212,8 @@ export interface ShatterInfiniteLightState {
   pauseStartedAt: number;
   /** Number of glowing stars clicked during the 'active' phase — "Limitless Infinity" stacks. */
   stacks: number;
+  /** Combined current Soph and Bridge base payouts, snapshotted at activation. */
+  basePayout: number;
   /** Divine Light granted once the 'active' phase resolves. */
   payout: number;
   lastPointerAngle?: number;
@@ -298,6 +306,16 @@ export interface ProgressState {
   causalBloom: number;
   shatteredCausalTranscript: number;
   heartOfCausality: number;
+  emberglass: number;
+  abyssalCinder: number;
+  solarSlag: number;
+  heartOfTheInferno: number;
+  intensityInfernoGenerated?: number;
+  intensityCardsPlayed?: number;
+  intensityInfernoSpent?: number;
+  intensityBestTurnInferno?: number;
+  intensityCraterClears?: number;
+  intensityAbilityActivations?: number;
   /** Total Divine Light ever earned (never decremented when spending). Used for unlock conditions. Save v22. */
   lifetimeDivineLight?: number;
   /** Highest Divine Light earned in a single turn. Used for Oblivion-Touched unlock. Save v22. */

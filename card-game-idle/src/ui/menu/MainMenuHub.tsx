@@ -526,20 +526,6 @@ export default function MainMenuHub(props: MainMenuHubProps) {
     return () => { cancelled = true; };
   }, []);
 
-  // Debug shortcut: typing "key" on the main menu marks every Forge event boss as defeated.
-  useEffect(() => {
-    let typed = '';
-    function onKeyDown(e: KeyboardEvent) {
-      const target = e.target as HTMLElement | null;
-      const isTyping = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target?.isContentEditable;
-      if (isTyping || e.key.length !== 1) return;
-      typed = (typed + e.key.toLowerCase()).slice(-3);
-      if (typed === 'key') useStore.getState().debugMarkForgeBossesDefeated();
-    }
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
-
   useEffect(() => {
     const shortcuts: Array<[KeybindActionId, () => void]> = [
       ['mainMenuCardStore', props.onCardStore],
@@ -550,6 +536,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
     ];
     function onMenuShortcut(e: KeyboardEvent) {
       const target = e.target as HTMLElement | null;
+      if (target?.closest('[aria-modal="true"]')) return;
       const isTyping = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement
         || target?.tagName === 'SELECT' || target?.isContentEditable;
       if (e.defaultPrevented || e.repeat || e.ctrlKey || e.metaKey || e.altKey || isTyping) return;

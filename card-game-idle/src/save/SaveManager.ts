@@ -3,7 +3,9 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 55;
+import { getPersistentGameState } from '@/core/debugSession';
+
+export const CURRENT_VERSION = 56;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -1118,6 +1120,27 @@ const migrations: Record<number, Migration> = {
     if (dailyLogin && !Array.isArray(dailyLogin['claimedStreakMilestones'])) dailyLogin['claimedStreakMilestones'] = [];
     return data;
   },
+  56: (data) => {
+    const progress = data.progress as unknown as Record<string, unknown> | undefined;
+    if (progress) {
+      for (const key of ['emberglass', 'abyssalCinder', 'solarSlag', 'heartOfTheInferno']) {
+        const amount = progress[key];
+        progress[key] = typeof amount === 'number' && Number.isFinite(amount) ? Math.max(0, Math.floor(amount)) : 0;
+      }
+    }
+    const turn = data.turn as unknown as Record<string, unknown> | undefined;
+    if (turn) {
+      for (const key of ['limitlessInfernoStacks', 'intensityInfernoGainedThisTurn', 'intensityInfernoSpentThisTurn']) {
+        const amount = turn[key];
+        turn[key] = typeof amount === 'number' && Number.isFinite(amount) ? Math.max(0, Math.floor(amount)) : 0;
+      }
+      const multiplier = turn['intensityNextGainMultiplier'];
+      if (typeof multiplier !== 'number' || !Number.isFinite(multiplier) || multiplier < 1) {
+        turn['intensityNextGainMultiplier'] = 1;
+      }
+    }
+    return data;
+  },
 };
 
 function applyMigrations(version: number, data: Partial<GameState>): GameState {
@@ -1177,13 +1200,14 @@ export class SaveManager {
   }
 
   save(): void {
-    const state = this.getState();
+    const state = getPersistentGameState(this.getState());
     const savedAt = Date.now();
     const payload: GameState = { ...state, lastSavedAt: savedAt };
     // saveTampered is an in-memory UI flag, not part of persisted state.
     delete (payload as { saveTampered?: boolean }).saveTampered;
     // Transient toast queue is also UI-only.
     delete (payload as { toasts?: unknown }).toasts;
+    delete (payload as { debugMode?: boolean }).debugMode;
     const envelope = encodeEnvelope(CURRENT_VERSION, savedAt, payload);
     this.storage.write(envelope);
     this.onSaved?.(savedAt);

@@ -4,6 +4,7 @@ import { CardRegistry } from '@/cards/CardRegistry';
 import { getLiveCardFaceBackgroundStyle, getLiveCardShimmerClassName } from '@/ui/cardBackgrounds';
 import { uiTypography } from '@/ui/theme';
 import { toOrbitSpace } from '@/systems/cards/AttackSequence';
+import { ATTACK_STAR_COLORS, getPremiumAttackTheme } from '@/ui/attackVisuals';
 
 const AMBIENT_STARS = Array.from({ length: 90 }, (_, index) => ({
   id: index,
@@ -29,6 +30,8 @@ export default function AttackSequenceOverlay() {
 
   const card = useMemo(() => sequence ? CardRegistry.get(sequence.cardDefinitionId) : undefined, [sequence?.cardDefinitionId]);
   if (!sequence) return null;
+  const premiumTheme = getPremiumAttackTheme(card);
+  const starColors = premiumTheme ? ATTACK_STAR_COLORS[premiumTheme] : null;
 
   const bridge = sequence.kind === 'bridge';
   const active = sequence.phase === 'active';
@@ -48,7 +51,7 @@ export default function AttackSequenceOverlay() {
       position: 'fixed', inset: 0, zIndex: 940, overflow: 'hidden', pointerEvents: 'auto', userSelect: 'none',
       background: bridge ? '#f8f7f2' : '#000',
       animation: bridge ? 'attackSequenceBridgeIn 180ms ease-out both' : 'attackSequenceFadeBlack 900ms ease-out both',
-    }} onPointerMove={handlePointerMove} className={`attack-sequence-overlay attack-sequence-overlay-${sequence.kind}`}>
+    }} onPointerMove={handlePointerMove} className={`attack-sequence-overlay attack-sequence-overlay-${sequence.kind}${premiumTheme ? ` attack-sequence-theme-${premiumTheme}` : ''}`}>
       {(sequence.phase !== 'priming' || bridge) && (
         <div className={`attack-sequence-field attack-sequence-field-${sequence.kind}${bridge ? ' attack-sequence-field-inverted' : ''}`}>
           <div className="attack-sequence-nebula" />
@@ -56,11 +59,16 @@ export default function AttackSequenceOverlay() {
           <div className="attack-sequence-orbit attack-sequence-orbit-b" />
           <div className="attack-sequence-signature" aria-hidden="true">✦</div>
           <div className="attack-sequence-energy-bands" aria-hidden="true" />
+          {premiumTheme === 'transcendent' && (
+            <div className="attack-sequence-wisps" aria-hidden="true">
+              {[0, 1, 2, 3].map(index => <i key={index} style={{ animationDelay: `${-index * 1.7}s`, rotate: `${index * 90}deg` }} />)}
+            </div>
+          )}
           {AMBIENT_STARS.map(star => (
             <i
               key={star.id}
               className={`shatter-ambient-star shatter-ambient-star-depth-${star.id % 3}`}
-              style={{ left: `${star.x}%`, top: `${star.y}%`, width: star.size, height: star.size, animationDelay: `${star.delay}s`, animationDuration: `${1.8 + (star.id % 7) * 0.35}s` }}
+              style={{ left: `${star.x}%`, top: `${star.y}%`, width: star.size, height: star.size, animationDelay: `${star.delay}s`, animationDuration: `${1.8 + (star.id % 7) * 0.35}s`, ...(starColors ? { color: starColors[star.id % starColors.length], background: starColors[star.id % starColors.length] } : {}) }}
             />
           ))}
         </div>
@@ -81,7 +89,7 @@ export default function AttackSequenceOverlay() {
           key={star.id}
           aria-hidden="true"
           className={bridge ? 'attack-sequence-star-guide attack-sequence-star-guide-bridge' : 'attack-sequence-star-guide'}
-          style={{ left: `${star.x}%`, top: `${star.y}%`, opacity: 0.28 + index * 0.06 }}
+          style={{ left: `${star.x}%`, top: `${star.y}%`, opacity: 0.28 + index * 0.06, ...(starColors ? { color: starColors[index % starColors.length] } : {}) }}
         >{bridge ? index + 1 : '·'}</i>
       ))}
       {active && <div className={`attack-sequence-orbit-target${bridge ? ' attack-sequence-orbit-target-bridge' : ''}`} aria-hidden="true"><span>✦</span></div>}

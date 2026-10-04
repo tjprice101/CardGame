@@ -170,6 +170,7 @@ export default function GardenResultModal() {
                         <img
                           src={rewardIconUrl(rewardDefinition.artAssetKey)}
                           alt={rewardLabel}
+                          onError={event => { event.currentTarget.style.visibility = 'hidden'; }}
                           width={40}
                           height={40}
                           style={{

@@ -42,7 +42,7 @@ export default function CollectionCardTile({
 
   return (
     <div
-      className={className}
+      className={`collection-card-tile${className ? ` ${className}` : ''}`}
       onClick={onClick}
       title={title}
       style={{

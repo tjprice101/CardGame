@@ -20,6 +20,7 @@ import './CollectionViewer.css';
 import VirtualizedList from '@/ui/components/VirtualizedList';
 import { getEverCollectionCount, getEverHoloCount, getEverInfiniteCount } from '@/systems/progression/ownershipHistory';
 import CollectionCardDetail from './CollectionCardDetail';
+import { getCardSetId, type CardSetId } from '@/data/elements';
 
 const RARITY_COLORS: Record<string, string> = {
   Common: '#888', Rare: '#5b9bd5', Epic: '#9b59b6', Legendary: '#f39c12', Eternal: '#ff6b6b', Infinite: '#e8e8f0', Enigmatic: '#b76cff', Transcendent: '#f2b24f',
@@ -29,11 +30,8 @@ const RARITY_ORDER: Record<string, number> = {
   Common: 0, Rare: 1, Epic: 2, Legendary: 3, Enigmatic: 4, Transcendent: 5, Eternal: 6, Infinite: 7,
 };
 
-function getCardSet(definitionId: string): 'Neutrality' | 'Causality' {
-  // Only Causality cards are explicitly namespaced; every other card (including
-  // Eternal/Infinite/Transcendent/Enigma ids that don't literally contain
-  // "neutral", e.g. `btei-axiom-of-oblivion`) belongs to Neutrality.
-  return definitionId.includes('causality') ? 'Causality' : 'Neutrality';
+function getCardSet(definitionId: string): CardSetId {
+  return getCardSetId(definitionId) ?? 'Neutrality';
 }
 
 const PACK_BY_ID = new Map(PACK_DEFINITIONS.map(pack => [pack.id, pack] as const));
@@ -179,7 +177,7 @@ export default function CollectionViewer({ onClose }: Props) {
   }), [categoryOrderRank, progress, recentlyAcquired, registryCards, sortMode]);
 
   const elements = useMemo(() => {
-    const availableCategories = new Set(['Neutrality', 'Causality']);
+    const availableCategories = new Set(['Neutrality', 'Causality', 'Intensity']);
     const orderedCategories = STORE_COLLECTION_SET_ORDER.filter(category => availableCategories.has(category));
     const orderedCategorySet = new Set(orderedCategories);
     const remainingCategories = Array.from(availableCategories)

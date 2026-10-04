@@ -36,6 +36,18 @@ Light cards have:
 - Ain Attack: reads stacks without consuming them.
 - Soph Attack: may consume stacks, with payout computed from the pre-spend pool.
 
+## Limitless Inferno
+
+Intensity has a separate uncapped turn resource, `turn.limitlessInfernoStacks`. `IntensityRuntime.ts` centralizes generation, next-positive-gain amplification, attack-pool selection, and reset. Level 3+ Intensity **Light Soph attacks** pay Inferno instead of Light Stacks; this includes qualifying Eternal and Infinite Light cards. Lower-level Light Soph attacks retain Light costs. Dark activations still pay their authored Light costs, and ASA summons/attacks never spend Inferno.
+
+Intensity materialized abilities are the intentional exception: they may spend or reshape Inferno. Spending increments `intensityInfernoSpentThisTurn` for rekindling but does not emit a Light Stack spend event.
+
+Card effects bank embers for subsequent Intensity hand plays, cycle cards to the bottom of the deck, recall the oldest matching discards, kindle from board composition or distinct discard identities, forge charge, amplify the next positive gain, react to generated/spent history, and temper the next Inferno Soph attack. Tempering is added once when the attack starts; the displayed cost is never added to payout. All card effects mutate tentative state, preserving atomic failure behavior.
+
+Inferno, generated/spent history, banked embers, gain amplification, and tempered attack bonus reset at turn end and with fresh encounter/turn state. Loading a valid active turn preserves them; migration normalizes missing or invalid values. Shatter remains within the same turn, so it does not discard Inferno preparation.
+
+The new Intensity achievement records are separate, permanent progress fields. Resolved card/ability effects add only the positive delta in turn-local generation/spending; Level 3+ Soph attack initiation records its actual Inferno cost once. `intensityBestTurnInferno` records the largest generated total in one turn, not the current pool after spending. These lifetime records survive boss snapshot restoration and exclude trial decks.
+
 Ain Soph Aur cards have:
 
 - On-summon stack gain: every successful summon grants +1 Limitless Light Stack.
@@ -60,8 +72,10 @@ Attack definitions declare their reads in `CardScalingExpr`, currently Limitless
 Shatter the Infinite Light is the full-board finisher. It becomes available only when all four front slots contain Ain Soph Aur and all four support slots contain Light/Dark cards already flipped to their active Ain side.
 
 - Priming fades the screen fully to black for 1.1 seconds before attack visuals begin.
-- The active phase lasts 10 seconds. Each clicked glowing star adds one Limitless Infinity stack.
-- Resolution grants `stacks * 1,000` base Divine Light through the normal Collection Power-scaled grant path.
+- At activation, snapshot the sum of every on-board Light card's current Soph attack and every on-board ASA's Bridge attack, using the same base-payout helper as real attacks. Include printed stack/ASA/Collection Power scaling and current Intensity tempered bonuses; Dark utilities contribute no attack value. Cooldowns and affordability do not exclude cards, and no attack costs are consumed.
+- The active phase lasts 10 seconds. Smooth circles build continuous orbit power; completed revolutions also update the displayed Limitless Infinity counter.
+- Resolution grants `snapshot * (1 + orbitPower)` through the central grant path, which applies Collection Power exactly once and preserves the normal +1% per front-row ASA bonus. Zero orbit still pays the full board total. Legacy click-stack counts do not add another payout multiplier.
+- The snapshot remains fixed throughout the attack and across save reloads; old active saves without it reconstruct the value from their saved board.
 - Board actions, cooldown ticks, and encounter timers pause for the whole sequence.
 - Resolution returns front-row Ain Soph Aur to the Extra Deck, returns back-row and discarded cards to the draw pile, preserves the hand, and clears Limitless Light Stacks and board effects.
 - The current turn remains active and no mulligan begins.

@@ -11,6 +11,7 @@ import AbilityMaterialization from './AbilityMaterialization';
 import { getSpotlightPackId, getSpotlightPackCost, SPOTLIGHT_DISCOUNT } from '@/systems/progression/spotlightPack';
 import { getDailyDealPackId, getDailyDealCost, DAILY_DEAL_DISCOUNT } from '@/systems/progression/dailyDeal';
 import { getLiveCardFaceBackgroundStyle, getLiveCardShimmerClassName, getCardFaceMetrics, getCardNameRibbonStyle } from '@/ui/cardBackgrounds';
+import { INTENSITY_PACK_BANNER_FILE } from '@/data/cards/intensityArt';
 
 const RARITY_COLORS: Record<string, string> = {
   Common: '#b8bcc6', Rare: '#7cbcff', Epic: '#c58bff', Legendary: '#ffd38a', Eternal: '#ff9f9f', Infinite: '#f2f4ff',
@@ -20,6 +21,7 @@ const BOX_LEGENDARY_PITY_MISS_THRESHOLD = 4;
 
 const PACK_ART_BASE = `${import.meta.env.BASE_URL}assets/pack-art`;
 const PACK_ART: Record<string, string> = {
+  'pack-intensity': `${PACK_ART_BASE}/${INTENSITY_PACK_BANNER_FILE}`,
   'pack-neutrality': `${PACK_ART_BASE}/NeutralityPackArt.png`,
   'pack-causality': `${import.meta.env.BASE_URL}assets/event-art/causality/Causality BANNER.png`,
 };

@@ -68,6 +68,11 @@ const BOSS_ART_FILES: Record<string, { folder: string; file: string }> = {
   boss_causality_black_sun_scribe: { folder: 'causality', file: 'Scribe of the Black Sun Boss Art.png' },
   boss_causality_elsewhen_judge: { folder: 'causality', file: 'The Elsewhen Judge Boss Art.png' },
   boss_causality_pearl_core: { folder: 'causality', file: 'The Pearlescent Core Boss Art.png' },
+  boss_intensity_drowned_cathedral: { folder: 'intensity', file: 'The Drowned Cathedral Boss Art.png' },
+  boss_intensity_divided_crown: { folder: 'intensity', file: 'The Divided Crown Boss Art.png' },
+  boss_intensity_unbearable_noon: { folder: 'intensity', file: 'The Sovereign of Unbearable Noon Boss Art.png' },
+  boss_intensity_distance_bell: { folder: 'intensity', file: 'The Bell That Buries Distance Boss Art.png' },
+  boss_intensity_last_dawn: { folder: 'intensity', file: 'The Arbiter After the Last Dawn Boss Art.png' },
 };
 
 function getBossArtUrl(keyArt: string): string | null {
@@ -79,14 +84,15 @@ function getBossArtUrl(keyArt: string): string | null {
 }
 
 function mapPackToBossCategory(packId: string, packElement: string): BossCategory {
+  if (packId === 'pack-intensity' || packElement === 'Intensity') return 'Intensity';
   return packId === 'pack-causality' || packElement === 'Causality' ? 'Causality' : 'Neutrality';
 }
 
 const PACK_BY_ID = new Map(PACK_DEFINITIONS.map(pack => [pack.id, pack] as const));
-const STORE_BOSS_TAB_ORDER: BossCategory[] = STORE_PACK_ORDER.map(packId => {
+const STORE_BOSS_TAB_ORDER: BossCategory[] = [...new Set<BossCategory>([...STORE_PACK_ORDER.map(packId => {
   const pack = PACK_BY_ID.get(packId);
   return pack ? mapPackToBossCategory(pack.id, pack.setId ?? 'Neutrality') : 'Neutrality';
-});
+}), 'Intensity'])];
 
 interface Props {
   onClose: () => void;

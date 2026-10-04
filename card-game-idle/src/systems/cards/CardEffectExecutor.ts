@@ -8,6 +8,8 @@ import { getUnmetCardRequirement } from './PlayRequirements';
 
 import { getActiveCoopRng as _getActiveCoopRng } from '@/state/coopSyncStore';
 import { TurnSystem } from './TurnSystem';
+import { gainInferno, getInferno } from './IntensityRuntime';
+import { getCardSetId } from '@/data/elements';
 
 export interface ExecutionResult {
   deck: DeckState;
@@ -31,8 +33,8 @@ function cloneBoard(board: BoardState): BoardState {
   return {
     ...board,
     activeBoardEffects: [...board.activeBoardEffects],
-    frontSlots: board.frontSlots.map(s => s ? { ...s } : null) as BoardState['frontSlots'],
-    backSlots: board.backSlots.map(s => s ? { ...s } : null) as BoardState['backSlots'],
+    frontSlots: board.frontSlots.map(s => s ? { ...s, attackCooldowns: { ...s.attackCooldowns } } : null) as BoardState['frontSlots'],
+    backSlots: board.backSlots.map(s => s ? { ...s, attackCooldowns: { ...s.attackCooldowns } } : null) as BoardState['backSlots'],
   };
 }
 
@@ -82,6 +84,140 @@ export class CardEffectExecutor {
 
     function processEffect(effect: CardEffect): boolean {
       switch (effect.type) {
+        case 'neutrality_stack_resonance':
+          divineLightBonus += Math.min(effect.cap, mutableTurn.limitlessLightStacks * effect.perStack);
+          break;
+        case 'neutrality_abyss_reclaim': {
+          const abyss = mutableDeck.lightBoundAbyss ?? [];
+          const recovered = abyss.filter(card => {
+            const definition = CardRegistry.get(card.definitionId);
+            return getCardSetId(card.definitionId) === 'Neutrality' && (definition?.type === 'Light' || definition?.type === 'Dark');
+          }).slice(0, effect.count);
+          const ids = new Set(recovered.map(card => card.instanceId));
+          mutableDeck = { ...mutableDeck, hand: [...mutableDeck.hand, ...recovered], lightBoundAbyss: abyss.filter(card => !ids.has(card.instanceId)) };
+          break;
+        }
+        case 'neutrality_charge_release': {
+          let released = 0;
+          for (const card of mutableBoard.backSlots) {
+            if (!card || card.side !== 'soph' || getCardSetId(card.definitionId) !== 'Neutrality') continue;
+            const amount = Math.min(card.limitlessCharge, effect.cap - released);
+            card.limitlessCharge -= amount;
+            released += amount;
+          }
+          mutableTurn.limitlessLightStacks += released;
+          divineLightBonus += released * effect.divineLightPerCharge;
+          break;
+        }
+        case 'neutrality_charge_grant':
+          for (const card of mutableBoard.backSlots) {
+            if (card?.side === 'soph' && getCardSetId(card.definitionId) === 'Neutrality') card.limitlessCharge += effect.value;
+          }
+          break;
+        case 'neutrality_cooldown_reduction': {
+          let accelerated = 0;
+          for (const card of [...mutableBoard.backSlots, ...mutableBoard.frontSlots]) {
+            if (!card || getCardSetId(card.definitionId) !== 'Neutrality') continue;
+            let changed = false;
+            for (const id of Object.keys(card.attackCooldowns)) {
+              const before = card.attackCooldowns[id];
+              card.attackCooldowns[id] = Math.max(0, before - effect.value);
+              changed ||= card.attackCooldowns[id] < before;
+            }
+            if (changed) accelerated += 1;
+          }
+          mutableTurn.limitlessLightStacks += Math.min(effect.cap, accelerated * effect.stackPerCard);
+          break;
+        }
+        case 'neutrality_equilibrium': {
+          const supports = mutableBoard.backSlots.filter(card => card && getCardSetId(card.definitionId) === 'Neutrality');
+          const pairs = Math.min(supports.filter(card => card?.type === 'Light').length, supports.filter(card => card?.type === 'Dark').length);
+          mutableTurn.limitlessLightStacks += pairs * effect.stacksPerPair;
+          divineLightBonus += pairs * effect.divineLightPerPair;
+          break;
+        }
+        case 'inferno_gain':
+          gainInferno(mutableTurn, effect.value);
+          break;
+        case 'inferno_board_kindle': {
+          const cards = [...mutableBoard.backSlots, ...mutableBoard.frontSlots]
+            .filter(card => card && (effect.side === 'any' || card.side === effect.side));
+          gainInferno(mutableTurn, cards.length * effect.perCard);
+          break;
+        }
+        case 'inferno_embers':
+          mutableTurn.intensityBankedEmbers = (mutableTurn.intensityBankedEmbers ?? 0) + effect.value;
+          break;
+        case 'inferno_charge_forge': {
+          let charged = 0;
+          for (const card of mutableBoard.backSlots) {
+            if (card?.side !== 'soph') continue;
+            card.limitlessCharge += effect.charge;
+            charged += 1;
+          }
+          gainInferno(mutableTurn, charged * effect.perCharged);
+          break;
+        }
+        case 'inferno_ash_cycle': {
+          const cards = mutableDeck.hand.filter(card => card.instanceId !== deckCard.instanceId).slice(0, effect.count);
+          const ids = new Set(cards.map(card => card.instanceId));
+          mutableDeck = {
+            ...mutableDeck,
+            hand: mutableDeck.hand.filter(card => !ids.has(card.instanceId)),
+            drawPile: [...mutableDeck.drawPile, ...cards],
+          };
+          mutableDeck = TurnSystem.drawCards(mutableDeck, cards.length);
+          gainInferno(mutableTurn, cards.length * effect.perCard);
+          break;
+        }
+        case 'inferno_recall': {
+          if (getInferno(mutableTurn) < effect.minInferno) break;
+          const recalled = mutableDeck.discardPile.filter(card => {
+            const definition = CardRegistry.get(card.definitionId);
+            return card.definitionId.includes('intensity') && (definition?.type === 'Light' || definition?.type === 'Dark');
+          }).slice(0, effect.count);
+          const ids = new Set(recalled.map(card => card.instanceId));
+          mutableDeck = {
+            ...mutableDeck,
+            hand: [...mutableDeck.hand, ...recalled],
+            discardPile: mutableDeck.discardPile.filter(card => !ids.has(card.instanceId)),
+          };
+          gainInferno(mutableTurn, recalled.length * effect.perCard);
+          break;
+        }
+        case 'inferno_threshold_draw':
+          if (getInferno(mutableTurn) >= effect.threshold) mutableDeck = TurnSystem.drawCards(mutableDeck, effect.draw);
+          else gainInferno(mutableTurn, effect.belowGain);
+          break;
+        case 'inferno_rekindle':
+          gainInferno(mutableTurn, Math.max(effect.minimum, Math.floor((mutableTurn.intensityInfernoSpentThisTurn ?? 0) * effect.fraction)));
+          break;
+        case 'inferno_next_gain':
+          gainInferno(mutableTurn, effect.kindle);
+          mutableTurn.intensityNextGainMultiplier = Math.max(mutableTurn.intensityNextGainMultiplier ?? 1, effect.multiplier);
+          break;
+        case 'inferno_pressure':
+          gainInferno(mutableTurn, Math.min(effect.cap, Math.floor((mutableTurn.intensityInfernoGainedThisTurn ?? 0) / effect.divisor) * effect.perStep));
+          break;
+        case 'inferno_temper':
+          mutableTurn.intensityAttackBonus = (mutableTurn.intensityAttackBonus ?? 0)
+            + Math.min(effect.cap, getInferno(mutableTurn) * effect.perStack);
+          break;
+        case 'inferno_balance': {
+          const light = mutableBoard.backSlots.filter(card => card?.type === 'Light').length;
+          const dark = mutableBoard.backSlots.filter(card => card?.type === 'Dark').length;
+          gainInferno(mutableTurn, Math.min(light, dark) * effect.perPair + Math.abs(light - dark) * effect.unmatchedGain);
+          break;
+        }
+        case 'inferno_eruption':
+          if (getInferno(mutableTurn) >= effect.threshold) divineLightBonus += effect.divineLight;
+          gainInferno(mutableTurn, effect.kindle);
+          break;
+        case 'inferno_memory': {
+          const ids = new Set(mutableDeck.discardPile.filter(card => card.definitionId.includes('intensity')).map(card => card.definitionId));
+          gainInferno(mutableTurn, Math.min(effect.cap, ids.size * effect.perDistinct));
+          break;
+        }
         // �E�E�E��E�E�E��E�E�E��E�E�E� Oblivion effects �E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E�
         case 'divine_light_flat': {
           let val = effect.value * multiplier;
@@ -118,6 +254,31 @@ export class CardEffectExecutor {
         case 'light_stacks_flat':
           mutableTurn.limitlessLightStacks = (mutableTurn.limitlessLightStacks ?? 0) + Math.max(0, effect.value);
           break;
+
+        // --- Making my my own effects! Yay!! ---
+        case 'consume_limitless_light_stacks':
+          if (mutableTurn.limitlessLightStacks < effect.value) {
+            return false;
+          }
+          mutableTurn.limitlessLightStacks -= effect.value;
+          break;
+
+        case 'conditional': {
+          const met = CardEffectExecutor.evaluateCondition(
+            effect.condition,
+            mutableTurn,
+            mutableBoard,
+          );
+
+          const branch = met ? effect.then : effect.else ?? [];
+          for (const subEffect of branch) {
+            if (!processEffect(subEffect)) {
+              return false;
+            }
+          }
+
+          break;
+        }
 
         // ──────── Legacy score/power effects (Light compat → map to Oblivion) ────────
         case 'score_flat':
@@ -339,17 +500,6 @@ export class CardEffectExecutor {
           break;
         }
 
-        case 'conditional': {
-          let met = false;
-          met = CardEffectExecutor.evaluateCondition(effect.condition, mutableTurn, mutableBoard);
-          if (met) {
-            for (const subEffect of effect.then) {
-              const ok = processEffect(subEffect);
-              if (!ok) return false;
-            }
-          }
-          break;
-        }
         default: {
           const unsupportedEffect: never = effect;
           return unsupportedEffect;

@@ -146,12 +146,12 @@ export const FORGE_STREAK_MILESTONES = [
 ] as const;
 
 export const FORGE_WHEEL_PRIZES = [
-  { id: 'aberrated-50', kind: 'aberrated_shards', amount: 50, weight: 20, label: '+50 Aberrated Shards', color: '#287c78' },
-  { id: 'card-light-3', kind: 'card_light_all', amount: 3, weight: 14, label: '+3 Card-light to owned cards', color: '#a88536' },
-  { id: 'aberrated-100', kind: 'aberrated_shards', amount: 100, weight: 16, label: '+100 Aberrated Shards', color: '#1f5a5a' },
-  { id: 'aberrated-150', kind: 'aberrated_shards', amount: 150, weight: 10, label: '+150 Aberrated Shards', color: '#326f70' },
-  { id: 'transcendence-shard-1', kind: 'shards_of_transcendence', amount: 1, weight: 8, label: '+1 Shard of Transcendence', color: '#62448e' },
-  { id: 'aberrated-500', kind: 'aberrated_shards', amount: 500, weight: 5, label: '+500 Aberrated Shards', color: '#275f68' },
+  { id: 'aberrated-50', kind: 'aberrated_shards', amount: 50, weight: 20, label: '+50 Aberrated Shards', color: '#7044a8' },
+  { id: 'card-light-3', kind: 'card_light_all', amount: 3, weight: 14, label: '+3 Card-light to owned cards', color: '#1679aa' },
+  { id: 'aberrated-100', kind: 'aberrated_shards', amount: 100, weight: 16, label: '+100 Aberrated Shards', color: '#7044a8' },
+  { id: 'aberrated-150', kind: 'aberrated_shards', amount: 150, weight: 10, label: '+150 Aberrated Shards', color: '#7044a8' },
+  { id: 'transcendence-shard-1', kind: 'shards_of_transcendence', amount: 1, weight: 8, label: '+1 Shard of Transcendence', color: '#bd2869' },
+  { id: 'aberrated-500', kind: 'aberrated_shards', amount: 500, weight: 5, label: '+500 Aberrated Shards', color: '#7044a8' },
   { id: 'divine-light-1725', kind: 'divine_light', amount: 1_725, weight: 9, label: '+1,725 Divine Light', color: '#b8862c' },
 ] as const;
 

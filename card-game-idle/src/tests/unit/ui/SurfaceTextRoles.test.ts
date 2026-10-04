@@ -139,18 +139,14 @@ describe.each(['light', 'dark'] as const)('surface text roles in %s mode', mode 
     expect(sidebar.style.background).toBe('var(--profile-surface)');
   });
 
-  it('uses neutral challenge columns with player-colored outlines and glows', async () => {
+  it('uses neutral challenge ledger surfaces with player-colored decoration', async () => {
     await act(async () => root.render(createElement(QuestsModal, { onClose: noop })));
-    const columns = Array.from(container.querySelectorAll<HTMLElement>('section')).filter(element =>
-      element.querySelector('h2')?.textContent?.includes('Challenges'),
-    );
-    expect(columns).toHaveLength(2);
-    const expected = document.createElement('div');
-    expected.style.color = warmTheme.text;
-    for (const column of columns) {
-      expect(column.style.background).toBe(warmTheme.surface);
-      expect(column.style.boxShadow).toBe(warmTheme.glow);
-      expect(column.querySelector('h2')?.style.color).toBe(expected.style.color);
-    }
+    const ledger = container.querySelector<HTMLElement>('.trials-ledger')!;
+    expect(ledger.style.getPropertyValue('--trials-bg')).toBe(warmTheme.appBackground);
+    expect(ledger.style.getPropertyValue('--trials-surface')).toBe(warmTheme.surface);
+    expect(ledger.style.getPropertyValue('--trials-text')).toBe(warmTheme.text);
+    expect(ledger.style.getPropertyValue('--trials-accent')).toBe(warmTheme.accent);
+    expect(container.querySelectorAll('.trials-rotation-summary')).toHaveLength(2);
+    expect(container.querySelector('h2')?.textContent).toBe('Daily Challenges');
   });
 });

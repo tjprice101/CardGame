@@ -1,8 +1,30 @@
 # Set-Specific Progression
 
-Garden of Cards is set-filtered. Valley of Null, Nullified Lattice, Null-seared Light, and Nullified Oblivion-matter belong to Neutrality. Rift of Causality, Seed of Causality, Causal Bloom, Shattered Causal Transcript, and Heart of Causality belong to Causality. These material economies are not interchangeable.
+Garden of Cards is set-filtered. Valley of Null, Nullified Lattice, Null-seared Light, and Nullified Oblivion-matter belong to Neutrality. Rift of Causality, Seed of Causality, Causal Bloom, Shattered Causal Transcript, and Heart of Causality belong to Causality. Crater of Flames belongs to Intensity and grants Emberglass, Abyssal Cinder, Solar Slag, and Heart of the Inferno. These material economies are not interchangeable.
 
-Ability Materialization contains Neutrality, Causality, and Transcendent filters. Decks still equip only three abilities total. Neutrality has seven abilities with Eternal and Infinite ownership gates. Causality has six gate-defined abilities: Author the First Cause and Causal Cartography are Foundational; Pearlescent Mandate and Archive of Elsewhen are Eternal; Final Cause and Infinite Manuscript are Infinite. The four Transcendent abilities are First Dawn Accord, Axiom of Acceleration, Vault of Unwritten Futures, and Confluence of All Origins; each costs 8,000,000 Divine Light plus 30 Shards of Transcendence to purchase.
+Ability Materialization contains Neutrality, Causality, Intensity, and Transcendent filters. Decks still equip only three abilities total. Neutrality has seven abilities with Eternal and Infinite ownership gates. Causality has six gate-defined abilities: Author the First Cause and Causal Cartography are Foundational; Pearlescent Mandate and Archive of Elsewhen are Eternal; Final Cause and Infinite Manuscript are Infinite. The four Transcendent abilities are First Dawn Accord, Axiom of Acceleration, Vault of Unwritten Futures, and Confluence of All Origins; each costs 8,000,000 Divine Light plus 30 Shards of Transcendence to purchase.
+
+## Intensity Expeditions And Abilities
+
+Intensity's five Eternal bosses each award one distinct Eternal card. Their first HP equals the middle Neutrality boss, and their final HP equals the final Neutrality boss: this is a midrange alternative, not a Causality endgame leap. Progression still orders Light/Dark rewards before Ain Soph Aur rewards, with each boss requiring the preceding clear in that set.
+
+Crater of Flames has four encounters at 30,000 / 40,000 / 50,000 / 60,000 HP. Like other expeditions, each nonfinal encounter grants three current materials and one next material; the final encounter grants four of its material. The corresponding state keys are `emberglass`, `abyssalCinder`, `solarSlag`, and `heartOfTheInferno`.
+
+Limitless Inferno is uncapped and turn-local. Card effects do not spend it except designated Light Soph attacks; materialized Intensity abilities are explicit exceptions. Foundational abilities require every registered base Intensity card; Eternal and Infinite abilities require any owned Intensity card of the corresponding rarity. Purchase costs are 12 Emberglass + 2 Abyssal Cinder (Foundational), 10 Abyssal Cinder + 4 Solar Slag (Eternal), or 12 Solar Slag + 6 Heart of the Inferno (Infinite).
+
+| Tier | Ability | Activation | Cooldown |
+| --- | --- | --- | --- |
+| Foundational | Kindle the Depths | 3 Light stacks → 4 Inferno | 35s |
+| Foundational | Bank the Flame | 6 Inferno → 12 Light stacks | 55s |
+| Foundational | Temper the Hand | 4 Inferno → draw up to 2 cards; requires a nonempty draw pile | 60s |
+| Eternal | Cinder Recall | 8 Inferno → recover the newest 2 eligible Intensity Light/Dark discard cards, or 1 if only 1 exists | 120s |
+| Eternal | White-hot Reprieve | 10 Inferno → reduce Intensity cooldowns by 2; recover 1 Inferno per accelerated card, up to 4 | 120s |
+| Infinite | Unquenched Reserve | 12 Inferno → double the next positive Inferno gain this turn; cannot stack | 180s |
+| Infinite | Crucible Without End | Consume all Inferno, minimum 20 → 500 base Divine Light per stack; face-down Intensity Soph cards gain 1 charge per 10 spent, up to 5 | 180s |
+
+`src/systems/abilities/intensityAbilities.ts` exports `activateIntensityAbility(state, abilityId, now)`, `getIntensityAbilityReadiness(state, abilityId, now)`, and `isIntensityAbility(id)`. Its `gainIntensityInferno(turn, amount)` export aliases `gainInferno` from `src/systems/cards/IntensityRuntime.ts`; there is one shared gain implementation. The activation helper checks busy/cooldown/resource/target conditions before mutation, stamps cooldowns on success, and returns `{ success: true, baseDivineLight }` or `{ success: false, reason }`. The readiness helper runs those same prechecks without mutation so HUD buttons match runtime availability. The store supplies ownership/loadout gates and sends returned Divine Light through its normal grant path. All positive card/ability Inferno gains must use the shared gain helper so Unquenched Reserve is consumed exactly once. Failed/zero/nonfinite gains do not consume it. Turn-end resets Inferno, its gained/spent counters, and the next-gain multiplier; ability cooldown deadlines remain intact.
+
+Dedicated boss, dungeon, material, and ability art is pending. Missing Intensity art uses neutral surfaces/hidden image slots, never another set's image; `PENDING_ABILITY_ART_KEYS` records the seven unsupplied icons separately from supplied-asset audits.
 
 # Progression And Challenges
 
@@ -95,22 +117,22 @@ Achievements and unlock gates should distinguish those rarity sources instead of
 
 Achievement definitions derive from `src/data/profile/titleBadges.ts`; unlock/claim views and currency rewards belong to `src/systems/progression/achievements.ts`. The presentation taxonomy in `achievementCategories.ts` is separate from the reward group. Never change reward groups, IDs, or payouts merely to reorganize the menu.
 
-The 19 subcategories are:
+The 20 subcategories are:
 
 | Section | Subcategories |
 | --- | --- |
 | Gameplay | Card Play; Resources; Daily Devotion |
 | Collection | Collection Growth; Holographic Cards; Infinity Crafted; Eternal Cards; Enigmatic Cards; Set Completion |
-| Battles | Wake Milestones; Boss & Category Clears; Null Raids |
-| Progression | Forge & Transcendence; Causality; Garden Expeditions; Ability Materialization |
+| Battles | Wake Milestones; Boss & Category Clears; Null Raids; Battleground |
+| Progression | Forge & Transcendence; Causality; Intensity; Garden Expeditions; Ability Materialization |
 | Social | Friends & Co-op |
 | Cosmetics | Custom Backgrounds |
 
 Null Raid achievements represent retained legacy progress, not a newly enabled mode. Every milestone is explicitly classified; unknown assignments fail visibly instead of disappearing. All Achievements is sectioned by the same categories. Search covers titles, requirements, reward names, and categories; status filters are All statuses, Ready to claim, Locked, and Claimed. Sidebar counts are total unlock counts, not filtered counts. Individual and Claim All actions use existing store claims.
 
-`src/data/profile/customMainMenuBackgrounds.ts` is the source of truth for seven permanent Transcendent cosmetic rewards. Their currency rewards are zero; existing noncosmetic Forge milestone payouts are unchanged.
+`src/data/profile/customMainMenuBackgrounds.ts` is the source of truth for seven permanent Transcendent rewards and three Intensity completion splashes. Their currency rewards are zero; existing noncosmetic milestone payouts are unchanged.
 
-`crownBackgroundRewards.ts` adds four dedicated achievements for Neutrality Eternal Crown Splash, Neutrality Infinite Crown Splash, Causality Eternal Crown Splash, and Causality Infinite Crown Splash. Each uses its existing full-set theme gate (including lifetime ownership and persisted theme unlocks), retains `main-menu-bg-slot-{themeId}`, and awards a background/title without currency. Cosmetics > Custom Backgrounds therefore contains eleven achievements. The profile slots and imported overrides carry matching achievement IDs; earned achievements remain latched. Neutrality currently has no live Infinite definitions, so its empty-set gate stays locked unless the theme was already earned and persisted. This does not add playable Neutrality Infinite cards or recipes.
+`crownBackgroundRewards.ts` adds four achievements for Neutrality Eternal Crown Splash, Neutrality Infinite Crown Splash, Causality Eternal Crown Splash, and Causality Infinite Crown Splash. Each uses its existing full-set theme gate (including lifetime ownership and persisted theme unlocks), retains `main-menu-bg-slot-{themeId}`, and awards a background/title without currency. With three Intensity splashes, Cosmetics > Custom Backgrounds contains fourteen achievements. The profile slots and imported overrides carry matching achievement IDs; earned achievements remain latched. Neutrality Infinite Crown now requires all eight restored live Neutrality Infinites; historical theme unlocks remain valid.
 
 | Background | Requirement | Bundled PNG stem |
 | --- | --- | --- |
@@ -121,8 +143,11 @@ Null Raid achievements represent retained legacy progress, not a newly enabled m
 | The Velocity of Silence | Acquire Axiom of Acceleration | `forge-velocity-of-silence` |
 | Cathedral of Unwritten Tomorrows | Acquire Vault of Unwritten Futures | `forge-unwritten-tomorrows` |
 | Where Every Origin Breaks | Acquire Confluence of All Origins | `forge-origins-break` |
+| The First Unbroken Eruption | Own all 19 base Intensity cards | `intensity-base-completion-splash` |
+| The Five Who Command the Flame | Own all five Eternal Intensity cards | `intensity-eternal-completion-splash` |
+| The Inferno Without a Last Dawn | Own all five Infinite Intensity cards | `intensity-infinite-completion-splash` |
 
-All seven supplied PNGs are installed in `card-game-idle/src/assets/main-menu-backgrounds/`, not the repository root. Vite's eager asset glob bundles them for web and desktop. `mainMenuBackgrounds.ts` preserves canonical selection IDs, availability checks, and achievement gates; matching desktop imported art may override an image without bypassing the gate. Earned unlocks latch into existing `progress.achievementUnlocks`; claims remain in `achievementClaims`. No new save migration was needed.
+All seven Forge PNGs are installed in `card-game-idle/src/assets/main-menu-backgrounds/`, not the repository root. The three Intensity splash PNGs await artwork in the same folder. Vite's eager asset glob bundles supplied images for web and desktop. `mainMenuBackgrounds.ts` preserves canonical selection IDs, availability checks, and achievement gates; matching desktop imported art may override an image without bypassing the gate. Earned unlocks latch into `progress.achievementUnlocks`; claims remain in `achievementClaims`.
 
 Find the rewards in Achievements > Cosmetics > Custom Backgrounds; equip earned art in Player Information > Main Menu Background. Claiming is not required to equip an earned background. Duplicate copies cannot satisfy the four-distinct-card gate; acquiring an ability is separate from owning its associated card, equipping it, or activating it. Missing images honestly show Artwork pending, remain unequippable, and fall back to available unlocked art in the main menu. Do not substitute unrelated artwork into a missing reward slot.
 
@@ -130,9 +155,27 @@ Find the rewards in Achievements > Cosmetics > Custom Backgrounds; equip earned 
 
 `Midjourney Art/Custom Main Menu Backgrounds.md` is the seven installed rewards' production prompt guide. Its subject-first Splotched Ink format follows the established replacement/updated/Forge guides, with distressed white paper, black dry-brush forms, and controlled pink-to-scarlet flames. Each silhouette differs and leaves space for main-menu overlays.
 
-`Midjourney Art/Intensity Set Prompts.md` replaces the old Pyroabyss set prompt file as a **proposed art roster**, not a playable set. It has 29 concepts: Level 0/1/2/3/4/5 counts 4/4/3/3/2/3, five Eternal concepts, and five Infinity concepts. The Last Seam story combines white volcanic creation, black abyssal memory, and molten-gold bonds. All prompts use the shared Splotched Ink medium but their own white/black/gold palette; each Infinity concept derives from an Eternal counterpart and intentionally retains gold.
+`Midjourney Art/Intensity Set Prompts.md` replaces the old Pyroabyss set prompt file and documents the **live 29-card Intensity roster**: 19 base cards (Level 0/1/2/3/4/5 counts 4/4/3/3/2/3), five level-3 Eternal cards, and five level-4/5 Infinite cards. Intensity is registered in the card catalog and its own pack, Eternity's Wake category, Crater of Flames expedition, Ability Materialization, and Infinitude. Five bosses award its five Eternal cards; five Infinite recipes each consume two copies of their corresponding Eternal and the recipe's Intensity dungeon materials. Its art direction uses concise Chinese mythological ink manuscripts: white parchment, black splotches, molten obsidian, hot orange/red infernos, and white-hot accents, not yellow/gold fire. All 48 gameplay assets are installed: 29 faces, back, pack banner, five boss banners, dungeon cover, four material icons, and seven ability icons. All material icons retain their complete supplied backgrounds and pixels; earlier Intensity alpha cleanup has been reversed. Only the three splash and five portrait rewards await new images; the four optional encounter-scene prompts are not runtime requirements.
 
-Do not expose Intensity as a live pack, boss category, card registry entry, unlock, or crafting recipe until those systems are explicitly implemented and tested. "Infinity" is the art brief's tier label; the current runtime rarity remains "Infinite." Proposed filenames are not runtime IDs. Older Pyroabyss splash/boss art remains legacy reference, not proof of live Intensity content.
+Runtime rarity remains `Infinite`, even where older art briefs say "Infinity." Stable definition IDs are independent of human-readable art filenames. Missing assets do not block implemented gameplay and must not be disguised with another set's imagery. Older Pyroabyss splash/boss art remains legacy reference and is not used as Intensity's dedicated art.
+
+## Intensity Accomplishments And Portraits
+
+The three unlockable Intensity UI palettes (base completion, Eternal Crown, Infinite Crown) use deep crimson reds, hot orange accents, obsidian-black and white swatches. Their animated accents stay red/orange rather than adopting the generic gold Eternal or cyan Infinite tint. Light/Dark appearance still controls neutral reading surfaces; palette selection changes decorative colors, not splash artwork. Existing palette IDs and ownership-history unlock gates are unchanged.
+
+The dedicated Intensity category contains 15 milestones:
+
+- Card plays: 1, 100, and 1,000 Intensity cards.
+- Lifetime Inferno generated: 100 and 10,000; spent: 100 and 1,000.
+- Single-turn pressure: generate 50 Inferno, regardless of how much remains after spending.
+- Full Crater expeditions: 1 and 25; only the final encounter increments the counter.
+- Hold all four different Crater materials simultaneously.
+- Materialize one Intensity ability, all three foundational abilities, and all seven abilities.
+- Successfully activate Intensity abilities 100 times.
+
+Existing dynamic achievements still cover the category clear, every boss, every Infinite craft, and base-plus-Eternal set completion. Five bosses and five Infinite crafts now have distinct lore-specific title epithets. Five additional named boss-trophy achievements accompany five portrait definitions in `intensityProfileRewards.ts`; each requires only its matching boss's first clear. Until supplied, portraits use explicitly labeled sigils, not broken image URLs. Their PNGs belong in `card-game-idle/src/assets/profile-pictures/intensity/`. All eight new cosmetic prompts are in the main Intensity art guide.
+
+Lifetime records are optional, normalized on load, and preserved through boss snapshot restoration. Old card-play history can seed a missing Intensity play total, but past Inferno generation, spending, expeditions, and activations are not fabricated from current inventories.
 
 ## Enigmas
 

@@ -38,10 +38,18 @@ function buildSetAnchoredBossHpCurve(bosses: BossBlueprint[]): number[] {
     }
 
     const setSize = setEnd - cursor + 1;
-    const setFirstHp = previousSetFinalHp == null
+    const neutralityHp = bosses
+      .map((boss, index) => boss.category === 'Neutrality' ? scaledHp[index] : undefined)
+      .filter((hp): hp is number => hp !== undefined)
+      .sort((left, right) => left - right);
+    const setFirstHp: number = currentCategory === 'Intensity' && neutralityHp.length > 0
+      ? neutralityHp[Math.floor(neutralityHp.length / 2)]!
+      : previousSetFinalHp == null
       ? FIRST_SET_FIRST_BOSS_HP
       : roundBossHp(previousSetFinalHp * (currentCategory === 'Causality' ? 4 : 0.5));
-    const setFinalHp = roundBossHp(setFirstHp * SET_FINAL_HP_MULTIPLIER);
+    const setFinalHp: number = currentCategory === 'Intensity' && neutralityHp.length > 0
+      ? neutralityHp[neutralityHp.length - 1]!
+      : roundBossHp(setFirstHp * SET_FINAL_HP_MULTIPLIER);
 
     const orderedSetIndices = Array.from({ length: setSize }, (_, offset) => cursor + offset)
       .sort((leftIndex, rightIndex) => {
@@ -124,6 +132,11 @@ const BOSS_BLUEPRINTS: BossBlueprint[] = [
   createBoss(14, 'boss-causality-black-sun-scribe', 'Scribe of the Black Sun', 'Causality', 'btei-causality-ink-sovereign', 'Its ink records defeat across futures the player has not entered yet.', 'boss_causality_black_sun_scribe'),
   createBoss(15, 'boss-causality-elsewhen-judge', 'The Elsewhen Judge', 'Causality', 'btei-causality-chromatic-verdict', 'Every verdict arrives from a different timeline and all are final.', 'boss_causality_elsewhen_judge'),
   createBoss(16, 'boss-causality-pearl-core', 'The Pearlescent Core', 'Causality', 'btei-causality-pearl-engine', 'The living event horizon at the heart of every possible manuscript.', 'boss_causality_pearl_core'),
+  createBoss(4, 'boss-intensity-drowned-cathedral', 'The Drowned Cathedral', 'Intensity', 'eternal-intensity-cathedral-below-all-seas', 'A basalt sanctuary beneath every sea, its submerged bells ringing with the pressure of an eruption.', 'boss_intensity_drowned_cathedral'),
+  createBoss(5, 'boss-intensity-divided-crown', 'The Divided Crown', 'Intensity', 'eternal-intensity-the-crown-divided-against-itself', 'Two incandescent sovereigns share a single crown, each holding the other at the brink of annihilation.', 'boss_intensity_divided_crown'),
+  createBoss(6, 'boss-intensity-unbearable-noon', 'The Sovereign of Unbearable Noon', 'Intensity', 'eternal-intensity-sovereign-of-unbearable-noon', 'A pale solar monarch whose radiance compresses the horizon into a ring of molten gold.', 'boss_intensity_unbearable_noon'),
+  createBoss(7, 'boss-intensity-distance-bell', 'The Bell That Buries Distance', 'Intensity', 'eternal-intensity-the-bell-that-buries-distance', 'A black bell hanging above a caldera; every toll folds distant mountains into the burning abyss.', 'boss_intensity_distance_bell'),
+  createBoss(8, 'boss-intensity-last-dawn', 'The Arbiter After the Last Dawn', 'Intensity', 'eternal-intensity-verdict-after-the-last-dawn', 'A twin-aspected arbiter holding the first white flame and the final dark ember in perfect tension.', 'boss_intensity_last_dawn'),
 ];
 
 const BOSS_SCALED_HP_BY_INDEX = buildSetAnchoredBossHpCurve(BOSS_BLUEPRINTS);

@@ -14,6 +14,7 @@ import { useSocialStore } from '@/state/socialStore';
 import { useStore } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import type { ProgressState } from '@/types/game';
+import { isDebugSessionActive, getPersistentGameState } from '@/core/debugSession';
 
 // ── Module state ────────────────────────────────────────────────────────────
 
@@ -168,7 +169,7 @@ export function initStatsSync(): void {
   unsubscribeAuth = useSocialStore.subscribe((state, prev) => {
     if (state.status === 'authenticated' && prev.status !== 'authenticated') {
       // On first auth, snapshot current state and push an initial upsert.
-      lastSnapshot = snapshot(useStore.getState().progress);
+      lastSnapshot = snapshot(getPersistentGameState(useStore.getState()).progress);
       void upsertStats();
     }
     if (state.status !== 'authenticated' && prev.status === 'authenticated') {
@@ -178,6 +179,10 @@ export function initStatsSync(): void {
   });
 
   unsubscribeStore = useStore.subscribe((state, prev) => {
+    if (isDebugSessionActive() || state.debugMode !== prev.debugMode) {
+      lastSnapshot = snapshot(getPersistentGameState(state).progress);
+      return;
+    }
     if (useSocialStore.getState().status !== 'authenticated') return;
     if (state.progress === prev.progress) return;
     const next = snapshot(state.progress);

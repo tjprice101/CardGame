@@ -1,5 +1,6 @@
 import type { LegacyCosmeticCard } from '@/data/cards/eternalCards';
 import type { GardenRewardCurrency } from '@/types/dungeons';
+import { neutralityInfiniteCards } from './neutralityInfiniteCards';
 
 // Combination recipe system
 // Each Infinite card is forged by consuming exact copies of specific Eternal cards.
@@ -16,17 +17,12 @@ export interface InfiniteRecipe {
   lore: string;               // flavour shown in the Infinitude menu
 }
 
-// Legacy Infinite card cosmetic metadata — kept only for profile/avatar collection
-// bookkeeping (definitionId + name). These cards are not registered as playable.
+// Compatibility metadata for existing profile consumers. Playable definitions
+// live in neutralityInfiniteCards.ts and causalityInfiniteCards.ts.
 export const infiniteCards: LegacyCosmeticCard[] = [
-  { definitionId: 'inf-oblivion-absolute', rarity: 'Infinite', name: 'The Absolute Null', description: 'Gain Divine Light scaled by your current Ain/Soph setup.', artKey: 'inf_oblivion_absolute' },
-  { definitionId: 'inf-void-cascade', rarity: 'Infinite', name: 'The Cascade of the Hollow Sky', description: 'All Seraphim on board gain Patience.', artKey: 'inf_void_cascade' },
-  { definitionId: 'inf-genesis-throne', rarity: 'Infinite', name: 'The White Throne Before Beginning', description: 'Gain Divine Light through Infinity-menu crafting.', artKey: 'inf_genesis_throne' },
-  { definitionId: 'inf-null-apex', rarity: 'Infinite', name: 'The Apex of Nothing', description: 'An Infinite card forged through the Infinity menu.', artKey: 'inf_null_apex' },
-  { definitionId: 'inf-entropic-crown', rarity: 'Infinite', name: 'The Crown of Unmaking', description: 'Gain Divine Light through Infinity-menu crafting.', artKey: 'inf_entropic_crown' },
-  { definitionId: 'inf-annihilation-field', rarity: 'Infinite', name: 'The Garden of Annihilation', description: 'On play: All Seraphim on board gain Patience; Shuffle discard into deck.', artKey: 'inf_annihilation_field' },
-  { definitionId: 'inf-sovereign-void', rarity: 'Infinite', name: 'The Sovereign Veil', description: 'An Infinite card forged through the Infinity menu.', artKey: 'inf_sovereign_void' },
-  { definitionId: 'inf-eternity-rupture', rarity: 'Infinite', name: 'The Rift of Outer Silence', description: 'On summon: All Seraphim gain Patience; shuffle the discard into the deck.', artKey: 'inf_eternity_rupture' },
+  ...neutralityInfiniteCards.map(card => ({
+    definitionId: card.definitionId, rarity: 'Infinite' as const, name: card.name, description: card.description, artKey: card.artKey,
+  })),
   { definitionId: 'inf-causality-origin-script', rarity: 'Infinite', name: 'Origin Script of Every Tomorrow', description: 'Generate an immense Cosmos reserve.', artKey: 'inf_causality_origin_script' },
   { definitionId: 'inf-causality-chromatic-horizon', rarity: 'Infinite', name: 'Chromatic Horizon Without End', description: 'Convert Light into an endless event horizon.', artKey: 'inf_causality_chromatic_horizon' },
   { definitionId: 'inf-causality-law-eater', rarity: 'Infinite', name: 'Law-Eater of the Pearl Void', description: 'Consume Cosmos for an overwhelming utility burst.', artKey: 'inf_causality_law_eater' },
@@ -150,4 +146,48 @@ const NEUTRALITY_INFINITE_RECIPES: InfiniteRecipe[] = BASE_INFINITE_RECIPES.map(
   };
 });
 
-export const INFINITE_RECIPES: InfiniteRecipe[] = [...NEUTRALITY_INFINITE_RECIPES, ...CAUSALITY_INFINITE_RECIPES];
+export const INTENSITY_INFINITE_RECIPES: InfiniteRecipe[] = [
+  {
+    resultId: 'infinite-intensity-the-unfathomed-return',
+    lore: 'What the white mountain surrendered, the black sea remembers.',
+    ingredients: [
+      { definitionId: 'eternal-intensity-cathedral-below-all-seas', count: 2 },
+      { currency: 'emberglass', count: 24 }, { currency: 'abyssalCinder', count: 12 },
+    ],
+  },
+  {
+    resultId: 'infinite-intensity-crown-with-no-final-king',
+    lore: 'Two opposed crowns melt into a seam that no sovereign can close.',
+    ingredients: [
+      { definitionId: 'eternal-intensity-the-crown-divided-against-itself', count: 2 },
+      { currency: 'abyssalCinder', count: 18 }, { currency: 'solarSlag', count: 8 },
+    ],
+  },
+  {
+    resultId: 'infinite-intensity-daybreak-without-end',
+    lore: 'The noon that once scorched the world learns how to begin again.',
+    ingredients: [
+      { definitionId: 'eternal-intensity-sovereign-of-unbearable-noon', count: 2 },
+      { currency: 'emberglass', count: 30 }, { currency: 'heartOfTheInferno', count: 2 },
+    ],
+  },
+  {
+    resultId: 'infinite-intensity-a-furnace-outside-time',
+    lore: 'The buried bell strikes once, and its furnace burns beyond sequence.',
+    ingredients: [
+      { definitionId: 'eternal-intensity-the-bell-that-buries-distance', count: 2 },
+      { currency: 'solarSlag', count: 12 }, { currency: 'heartOfTheInferno', count: 2 },
+    ],
+  },
+  {
+    resultId: 'infinite-intensity-the-seam-that-holds-eternity',
+    lore: 'Creation and erasure remain apart only because one golden fracture refuses to break.',
+    ingredients: [
+      { definitionId: 'eternal-intensity-verdict-after-the-last-dawn', count: 2 },
+      { currency: 'emberglass', count: 40 }, { currency: 'abyssalCinder', count: 24 },
+      { currency: 'solarSlag', count: 16 }, { currency: 'heartOfTheInferno', count: 5 },
+    ],
+  },
+];
+
+export const INFINITE_RECIPES: InfiniteRecipe[] = [...NEUTRALITY_INFINITE_RECIPES, ...CAUSALITY_INFINITE_RECIPES, ...INTENSITY_INFINITE_RECIPES];

@@ -8,7 +8,7 @@ import {
   hasBeatenAllForgeEventBosses,
 } from '@/data/forge/forgeDefinitions';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
-import { getLiveCardShimmerClassName } from '@/ui/cardBackgrounds';
+import { getLiveCardFaceBackgroundStyle, getLiveCardShimmerClassName } from '@/ui/cardBackgrounds';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import { uiTypography } from '@/ui/theme';
 
@@ -152,11 +152,13 @@ export default function ForgeOfTranscendence({ onClose }: Props) {
             display: 'flex', alignItems: 'flex-end', padding: 28,
           }}>
             <div
-              className={selectedDef ? getLiveCardShimmerClassName(selectedDef, 'normal', 'front') : undefined}
+              role="img"
+              aria-label={`${selectedLore?.displayName} — holofoil card preview`}
+              className={getLiveCardShimmerClassName(selectedDef, 'holo', 'front')}
               style={{
-                width: 200, aspectRatio: '148 / 204', borderRadius: 14, backgroundImage: selectedLore?.bannerGradient,
-                backgroundSize: 'cover', backgroundPosition: 'center',
-                boxShadow: '0 20px 60px rgba(120,60,220,0.35)', border: '2px solid rgba(255,255,255,0.9)',
+                width: 200, aspectRatio: '148 / 204', borderRadius: 14, flexShrink: 0,
+                ...getLiveCardFaceBackgroundStyle(selectedDef, 'holo', 'front'),
+                boxShadow: '0 20px 60px rgba(120,60,220,0.35)',
               }}
             />
             <div style={{ marginLeft: 24 }}>

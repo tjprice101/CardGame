@@ -11,6 +11,7 @@ export class GameEngine {
   private saveManager!: SaveManager;
   private rafId: number | null = null;
   private lastTimestamp = 0;
+  private renderingActive = true;
 
   async init(canvas: HTMLCanvasElement): Promise<void> {
     this.saveManager = new SaveManager(
@@ -43,13 +44,14 @@ export class GameEngine {
       console.warn('Renderer failed to initialize; running without graphics.', err);
     }
     this.saveManager.startAutoSave();
-    this.startLoop();
+    this.syncRendering();
     this.registerVisualFeedbackListeners();
     document.addEventListener('visibilitychange', this.onVisibilityChange);
     eventBus.emit('game:ready', {});
   }
 
   private startLoop(): void {
+    if (!this.boardEffects || this.rafId !== null) return;
     this.lastTimestamp = performance.now();
     const loop = (timestamp: number) => {
       const deltaMs = Math.min(timestamp - this.lastTimestamp, 200);
@@ -117,10 +119,24 @@ export class GameEngine {
   private onVisibilityChange = (): void => {
     if (document.visibilityState === 'hidden') {
       this.saveManager.save();
-    } else {
-      this.lastTimestamp = performance.now();
     }
+    this.syncRendering();
   };
+
+  setRenderingActive(active: boolean): void {
+    this.renderingActive = active;
+    this.syncRendering();
+  }
+
+  private syncRendering(): void {
+    if (this.renderingActive && document.visibilityState !== 'hidden') {
+      this.renderer?.app.start();
+      this.startLoop();
+    } else {
+      this.renderer?.app.stop();
+      this.stopLoop();
+    }
+  }
 
   saveNow(): void {
     this.saveManager.save();

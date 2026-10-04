@@ -20,6 +20,7 @@ import {
   selectProgress,
 } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
+import { getSophAttackPool, usesInferno } from '@/systems/cards/IntensityRuntime';
 import { AIN_SOPH_AUR_SUMMON_STACK_REWARD, SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
 import { resolveCardScaling } from '@/systems/cards/CardScaling';
 import { computeGlobalResonanceScore } from '@/systems/progression/cardMastery';
@@ -229,7 +230,9 @@ function LightAttackRow({ instance, def }: {
   const ainCd = instance.attackCooldowns?.[def.ainAttack.id] ?? 0;
   const sophCd = instance.attackCooldowns?.[def.sophAttack.id] ?? 0;
   const isActive = instance.side === 'ain' && instance.faceState === 'front';
-  const sophCost = previewStackCost(def.sophAttack.stackCost, turn.limitlessLightStacks);
+  const sophPool = getSophAttackPool(def.sophAttack, turn);
+  const sophResource = usesInferno(def.sophAttack) ? 'Inferno' : 'Light';
+  const sophCost = previewStackCost(def.sophAttack.stackCost, sophPool);
   const attackRows = [
     {
       label: 'Ain Attack',
@@ -237,13 +240,18 @@ function LightAttackRow({ instance, def }: {
       cd: ainCd,
       ready: isActive && ainCd <= 0,
       cost: 0,
+      pool: turn.limitlessLightStacks,
+      resource: 'Light',
     },
     {
       label: 'Soph Attack',
-      value: Math.max(0, Math.round(def.sophAttack.baseDivineLight + resolveCardScaling(def.sophAttack.scaling, scalingContext) + sophCost)),
+      value: Math.max(0, Math.round(def.sophAttack.baseDivineLight + resolveCardScaling(def.sophAttack.scaling, scalingContext)
+        + (usesInferno(def.sophAttack) ? turn.intensityAttackBonus ?? 0 : 0))),
       cd: sophCd,
-      ready: isActive && sophCd <= 0 && turn.limitlessLightStacks >= sophCost,
+      ready: isActive && sophCd <= 0 && sophPool >= sophCost,
       cost: sophCost,
+      pool: sophPool,
+      resource: sophResource,
     },
   ];
 
@@ -274,7 +282,7 @@ function LightAttackRow({ instance, def }: {
               {formatNumber(a.value)}
             </div>
             <div style={{ fontSize: 9, color: a.ready ? C.green.fg : 'rgba(244,244,248,0.35)', marginTop: 4, fontFamily: BF }}>
-              {!isActive ? 'Flip to Ain first' : a.cd > 0 ? `Cooldown: ${a.cd} cards` : turn.limitlessLightStacks < a.cost ? `Need ${a.cost} Stacks` : '● Ready'}
+              {!isActive ? 'Flip to Ain first' : a.cd > 0 ? `Cooldown: ${a.cd} cards` : a.pool < a.cost ? `Need ${a.cost} ${a.resource} Stacks` : '● Ready'}
             </div>
           </div>
         ))}
@@ -434,7 +442,7 @@ function OverviewTab() {
             { icon: '⚔',  label: 'Ain Attacks',       desc: 'Cooldown-gated attacks on flipped Light cards. Read your stacks without spending them.', accent: C.blue   },
             { icon: '✾',  label: 'Soph Attacks',      desc: 'Higher base payout, consumes Limitless Light Stacks measured before the cost is paid.',  accent: C.blue   },
             { icon: '✦',  label: 'Bridge the Light',  desc: 'Ain Soph Aur front-row attacks — the highest base payouts available.',                    accent: C.gold   },
-            { icon: '✧',  label: 'Shatter the Infinite Light', desc: 'A fully bridged board unlocks a 10-second star-click finisher worth 1,000 base Divine Light per hit.', accent: C.red },
+            { icon: '✧',  label: 'Shatter the Infinite Light', desc: 'A fully bridged board unlocks a 10-second orbit finisher: total current Soph + Bridge attacks × Collection Power × (1 + orbit power).', accent: C.red },
             { icon: '☠',  label: 'Sacrifice',         desc: 'Sacrifice a charged Soph card to convert a percentage of its stored charge into Limitless Light Stacks.', accent: C.red    },
             { icon: '◈',  label: 'Collection Power',  desc: 'A permanent share of every attack’s scaling, earned by playing and mastering cards.',     accent: C.purple },
             { icon: '∞',  label: 'Limitless Light',   desc: 'Flip charged cards to bank stacks, then spend or scale off them the same turn.',          accent: C.green  },
@@ -547,9 +555,9 @@ function AttacksTab() {
         <SourceCard
           icon="✧"
           title="Shatter the Infinite Light"
-          subtitle="Requires all four front slots to hold Ain Soph Aur and all four back-row Light or Dark cards to be flipped to Ain. After a full fade to black, click glowing stars for 10 seconds; each hit adds one Limitless Infinity stack worth 1,000 base Divine Light before Collection Power scaling. Timers pause during the sequence."
+          subtitle="Requires all four front slots to hold Ain Soph Aur and all four back-row Light or Dark cards to be flipped to Ain. At activation, Shatter snapshots the total current Soph and Bridge the Light attack values on-board, including their printed scaling. Circle the core for 10 seconds to multiply that total by (1 + orbit power). Collection Power applies once at payout, along with the normal front-row ASA bonus. Attack costs are not consumed, and individual cooldowns do not reduce the snapshot. Timers pause during the sequence."
           accent={C.red}
-          tags={['fully bridged', '10-second window', '1,000 per hit']}
+          tags={['fully bridged', '10-second window', 'board total × orbit']}
         />
         <div style={{ marginTop: 10 }}>
           <SourceCard
@@ -656,6 +664,14 @@ function BonusesTab() {
             value={`${turn.limitlessLightStacks}`}
             accent={turn.limitlessLightStacks > 0 ? C.green : C.dim}
             tags={['per turn', 'resets at turn end']}
+          />
+          <SourceCard
+            icon="◆"
+            title={`Limitless Inferno Stacks  (${turn.limitlessInfernoStacks ?? 0} banked)`}
+            subtitle="Intensity generates uncapped Inferno during a turn. Level 3+ Intensity Light Soph attacks spend it instead of Light Stacks; Intensity abilities can also spend or reshape it."
+            value={`${turn.limitlessInfernoStacks ?? 0}`}
+            accent={(turn.limitlessInfernoStacks ?? 0) > 0 ? C.gold : C.dim}
+            tags={['Intensity', 'resets at turn end']}
           />
           <SourceCard
             icon="✦"
@@ -781,7 +797,7 @@ function TipsTab() {
       <TipCard
         rank={6}
         title="Cash Out a Fully Bridged Board"
-        detail="Four front-row Ain Soph Aur plus four back-row cards flipped to Ain unlock Shatter the Infinite Light. Click as many stars as possible; afterward your hand is preserved while field and discard cards return to their decks."
+        detail="Four front-row Ain Soph Aur plus four back-row cards flipped to Ain unlock Shatter the Infinite Light. Circle the core to amplify the snapshotted Soph + Bridge total; afterward your hand is preserved while field and discard cards return to their decks."
         accent={C.red.fg}
       />
       <TipCard

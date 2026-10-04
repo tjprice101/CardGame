@@ -13,7 +13,7 @@ import { applyUiPalette, DEFAULT_WARM_PALETTE, getUiColorModePalette, resetUiPal
 describe('achievement presentation taxonomy', () => {
   it('places every registered achievement in exactly one populated category', () => {
     const categories = TITLE_BADGES.map(getAchievementCategory);
-    expect(new Set(ACHIEVEMENT_CATEGORIES.map(category => category.id)).size).toBe(19);
+    expect(new Set(ACHIEVEMENT_CATEGORIES.map(category => category.id)).size).toBe(20);
     for (const category of ACHIEVEMENT_CATEGORIES) {
       expect(categories.filter(id => id === category.id).length).toBeGreaterThan(0);
     }
@@ -99,15 +99,38 @@ describe.each(['light', 'dark'] as const)('organized achievements in %s mode', m
     const rows = Array.from(container.querySelectorAll<HTMLElement>('[data-achievement-id]'));
     expect(rows).toHaveLength(TITLE_BADGES.length);
     expect(new Set(rows.map(row => row.dataset.achievementId)).size).toBe(TITLE_BADGES.length);
-    expect(container.querySelectorAll('section')).toHaveLength(19);
+    expect(container.querySelectorAll('section')).toHaveLength(20);
     for (const section of ['Gameplay', 'Collection', 'Battles', 'Progression', 'Social', 'Cosmetics']) {
       expect(container.querySelector('nav')?.textContent).toContain(section);
     }
   });
 
-  it('shows all eleven background unlocks in their own category', async () => {
+  it('uses readable theme text without blurred shadows for the header summary', () => {
+    const palette = getUiColorModePalette(DEFAULT_WARM_PALETTE, mode);
+    const expected = document.createElement('span');
+    const stats = container.querySelectorAll<HTMLElement>('.achievement-summary-stat');
+    expect(stats.length).toBeGreaterThanOrEqual(2);
+    for (const stat of stats) {
+      const label = stat.children[0] as HTMLElement;
+      const value = stat.children[1] as HTMLElement;
+      expected.style.color = palette.text;
+      expect(label.style.color).toBe(expected.style.color);
+      expect(value.style.color).toBe(expected.style.color);
+      expect(label.style.fontSize).toBe('11px');
+      expect(label.style.letterSpacing).toBe('1px');
+      expect(label.style.textShadow).toBe('');
+      expect(value.style.textShadow).toBe('');
+      const sub = value.querySelector('span');
+      if (sub) {
+        expected.style.color = palette.textMuted;
+        expect(sub.style.color).toBe(expected.style.color);
+      }
+    }
+  });
+
+  it('shows all fourteen background unlocks in their own category', async () => {
     await selectCategory('Custom Backgrounds');
-    expect(container.querySelectorAll('[data-achievement-id]')).toHaveLength(11);
+    expect(container.querySelectorAll('[data-achievement-id]')).toHaveLength(14);
     expect(container.querySelector('h2')?.textContent).toBe('Cosmetics / Custom Backgrounds');
     for (const reward of CUSTOM_MAIN_MENU_BACKGROUND_REWARDS) {
       expect(container.querySelector(`[data-achievement-id="${reward.achievementId}"]`)?.textContent).toContain(reward.name);

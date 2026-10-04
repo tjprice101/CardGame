@@ -1,6 +1,6 @@
 ﻿import { Fragment, useMemo, useState } from 'react';
 import { useStore, selectProgress } from '@/state/store';
-import { SET_LABEL } from '@/data/elements';
+import { getCardSetId } from '@/data/elements';
 import { INFINITE_RECIPES, type InfiniteRecipe } from '@/data/cards/infiniteCards';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
 import { CardRegistry } from '@/cards/CardRegistry';
@@ -46,8 +46,8 @@ export default function Infinitude({ onClose }: Props) {
     return INFINITE_RECIPES
       .map((recipe, originalIndex) => {
         const definition = CardRegistry.get(recipe.resultId) ?? null;
-        const setKey = definition ? 'Neutrality' : 'Unknown';
-        return { recipe, definition, setKey, setLabel: SET_LABEL, originalIndex };
+        const setKey = getCardSetId(recipe.resultId) ?? 'Neutrality';
+        return { recipe, definition, setKey, setLabel: setKey, originalIndex };
       })
       .sort((left, right) => {
         const rankDelta = (setRank.get(left.setKey) ?? Number.MAX_SAFE_INTEGER)
@@ -62,13 +62,12 @@ export default function Infinitude({ onClose }: Props) {
   );
   const [justCombined, setJustCombined] = useState<string | null>(null);
   const [combineError, setCombineError] = useState<string | null>(null);
-  const [listFilter, setListFilter] = useState<'all' | 'event'>('all');
+  const [listFilter, setListFilter] = useState<'all' | 'event' | 'intensity'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const visibleRecipes = useMemo(() => {
-    const base = listFilter === 'event'
-      ? orderedRecipes.filter(e => e.recipe.resultId.startsWith('inf-causality-'))
-      : orderedRecipes.filter(e => !e.recipe.resultId.startsWith('inf-causality-'));
+    const base = listFilter === 'all' ? orderedRecipes
+      : orderedRecipes.filter(e => e.setKey === (listFilter === 'event' ? 'Causality' : 'Intensity'));
     if (!searchQuery.trim()) return base;
     const q = searchQuery.toLowerCase();
     return base.filter(e =>
@@ -103,11 +102,10 @@ export default function Infinitude({ onClose }: Props) {
     }
   }
 
-  function switchFilter(tab: 'all' | 'event') {
+  function switchFilter(tab: 'all' | 'event' | 'intensity') {
     setListFilter(tab);
-    const nextList = tab === 'event'
-      ? orderedRecipes.filter(e => e.recipe.resultId.startsWith('inf-causality-'))
-      : orderedRecipes.filter(e => !e.recipe.resultId.startsWith('inf-causality-'));
+    const nextList = tab === 'all' ? orderedRecipes
+      : orderedRecipes.filter(e => e.setKey === (tab === 'event' ? 'Causality' : 'Intensity'));
     if (!nextList.some(e => e.recipe.resultId === selectedRecipeId)) {
       setSelectedRecipeId(nextList[0]?.recipe.resultId ?? null);
     }
@@ -158,7 +156,7 @@ export default function Infinitude({ onClose }: Props) {
           {/* Sidebar */}
           <aside style={styles.sidebar}>
             <div style={styles.tabRow}>
-              {(['all', 'event'] as const).map(tab => {
+              {(['all', 'event', 'intensity'] as const).map(tab => {
                 const active = listFilter === tab;
                 return (
                   <button
@@ -170,7 +168,7 @@ export default function Infinitude({ onClose }: Props) {
                     }}
                   >
                     <span style={active ? styles.tabBtnActiveDot : styles.tabBtnDot} />
-                    {tab === 'all' ? 'All Formulas' : 'Event'}
+                    {tab === 'all' ? 'All Formulas' : tab === 'event' ? 'Causality' : 'Intensity'}
                   </button>
                 );
               })}
@@ -242,7 +240,7 @@ export default function Infinitude({ onClose }: Props) {
                   </div>
                   <div style={styles.detailIntro}>
                     <div style={styles.cardEyebrow}>
-                      {getDisplayCardTypeLabel(resultDef.type)} {'\u00B7'} {SET_LABEL} {'\u00B7'} Infinite
+                      {getDisplayCardTypeLabel(resultDef.type)} {'\u00B7'} {getCardSetId(resultDef.definitionId) ?? 'Neutrality'} {'\u00B7'} Infinite
                     </div>
                     <h1 style={styles.cardTitle}>{resultDef.name}</h1>
                     <div style={styles.ownedNote}>
@@ -305,7 +303,7 @@ export default function Infinitude({ onClose }: Props) {
                             </div>
                             {ingDef && (
                               <div style={styles.ingredientSub}>
-                                {ingDef ? `${getDisplayCardTypeLabel(ingDef.type)} · ${SET_LABEL}` : 'Garden material'}
+                                {`${getDisplayCardTypeLabel(ingDef.type)} · ${getCardSetId(ingDef.definitionId) ?? 'Neutrality'}`}
                               </div>
                             )}
                             <div style={styles.progBarTrack}>
@@ -414,7 +412,7 @@ function InfiniteCardFace({ def }: { def: CardDefinition }) {
     >
       <div style={getCardNameRibbonStyle('grid')}>
         <div style={{ fontSize: previewFaceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.5, textTransform: 'uppercase' }}>
-          {getDisplayCardTypeLabel(def.type)} {'\u00B7'} {SET_LABEL} {'\u00B7'} Infinite
+          {getDisplayCardTypeLabel(def.type)} {'\u00B7'} {getCardSetId(def.definitionId) ?? 'Neutrality'} {'\u00B7'} Infinite
         </div>
         <div style={{ fontSize: previewFaceMetrics.nameSize, fontWeight: 'bold', color: cardFacePalette.text, lineHeight: 1.25, marginTop: 3 }}>
           {def.name}

@@ -67,6 +67,7 @@ function TopStatusBar({ onOpenDivineLightScreen }: { onOpenDivineLightScreen: ()
   const phaseLabel = turn.phase === 'mulligan' ? 'Mulligan' : turn.phase === 'playing' ? (isGarden ? 'Expedition Turn' : 'Playing') : 'Idle';
   const spectrumLevel = getTurnSpectrumLevel(turn);
   const hasCausality = [...deck.deckList, ...deck.extraDeck].some(entry => getCardSetId(entry.definitionId) === 'Causality');
+  const hasIntensity = [...deck.deckList, ...deck.extraDeck].some(entry => getCardSetId(entry.definitionId) === 'Intensity');
 
   return (
     <div style={{
@@ -144,6 +145,11 @@ function TopStatusBar({ onOpenDivineLightScreen }: { onOpenDivineLightScreen: ()
             <span aria-hidden="true">◈</span><strong>{(turn.limitlessCosmosStacks ?? 0).toLocaleString()}</strong><span>Cosmos</span>
           </div>
         )}
+        {hasIntensity && (
+          <div className="turn-cosmos-compact" title="Limitless Inferno — resets each turn">
+            <span aria-hidden="true">◆</span><strong>{(turn.limitlessInfernoStacks ?? 0).toLocaleString()}</strong><span>Inferno</span>
+          </div>
+        )}
         <button
           className="divine-light-acquisition-button"
           onClick={onOpenDivineLightScreen}
@@ -168,7 +174,7 @@ function TopStatusBar({ onOpenDivineLightScreen }: { onOpenDivineLightScreen: ()
 /** Right rail: one scrollable deck/inspector/ability stack plus an anchored control footer. */
 function DeckSetOverview() {
   const deck = useStore(selectDeck);
-  const counts = { Neutrality: { main: 0, extra: 0 }, Causality: { main: 0, extra: 0 } };
+  const counts = { Neutrality: { main: 0, extra: 0 }, Causality: { main: 0, extra: 0 }, Intensity: { main: 0, extra: 0 } };
   for (const entry of deck.deckList) {
     const setId = getCardSetId(entry.definitionId);
     if (setId) counts[setId].main += entry.copies;

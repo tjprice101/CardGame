@@ -202,6 +202,51 @@ describe('SaveManager integrity', () => {
     });
   });
 
+  describe('Intensity v56 migration', () => {
+    it('initializes absent material/runtime keys without disturbing existing progress', () => {
+      const storage = memStorage();
+      const legacy = JSON.parse(JSON.stringify(makeState())) as GameState;
+      const progress = legacy.progress as unknown as Record<string, unknown>;
+      for (const key of ['emberglass', 'abyssalCinder', 'solarSlag', 'heartOfTheInferno']) delete progress[key];
+      delete legacy.turn.limitlessInfernoStacks;
+      delete legacy.turn.intensityInfernoGainedThisTurn;
+      delete legacy.turn.intensityInfernoSpentThisTurn;
+      delete legacy.turn.intensityNextGainMultiplier;
+      legacy.turn.abilityCooldownUntil = { 'intensity-kindle-the-depths': 123_456 };
+      storage.write(JSON.stringify({ version: 55, data: LZString.compressToUTF16(JSON.stringify(legacy)) }));
+      const loaded = new SaveManager(() => makeState(), storage).loadWithStatus()!.state;
+      const balances = loaded.progress as unknown as Record<string, unknown>;
+      for (const key of ['emberglass', 'abyssalCinder', 'solarSlag', 'heartOfTheInferno']) expect(balances[key]).toBe(0);
+      expect(loaded.turn.limitlessInfernoStacks).toBe(0);
+      expect(loaded.turn.intensityNextGainMultiplier).toBe(1);
+      expect(loaded.turn.intensityInfernoGainedThisTurn).toBe(0);
+      expect(loaded.turn.intensityInfernoSpentThisTurn).toBe(0);
+      expect(loaded.turn.abilityCooldownUntil).toEqual(legacy.turn.abilityCooldownUntil);
+      expect(loaded.progress.divineLight).toBe(legacy.progress.divineLight);
+    });
+    it('sanitizes invalid balances while preserving valid Inferno and its reserved multiplier', () => {
+      const storage = memStorage();
+      const legacy = JSON.parse(JSON.stringify(makeState())) as GameState;
+      const progress = legacy.progress as unknown as Record<string, unknown>;
+      Object.assign(progress, { emberglass: 7.9, abyssalCinder: -4, solarSlag: 'broken', heartOfTheInferno: 13 });
+      legacy.turn.limitlessInfernoStacks = 10_000;
+      legacy.turn.intensityNextGainMultiplier = 2;
+      legacy.turn.intensityInfernoGainedThisTurn = 10_030;
+      legacy.turn.intensityInfernoSpentThisTurn = 30;
+      storage.write(JSON.stringify({ version: 55, data: LZString.compressToUTF16(JSON.stringify(legacy)) }));
+      const loaded = new SaveManager(() => makeState(), storage).loadWithStatus()!.state;
+      const balances = loaded.progress as unknown as Record<string, unknown>;
+      expect(materialBalances(balances)).toEqual([7, 0, 0, 13]);
+      expect(loaded.turn.limitlessInfernoStacks).toBe(10_000);
+      expect(loaded.turn.intensityNextGainMultiplier).toBe(2);
+      expect(loaded.turn.intensityInfernoGainedThisTurn).toBe(10_030);
+      expect(loaded.turn.intensityInfernoSpentThisTurn).toBe(30);
+      function materialBalances(value: Record<string, unknown>) {
+        return ['emberglass', 'abyssalCinder', 'solarSlag', 'heartOfTheInferno'].map(key => value[key]);
+      }
+    });
+  });
+
   describe('export / import', () => {
     it('round-trips through exportSave → importSave', () => {
       const storageA = memStorage();

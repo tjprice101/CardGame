@@ -1,6 +1,7 @@
 import { getSupabase } from '@/net/supabaseClient';
 import { useSocialStore } from '@/state/socialStore';
 import { useStore } from '@/state/store';
+import { isDebugSessionActive } from '@/core/debugSession';
 import { SaveManager } from '@/save/SaveManager';
 import { createSaveStorage } from '@/save/storage';
 import type { GameState } from '@/types/game';
@@ -96,6 +97,7 @@ async function reconcileOnLogin(userId: string): Promise<void> {
     const localLoaded = mgr.loadWithStatus();
     const localExport = localLoaded ? mgr.exportSave() : null;
     const remote = await fetchCloudSave(userId);
+    if (isDebugSessionActive()) return;
 
     if (!remote) {
       const localSavedAt = localLoaded?.state.lastSavedAt ?? 0;

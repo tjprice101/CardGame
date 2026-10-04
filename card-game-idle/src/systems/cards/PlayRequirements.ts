@@ -83,6 +83,14 @@ function walk(effects: CardEffect[], state: RequirementState): string | null {
         if (state.cosmos < effect.value) return `Requires ${effect.value} Limitless Cosmos`;
         state.cosmos -= effect.value;
         break;
+      // My own requirement!
+      case 'consume_limitless_light_stacks':
+        if (state.lightStacks < effect.value) {
+          return `Requires ${effect.value} Limitless Light Stacks`;
+        }
+
+        state.lightStacks -= effect.value;
+        break;
       case 'light_stacks_flat':
         state.lightStacks += Math.max(0, effect.value);
         break;
@@ -130,12 +138,19 @@ function walk(effects: CardEffect[], state: RequirementState): string | null {
       case 'salvage_any':
         takeMatchingFromDiscard(state, null, 1);
         break;
-      case 'conditional':
-        if (conditionMet(effect.condition, state)) {
-          const failure = walk(effect.then, state);
-          if (failure) return failure;
+      case 'conditional': {
+        const branch = conditionMet(effect.condition, state)
+          ? effect.then
+          : effect.else ?? [];
+        const failure = walk(branch, state);
+
+        if (failure !== null) {
+          return failure;
         }
+
         break;
+      }
+
       default:
         break;
     }

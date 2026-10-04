@@ -10,7 +10,7 @@ import AchievementsModal from '@/ui/menus/AchievementsModal';
 import { applyUiPalette, DEFAULT_WARM_PALETTE, getUiColorModePalette, resetUiPalette } from '@/ui/theme';
 import * as backgroundRewards from '@/data/profile/customMainMenuBackgrounds';
 
-const rewards = CUSTOM_MAIN_MENU_BACKGROUND_REWARDS;
+const rewards = CUSTOM_MAIN_MENU_BACKGROUND_REWARDS.filter(reward => reward.rarity === 'Transcendent');
 
 describe.each(['light', 'dark'] as const)('background achievement UI in %s mode', mode => {
   const initialState = useStore.getState();
@@ -148,18 +148,18 @@ describe.each(['light', 'dark'] as const)('background achievement UI in %s mode'
     }
   });
 
-  it('lists eleven named cosmetic rewards in the dedicated Achievements category', async () => {
+  it('lists fourteen named cosmetic rewards in the dedicated Achievements category', async () => {
     await act(async () => root.render(createElement(AchievementsModal, { onClose: noop })));
     const tab = Array.from(container.querySelectorAll('button')).find(button => button.textContent?.includes('Custom Backgrounds'))!;
     expect(tab).toBeDefined();
     await act(async () => tab.click());
-    for (const reward of [...rewards, ...CROWN_BACKGROUND_REWARDS]) {
+    for (const reward of [...CUSTOM_MAIN_MENU_BACKGROUND_REWARDS, ...CROWN_BACKGROUND_REWARDS]) {
       expect(container.textContent).toContain(reward.name);
       expect(container.textContent).toContain(reward.requirement);
       expect(container.textContent).toContain(`${reward.rarity} main menu background: ${reward.name}`);
     }
     expect(container.textContent).toContain('Background + Title');
     expect(container.textContent).not.toContain('+0');
-    expect(Array.from(container.querySelectorAll('button')).filter(button => button.textContent === 'Locked')).toHaveLength(11);
+    expect(Array.from(container.querySelectorAll('button')).filter(button => button.textContent === 'Locked')).toHaveLength(14);
   });
 });

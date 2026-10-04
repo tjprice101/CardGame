@@ -2,6 +2,7 @@ import { isSupabaseConfigured } from '@/net/supabaseClient';
 import { useMessagesStore } from '@/state/messagesStore';
 import { useSocialStore } from '@/state/socialStore';
 import { useStore } from '@/state/store';
+import { getPersistentGameState } from '@/core/debugSession';
 
 let installed = false;
 let unsubscribeSocial: (() => void) | null = null;
@@ -22,7 +23,7 @@ function scheduleProfileSync(): void {
 async function runProfileSync(): Promise<void> {
   const social = useSocialStore.getState();
   if (social.status !== 'authenticated' || !social.profile) return;
-  const profile = useStore.getState().progress.profile;
+  const profile = getPersistentGameState(useStore.getState()).progress.profile;
   await social.syncOwnProfile({
     displayName: profile.name,
     bio: profile.bio ?? '',

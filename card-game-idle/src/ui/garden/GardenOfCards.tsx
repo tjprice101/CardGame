@@ -4,6 +4,7 @@ import { useStore, selectProgress } from '@/state/store';
 import { uiTypography } from '@/ui/theme';
 import ShardDropRate from '@/ui/components/ShardDropRate';
 import { areShardDropRatesVisible, formatShardDropChance } from '@/data/forge/forgeDefinitions';
+import type { GardenDungeonDefinition } from '@/types/dungeons';
 
 interface Props { onClose: () => void; onEnterDungeon?: (dungeonId: string) => void }
 
@@ -16,7 +17,7 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
   const resolveGardenEncounter = useStore(state => state.resolveGardenEncounter);
   const exitGardenDungeon = useStore(state => state.exitGardenDungeon);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [category, setCategory] = useState<'Neutrality' | 'Causality'>('Neutrality');
+  const [category, setCategory] = useState<GardenDungeonDefinition['category']>('Neutrality');
   const [showInventory, setShowInventory] = useState(false);
   const visibleDungeons = GARDEN_DUNGEONS
     .filter(dungeon => dungeon.category === category && dungeon.id !== 'garden-archive');
@@ -104,7 +105,7 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
                   Garden Archive
                 </h2>
                 <div style={{ marginTop: 4, color: 'rgba(255,255,255,0.65)', fontSize: 11 }}>
-                  A shared record of materials recovered from Neutrality and Causality expeditions.
+                  A shared record of materials recovered from Neutrality, Causality, and Intensity expeditions.
                 </div>
               </div>
               <button
@@ -143,6 +144,7 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
                     <img
                       src={rewardIconUrl(item.meta.artAssetKey)}
                       alt={item.meta.name}
+                      onError={event => { event.currentTarget.style.visibility = 'hidden'; }}
                       width={96}
                       height={96}
                       style={{
@@ -182,7 +184,7 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
             <div style={{ width: 'min(440px, 38vw)', display: 'flex', flexDirection: 'column', gap: 14, flexShrink: 0 }}>
               {/* Set filter */}
               <div style={{ display: 'flex', gap: 8, position: 'relative', zIndex: 5 }}>
-                {(['Neutrality', 'Causality'] as const).map(value => (
+                {(['Neutrality', 'Causality', 'Intensity'] as const).map(value => (
                   <button
                     key={value}
                     type="button"
@@ -361,7 +363,7 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
                 <div style={{ display: 'grid', gap: 8 }}>
                   {selected.encounters.map((encounter, index) => encounter.reward && (
                     <div key={encounter.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }}>
-                      <img src={rewardIconUrl(encounter.reward.artAssetKey)} alt="" width={81} height={81} style={{ width: 81, height: 81, borderRadius: 8, border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 10px rgba(255,255,255,0.25)', flexShrink: 0 }} />
+                      <img src={rewardIconUrl(encounter.reward.artAssetKey)} alt="" onError={event => { event.currentTarget.style.visibility = 'hidden'; }} width={81} height={81} style={{ width: 81, height: 81, borderRadius: 8, border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 10px rgba(255,255,255,0.25)', flexShrink: 0 }} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 12, fontWeight: 700, color: '#ffffff' }}>Encounter {index + 1}: {encounter.name}</div>
                         <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 11, marginTop: 1 }}>

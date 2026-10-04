@@ -1,5 +1,6 @@
 import { transcendentCardDefinitions } from '@/data/ascension/transcendentCards';
 import type { ProgressState } from '@/types/game';
+import { isThemeUnlocked } from './uiThemes';
 
 export interface CustomMainMenuBackgroundReward {
   id: string;
@@ -8,7 +9,7 @@ export interface CustomMainMenuBackgroundReward {
   description: string;
   requirement: string;
   artFileStem: string;
-  rarity: 'Transcendent';
+  rarity: 'Legendary' | 'Eternal' | 'Infinite' | 'Transcendent';
   meetsRequirement: (progress: ProgressState) => boolean;
 }
 
@@ -17,6 +18,24 @@ const volumeOneIds = transcendentCardDefinitions
   .map(card => card.definitionId);
 
 export const CUSTOM_MAIN_MENU_BACKGROUND_REWARDS: readonly CustomMainMenuBackgroundReward[] = [
+  {
+    id: 'main-menu-bg-intensity-first-eruption', achievementId: 'title-background-intensity-base',
+    name: 'The First Unbroken Eruption', description: 'A white volcanic mountain awakens above an obsidian sea in orange-red infernos.',
+    requirement: 'Own every base Intensity card.', artFileStem: 'intensity-base-completion-splash', rarity: 'Legendary',
+    meetsRequirement: progress => isThemeUnlocked('theme-reward-base-intensity', progress),
+  },
+  {
+    id: 'main-menu-bg-intensity-five-sovereigns', achievementId: 'title-background-intensity-eternal',
+    name: 'The Five Who Command the Flame', description: 'Five volcanic powers gather around a burning obsidian crown.',
+    requirement: 'Own every Eternal Intensity card.', artFileStem: 'intensity-eternal-completion-splash', rarity: 'Eternal',
+    meetsRequirement: progress => isThemeUnlocked('theme-reward-eternal-intensity', progress),
+  },
+  {
+    id: 'main-menu-bg-intensity-endless-inferno', achievementId: 'title-background-intensity-infinite',
+    name: 'The Inferno Without a Last Dawn', description: 'A white phoenix carries endless erupting worlds across a black abyss.',
+    requirement: 'Own every Infinite Intensity card.', artFileStem: 'intensity-infinite-completion-splash', rarity: 'Infinite',
+    meetsRequirement: progress => isThemeUnlocked('theme-reward-infinite-intensity', progress),
+  },
   {
     id: 'main-menu-bg-forge-unsealed-impossible',
     achievementId: 'title-background-unsealed-impossible',

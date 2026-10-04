@@ -1,4 +1,6 @@
 import type { GardenRewardCurrency } from '@/types/dungeons';
+import { CardRegistry } from '@/cards/CardRegistry';
+import { getCardSetId } from '@/data/elements';
 
 export type AbilitySlot = 1 | 2 | 3;
 export type AbilityTier = 'foundational' | 'eternal' | 'infinite' | 'transcendent';
@@ -13,9 +15,11 @@ export interface AbilityDefinition {
   readonly durationSeconds?: number;
   readonly stackCost?: number;
   readonly iconAssetKey: string;
-  readonly ownershipGate?: 'anyNeutralityEternal' | 'anyNeutralityInfinite' | 'allCausalityBase' | 'anyCausalityEternal' | 'anyCausalityInfinite';
+  readonly ownershipGate?: 'anyNeutralityEternal' | 'anyNeutralityInfinite' | 'allCausalityBase' | 'anyCausalityEternal' | 'anyCausalityInfinite' | 'allIntensityBase' | 'anyIntensityEternal' | 'anyIntensityInfinite';
   readonly cosmosCost?: number;
   readonly consumesAllCosmos?: boolean;
+  readonly infernoCost?: number;
+  readonly consumesAllInferno?: boolean;
   readonly buff?: {
     readonly id: string;
     readonly name: string;
@@ -33,6 +37,41 @@ export const ABILITY_ICON_FALLBACKS: Readonly<Record<string, { folder: string; f
 };
 
 export const ABILITY_DEFINITIONS: readonly AbilityDefinition[] = [
+  {
+    id: 'intensity-kindle-the-depths', setId: 'Intensity', name: 'Kindle the Depths',
+    description: 'Spend 3 Limitless Light Stacks to gain 4 Limitless Inferno. Cooldown: 35 seconds.',
+    stackCost: 3, cooldownSeconds: 35, ownershipGate: 'allIntensityBase', iconAssetKey: 'intensity-kindle-the-depths',
+  },
+  {
+    id: 'intensity-bank-the-flame', setId: 'Intensity', name: 'Bank the Flame',
+    description: 'Convert 6 Limitless Inferno into 12 Limitless Light Stacks. Cooldown: 55 seconds.',
+    infernoCost: 6, cooldownSeconds: 55, ownershipGate: 'allIntensityBase', iconAssetKey: 'intensity-bank-the-flame',
+  },
+  {
+    id: 'intensity-temper-the-hand', setId: 'Intensity', name: 'Temper the Hand',
+    description: 'Spend 4 Limitless Inferno to draw 2 cards. Requires a nonempty draw pile. Cooldown: 60 seconds.',
+    infernoCost: 4, cooldownSeconds: 60, ownershipGate: 'allIntensityBase', iconAssetKey: 'intensity-temper-the-hand',
+  },
+  {
+    id: 'intensity-cinder-recall', setId: 'Intensity', name: 'Cinder Recall',
+    description: 'Spend 8 Limitless Inferno to recover up to 2 most recently discarded Intensity Light or Dark cards. Requires at least 1 eligible card. Cooldown: 120 seconds.',
+    infernoCost: 8, cooldownSeconds: 120, ownershipGate: 'anyIntensityEternal', iconAssetKey: 'intensity-cinder-recall',
+  },
+  {
+    id: 'intensity-white-hot-reprieve', setId: 'Intensity', name: 'White-hot Reprieve',
+    description: 'Spend 10 Limitless Inferno to reduce every active Intensity card cooldown by 2. Recover 1 Inferno per card accelerated, up to 4. Cooldown: 120 seconds.',
+    infernoCost: 10, cooldownSeconds: 120, ownershipGate: 'anyIntensityEternal', iconAssetKey: 'intensity-white-hot-reprieve',
+  },
+  {
+    id: 'intensity-unquenched-reserve', setId: 'Intensity', name: 'Unquenched Reserve',
+    description: 'Spend 12 Limitless Inferno to double your next positive Inferno gain this turn. Does not stack with an existing reserved gain. Cooldown: 180 seconds.',
+    infernoCost: 12, cooldownSeconds: 180, ownershipGate: 'anyIntensityInfinite', iconAssetKey: 'intensity-unquenched-reserve',
+  },
+  {
+    id: 'intensity-crucible-without-end', setId: 'Intensity', name: 'Crucible Without End',
+    description: 'Consume all Limitless Inferno, requiring 20, to gain 500 base Divine Light per stack and add up to 5 charges to each face-down Intensity Soph card (1 per 10 stacks consumed). Cooldown: 180 seconds.',
+    consumesAllInferno: true, infernoCost: 20, cooldownSeconds: 180, ownershipGate: 'anyIntensityInfinite', iconAssetKey: 'intensity-crucible-without-end',
+  },
   {
     id: 'neutralizing-inferno',
     setId: 'Neutrality',
@@ -211,10 +250,12 @@ export const ABILITY_DEFINITIONS: readonly AbilityDefinition[] = [
 
 export const ABILITY_REGISTRY = new Map(ABILITY_DEFINITIONS.map(ability => [ability.id, ability]));
 
+export const PENDING_ABILITY_ART_KEYS: ReadonlySet<string> = new Set();
+
 export function getAbilityTier(ability: AbilityDefinition): AbilityTier {
   if (ability.setId === 'Transcendent') return 'transcendent';
-  if (ability.ownershipGate === 'anyNeutralityInfinite' || ability.ownershipGate === 'anyCausalityInfinite') return 'infinite';
-  if (ability.ownershipGate === 'anyNeutralityEternal' || ability.ownershipGate === 'anyCausalityEternal') return 'eternal';
+  if (ability.ownershipGate === 'anyNeutralityInfinite' || ability.ownershipGate === 'anyCausalityInfinite' || ability.ownershipGate === 'anyIntensityInfinite') return 'infinite';
+  if (ability.ownershipGate === 'anyNeutralityEternal' || ability.ownershipGate === 'anyCausalityEternal' || ability.ownershipGate === 'anyIntensityEternal') return 'eternal';
   if (ability.ownershipGate === 'allCausalityBase') return 'foundational';
   return 'foundational';
 }
@@ -222,6 +263,11 @@ export function getAbilityTier(ability: AbilityDefinition): AbilityTier {
 export function getAbilityMaterialCost(ability: AbilityDefinition): AbilityMaterialCost {
   const tier = getAbilityTier(ability);
   if (ability.setId === 'Transcendent') return { divineLight: 8_000_000, shardsOfTranscendence: 30 };
+  if (ability.setId === 'Intensity') {
+    if (tier === 'infinite') return { solarSlag: 12, heartOfTheInferno: 6 };
+    if (tier === 'eternal') return { abyssalCinder: 10, solarSlag: 4 };
+    return { emberglass: 12, abyssalCinder: 2 };
+  }
   if (ability.setId === 'Causality') {
     if (tier === 'infinite') return { shatteredCausalTranscript: 12, heartOfCausality: 6 };
     if (tier === 'eternal') return { causalBloom: 10, shatteredCausalTranscript: 4 };
@@ -238,11 +284,23 @@ export function meetsAbilityOwnershipGate(
   infiniteCollection: Record<string, number>,
 ): boolean {
   if (!ability.ownershipGate) return true;
+  if (ability.ownershipGate === 'allIntensityBase') {
+    const baseIds = CardRegistry.getAll()
+      .filter(card => card.definitionId.includes('-intensity-') && !['Eternal', 'Infinite', 'Transcendent'].includes(card.rarity))
+      .map(card => card.definitionId);
+    return baseIds.length > 0 && baseIds.every(id => (collection[id] ?? 0) > 0);
+  }
+  if (ability.ownershipGate === 'anyIntensityEternal') {
+    return Object.entries(collection).some(([id, count]) => id.startsWith('eternal-intensity-') && count > 0);
+  }
+  if (ability.ownershipGate === 'anyIntensityInfinite') {
+    return Object.entries(infiniteCollection).some(([id, count]) => id.startsWith('infinite-intensity-') && count > 0);
+  }
   if (ability.ownershipGate === 'anyNeutralityEternal') {
-    return Object.entries(collection).some(([definitionId, count]) => definitionId.startsWith('btei-') && count > 0);
+    return Object.entries(collection).some(([id, count]) => count > 0 && getCardSetId(id) === 'Neutrality' && CardRegistry.get(id)?.rarity === 'Eternal');
   }
   if (ability.ownershipGate === 'anyNeutralityInfinite') {
-    return Object.entries(infiniteCollection).some(([definitionId, count]) => definitionId.startsWith('inf-') && count > 0);
+    return Object.entries(infiniteCollection).some(([id, count]) => count > 0 && getCardSetId(id) === 'Neutrality' && CardRegistry.get(id)?.rarity === 'Infinite');
   }
   if (ability.ownershipGate === 'anyCausalityEternal') {
     return Object.entries(collection).some(([definitionId, count]) => definitionId.startsWith('btei-causality-') && count > 0);

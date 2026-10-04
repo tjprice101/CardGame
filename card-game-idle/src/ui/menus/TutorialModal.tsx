@@ -317,6 +317,19 @@ function LightStacksBody() {
       </div>
 
       <div style={{ ...cardStyle, marginTop: 10 }}>
+        <SectionHeading>Limitless Inferno</SectionHeading>
+        <div style={bodyTextStyle}>
+          Intensity cards build uncapped <Tag>Limitless Inferno</Tag> during a turn. Level 3+ Intensity Light
+          Soph attacks, including Eternal and Infinite Light cards, spend Inferno instead of Light Stacks.
+          Dark activations and Ain Soph Aur summons build, recover, or react to it without spending it.
+          Intensity abilities can also consume or reshape Inferno. Embers kindle the next Intensity hand plays;
+          prepared tempering boosts the next Inferno Soph attack. Inferno, embers, amplifiers, and tempering
+          reset at turn end. Ordinary Light costs and Spectrum level-ups still use Light Stacks.
+        </div>
+        <div style={bodyTextStyle}>Achievements &gt; Progression &gt; Intensity tracks volcanic card play, lifetime Inferno generation/spending, a 50-Inferno single-turn record, Crater expedition clears, and ability mastery. Each Intensity boss also earns its own profile trophy. The five portrait images await artwork; unlocked sigils remain usable.</div>
+      </div>
+
+      <div style={{ ...cardStyle, marginTop: 10 }}>
         <SectionHeading>Spectrum Level</SectionHeading>
         <div style={bodyTextStyle}>
           Every card has a <Tag>Spectrum Level</Tag> from 0 to 5. You can only play a card from hand, or summon an
@@ -324,8 +337,9 @@ function LightStacksBody() {
           encounter, boss fight, and Battleground match starts at Lv 0.
         </div>
         <ListItem label="Raise">Press Raise Spectrum (default hotkey R) to spend 5 Limitless Light Stacks and sacrifice 1 hand card to reach Lv 1. Each further level costs 1 more stack (6, 7, 8, then 9 for Lv 5).</ListItem>
-        <ListItem label="Light-bound Abyss">Sacrificed cards stay outside your deck until the next deck reset, such as a new turn, Garden encounter, boss fight, or Battleground match.</ListItem>
+        <ListItem label="Light-bound Abyss">Sacrificed cards stay outside your deck until the next deck reset, unless an explicit reclaim effect returns them sooner. The Absolute Null and The White Throne Before Beginning recover the oldest eligible Neutrality Light/Dark cards, never Ain Soph Aur cards.</ListItem>
         <ListItem label="Rarity floors">Enigmatic cards are Lv 1+, Eternal Lv 2+, Infinite Lv 4+, and Transcendent cards are always Lv 5.</ListItem>
+        <ListItem label="Neutrality Infinites">All eight original Neutrality Infinites are playable with their existing artwork and Infinity recipes: two Light, four persistent Dark, and two Ain Soph Aur cards. They require Spectrum Level 4 or 5 as shown on each card. Their effects specialize in Light Stack resonance, Abyss recovery, Soph charge release/granting, cooldown acceleration, and balanced Neutrality support pairs. Their attacks spend Light Stacks, not Inferno.</ListItem>
         <ListItem label="Phantom Matrix">Its free summon may reach one level above your current Spectrum Level.</ListItem>
         <ListItem label="Deckbuilding">Higher-level cards hit harder but take tempo to unlock, so keep enough Lv 0 cards to start every turn and mulligan high-level cards you cannot reach soon.</ListItem>
       </div>
@@ -354,7 +368,7 @@ function SetsBody() {
         <div style={bodyTextStyle}>
           Buy abilities in Ability Materialization with the listed set materials, then equip up to three owned
           abilities in a saved deck. Activate them from the in-turn Ability Amplification panel. Neutrality and
-          Causality abilities have separate ownership gates; Transcendent abilities cost Divine Light and Shards
+          Causality and Intensity abilities have separate ownership gates; Transcendent abilities cost Divine Light and Shards
           of Transcendence instead of Garden materials.
         </div>
       </div>
@@ -428,14 +442,15 @@ function ModesBody() {
       <div style={cardStyle}>
         <SectionHeading>Eternity's Wake &mdash; Boss Fights</SectionHeading>
         <ListItem label="Format">One boss per session, 3-minute timer, single turn. All Divine Light you generate is dealt as damage instead of banked.</ListItem>
-        <ListItem label="Categories">The current boss sets are Neutrality and Causality. Use the set filters in the Wake menu to switch.</ListItem>
+        <ListItem label="Categories">The current boss sets are Neutrality, Causality, and Intensity. Use the set filters in the Wake menu to switch.</ListItem>
         <ListItem label="Rewards">First clear and repeat clears grant Aberrated Shards and the boss's signature Eternal card. Aberrated Shards are reserved for event Packs, Boxes, and Cases.</ListItem>
         <ListItem label="Causality Wake">The Causality filter contains five endgame-heavy bosses, each with a unique Causality Eternal reward.</ListItem>
+        <ListItem label="Intensity Wake">Five volcanic and abyssal bosses award the five Intensity Eternals. Their first boss starts at the midway Neutrality boss&apos;s health, not Causality endgame health.</ListItem>
         <ListItem label="Tier Progress">On completion, this mode awards +X <Tag>Card-light</Tag> for each card in your deck (and Extra Deck). Higher-tier bosses give more, up to 20 Card-light per card. The displayed amount is the base; each card also receives an extra +5% per Tier it has already reached.</ListItem>
       </div>
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <SectionHeading>Garden of Cards</SectionHeading>
-        <div style={bodyTextStyle}>Choose a set filter to enter an expedition. Valley of Null has three Neutrality encounters; Rift of Causality has four Causality encounters. Each encounter awards its listed set materials. Complete the final encounter to finish the run.</div>
+        <div style={bodyTextStyle}>Choose a set filter to enter an expedition. Valley of Null has three Neutrality encounters; Rift of Causality has four Causality encounters; Crater of Flames has four Intensity encounters. Each encounter awards its listed set materials. Complete the final encounter to finish the run.</div>
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
@@ -534,7 +549,7 @@ function ProgressionBody() {
         <ListItem label="Titles">Earn titles through gameplay milestones, boss clears, Infinity crafting, set completion, progression, social activity, and custom-background achievements. Pick an earned title from your profile.</ListItem>
         <ListItem label="UI Theme">Choose an unlocked Core or Rewards palette in Player Information and select Save UI Theme. Its four swatches rotate through accents, outlines, glows, and readable heading/button-title gradients: each holds for one minute, followed by a three-second fade. Reduced motion switches swatches without fading; Pantheon Default stays monochrome.</ListItem>
         <ListItem label="Appearance">Light and Dark Mode are available in Settings and your profile. Ordinary reading surfaces stay predominantly white or black; your palette supplies the decorative color. Artwork, main-menu backgrounds, card foil, and special experiences retain their own colors. Small captions remain solid and readable.</ListItem>
-        <ListItem label="Collection">Browse, search, sort, and favorite cards without changing their artwork or finish. Infinite cards group by Neutrality or Causality, not by Light, Dark, or Ain Soph Aur.</ListItem>
+        <ListItem label="Collection">Browse, search, sort, and favorite cards without changing their artwork or finish. Infinite cards group by Neutrality, Causality, or Intensity, not by Light, Dark, or Ain Soph Aur.</ListItem>
       </div>
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <SectionHeading>Finding &amp; Claiming Achievements</SectionHeading>
@@ -544,7 +559,7 @@ function ProgressionBody() {
       </div>
       <div style={{ ...cardStyle, marginTop: 10 }}>
         <SectionHeading>Custom Main Menu Backgrounds</SectionHeading>
-        <div style={bodyTextStyle}>Find eleven background achievements in Achievements &gt; Cosmetics &gt; Custom Backgrounds: four Eternal/Infinite set crowns and seven Transcendent Forge rewards. Their artwork is installed. Once earned, open Player Information &gt; Main Menu Background and select the unlocked image to equip it. These backgrounds change splash art, not your UI color palette.</div>
+        <div style={bodyTextStyle}>Find fourteen background achievements in Achievements &gt; Cosmetics &gt; Custom Backgrounds: four Eternal/Infinite set crowns, seven Transcendent Forge rewards, and three Intensity base/Eternal/Infinite completion splashes. The first eleven images are installed; the three Intensity splashes await dedicated artwork. Once earned and available, open Player Information &gt; Main Menu Background and select the unlocked image. These backgrounds change splash art, not your UI color palette.</div>
         {[...CROWN_BACKGROUND_REWARDS, ...CUSTOM_MAIN_MENU_BACKGROUND_REWARDS].map(reward => (
           <ListItem key={reward.achievementId} label={reward.name}>{reward.requirement}</ListItem>
         ))}

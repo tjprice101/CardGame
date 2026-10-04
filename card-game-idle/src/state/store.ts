@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { cloneState } from '@/utils/stateClone';
+import { useTranscendentUnlockStore } from '@/state/transcendentUnlockStore';
+import { beginDebugSession, endDebugSession, isDebugSessionActive } from '@/core/debugSession';
+import { ABILITY_DEFINITIONS } from '@/data/abilities/abilityDefinitions';
 import type {
   BoardState, ComputedBoardStats, DeckCard, DeckEntry,
   DeckState, EnigmaInstance, ExtraDeckEntry, GameState, PendingEffect, ProgressState, SavedDeck, SettingsState, TurnState, TrialDeckState,
@@ -22,11 +25,14 @@ import { CardRegistry } from '@/cards/CardRegistry';
 import { ScoreSystem } from '@/systems/scoring/ScoreSystem';
 import { DeckSystem } from '@/systems/cards/DeckSystem';
 import { accrueSophCharges, AIN_SOPH_AUR_SUMMON_STACK_REWARD, SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
-import { canActivateShatterTheInfiniteLight, SHATTER_ACTIVE_MS, SHATTER_PRIME_MS, SHATTER_RESULT_MS } from '@/systems/cards/ShatterTheInfiniteLight';
+import { canActivateShatterTheInfiniteLight, getShatterBasePayout, getShatterOrbitMultiplier, SHATTER_ACTIVE_MS, SHATTER_PRIME_MS, SHATTER_RESULT_MS } from '@/systems/cards/ShatterTheInfiniteLight';
+import { getAttackBasePayout } from '@/systems/cards/AttackPayout';
 import { ATTACK_SEQUENCE_PRIME_MS, ATTACK_SEQUENCE_RESULT_MS, ORBIT_MAX_RADIUS, ORBIT_MIN_RADIUS, getAttackSequenceDuration, getAttackSequenceMultiplier, getAttackSequenceStars, isOrbitSample } from '@/systems/cards/AttackSequence';
-import { resolveCardScaling } from '@/systems/cards/CardScaling';
 import { TurnSystem } from '@/systems/cards/TurnSystem';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
+import { gainInferno, getSophAttackPool, resetInferno, usesInferno } from '@/systems/cards/IntensityRuntime';
+import { captureIntensityProgress, mergeIntensityProgress, INTENSITY_PROGRESS_KEYS } from '@/systems/progression/intensityProgress';
+import { activateIntensityAbility, isIntensityAbility } from '@/systems/abilities/intensityAbilities';
 import { getUnmetCardRequirement } from '@/systems/cards/PlayRequirements';
 import { getCardSpectrumLevel, getSpectrumLevelUpBlocker, getSpectrumLevelUpCost, getTurnSpectrumLevel } from '@/systems/cards/SpectrumLevel';
 import { getSummonRequirements, satisfiesSummonRequirements } from '@/systems/cards/AinSophSummonRequirements';
@@ -52,7 +58,7 @@ import {
   isEnigmaUnlocked,
   awardEnigmaReward,
 } from '@/systems/progression/EnigmaSystem';
-import { getEnigmaDefinition } from '@/data/enigmas/enigmaDefinitions';
+import { getEnigmaDefinition, ENIGMA_DEFINITIONS } from '@/data/enigmas/enigmaDefinitions';
 import { getBossRewardMultiplier } from '@/systems/progression/featuredBoss';
 import {
   getAchievementShardReward,
@@ -71,8 +77,8 @@ import {
 import { getSpotlightPackId, getSpotlightPackCost } from '@/systems/progression/spotlightPack';
 import { getDailyDealPackId, getDailyDealCost } from '@/systems/progression/dailyDeal';
 import { TITLE_BADGES, TITLE_BADGE_BY_ID } from '@/data/profile/titleBadges';
-import { latchUnlockedAvatars } from '@/data/profile/avatars';
-import { getRewardThemeSeed, latchUnlockedUiThemes } from '@/data/profile/uiThemes';
+import { AVATARS, latchUnlockedAvatars } from '@/data/profile/avatars';
+import { UI_THEMES, getRewardThemeSeed, latchUnlockedUiThemes } from '@/data/profile/uiThemes';
 import {
   BOSS_DEFINITIONS,
   BOSS_FIGHT_ROUND_SECONDS,
@@ -150,6 +156,12 @@ const defaultTurn: TurnState = {
   limitlessLightStacks: 0,
   spectrumLevel: 0,
   limitlessCosmosStacks: 0,
+  limitlessInfernoStacks: 0,
+  intensityInfernoGainedThisTurn: 0,
+  intensityInfernoSpentThisTurn: 0,
+  intensityNextGainMultiplier: 1,
+  intensityBankedEmbers: 0,
+  intensityAttackBonus: 0,
   causalityCardsPlayedThisTurn: 0,
   causalityDivineLightThisTurn: 0,
   divineLightEarnedThisTurn: 0,
@@ -214,6 +226,16 @@ const defaultProgress: ProgressState = {
   causalBloom: 0,
   shatteredCausalTranscript: 0,
   heartOfCausality: 0,
+  emberglass: 0,
+  abyssalCinder: 0,
+  solarSlag: 0,
+  heartOfTheInferno: 0,
+  intensityInfernoGenerated: 0,
+  intensityCardsPlayed: 0,
+  intensityInfernoSpent: 0,
+  intensityBestTurnInferno: 0,
+  intensityCraterClears: 0,
+  intensityAbilityActivations: 0,
   lifetimeDivineLight: 5_000,
   bestSingleTurnDivineLight: 0,
   aberratedShards: 0,
@@ -509,7 +531,9 @@ interface StoreActions {
   claimDailyStreakMilestone: (day: 3 | 14) => boolean;
   spinForgeWheel: () => { prize: typeof FORGE_WHEEL_PRIZES[number]; amount: number } | null;
   /** Debug shortcut: marks every Forge event boss as defeated without fighting them. */
-  debugMarkForgeBossesDefeated: () => void;
+  debugMode: boolean;
+  activateDebugMode: () => void;
+  exitDebugMode: () => void;
   /** Spend Shards of Transcendence to acquire 1 copy of a Forge gallery card. Requires the Forge to be open. */
   purchaseForgeCardWithShards: (definitionId: string) => boolean;
   /** Purchase a Transcendent shop card with Entropic Energy. */
@@ -881,6 +905,7 @@ function buildNeutralityTutorialDeck(
 
 function addCollectionCard(progress: ProgressState, definitionId: string, finish: CardFinish = 'normal'): void {
   const definition = CardRegistry.get(definitionId);
+  const firstCopy = getEverCollectionCount(progress, definitionId) === 0;
   // No collection-side cap: every drawn copy is added so bulk pack opens always
   // grant the full count (the 4-of restriction is enforced at deckbuilding time).
   const nextCopies = (progress.collection[definitionId] ?? 0) + 1;
@@ -903,6 +928,15 @@ function addCollectionCard(progress: ProgressState, definitionId: string, finish
   // Mark as recently acquired (drives NEW badge in CollectionViewer).
   if (!progress.recentlyAcquired) progress.recentlyAcquired = {};
   progress.recentlyAcquired[definitionId] = Date.now();
+  if (definition?.rarity === 'Eternal' || definition?.rarity === 'Infinite') {
+    useTranscendentUnlockStore.getState().enqueue({ kind: 'card', definitionId, firstCopy, totalOwned: nextCopies, amount: 1 });
+  }
+}
+
+function awardTranscendenceShards(progress: ProgressState, amount: number): void {
+  if (amount <= 0) return;
+  progress.shardsOfTranscendence = (progress.shardsOfTranscendence ?? 0) + amount;
+  useTranscendentUnlockStore.getState().enqueue({ kind: 'shards', amount, totalOwned: progress.shardsOfTranscendence });
 }
 
 function recordPackOpen(progress: ProgressState, packId: string, tier: 'pack' | 'box' | 'case', drawn: string[]): void {
@@ -988,11 +1022,23 @@ function emitQuestProgressToProgress(
  * emits engine-flavored quest progress events. Always called *after* the
  * play has fully resolved (so `definitionId` is the real card played).
  */
+function recordIntensityProgress(s: Store, next: TurnState, previous: TurnState = s.turn): void {
+  if (s.trialDeck.mode === 'active') return;
+  const generated = next.intensityInfernoGainedThisTurn ?? 0;
+  const spent = next.intensityInfernoSpentThisTurn ?? 0;
+  s.progress.intensityInfernoGenerated = (s.progress.intensityInfernoGenerated ?? 0)
+    + Math.max(0, generated - (previous.intensityInfernoGainedThisTurn ?? 0));
+  s.progress.intensityInfernoSpent = (s.progress.intensityInfernoSpent ?? 0)
+    + Math.max(0, spent - (previous.intensityInfernoSpentThisTurn ?? 0));
+  s.progress.intensityBestTurnInferno = Math.max(s.progress.intensityBestTurnInferno ?? 0, generated);
+}
+
 function recordCardPlay(s: Store, definitionId: string): void {
   if (s.trialDeck.mode === 'active') return;
   s.progress.totalCardsPlayed += 1;
   if (!s.progress.cardPlayCounts) s.progress.cardPlayCounts = {};
   s.progress.cardPlayCounts[definitionId] = (s.progress.cardPlayCounts[definitionId] ?? 0) + 1;
+  if (definitionId.includes('-intensity-')) s.progress.intensityCardsPlayed = (s.progress.intensityCardsPlayed ?? 0) + 1;
   const def = ScoreSystem.getDefinition(definitionId);
   if (!def) return;
   emitQuestProgressToProgress(s.progress, { kind: 'play_cards', amount: 1 });
@@ -1146,10 +1192,12 @@ function completeBossFight(s: Store, victory: boolean): void {
     if (saved) {
       ensureEnigmaState(s.progress);
       const raidEnigmaSnapshot = cloneState(s.progress.enigmas.instances);
+      const intensitySnapshot = captureIntensityProgress(s.progress);
       s.deck = saved.deck;
       s.board = saved.board;
       s.turn = saved.turn;
       s.progress = saved.progress;
+      mergeIntensityProgress(s.progress, intensitySnapshot);
       s.settings = saved.settings;
       mergeFightEnigmaProgress(s.progress, raidEnigmaSnapshot, (id, i) => {
         const inst = s.progress.enigmas.instances[id];
@@ -1216,12 +1264,14 @@ function completeBossFight(s: Store, victory: boolean): void {
   const fightExtraDeck = s.deck.extraDeck;
   ensureEnigmaState(s.progress);
   const fightEnigmaSnapshot = cloneState(s.progress.enigmas.instances);
+  const fightIntensitySnapshot = captureIntensityProgress(s.progress);
 
   if (saved) {
     s.deck = saved.deck;
     s.board = saved.board;
     s.turn = saved.turn;
     s.progress = saved.progress;
+    mergeIntensityProgress(s.progress, fightIntensitySnapshot);
     s.settings = saved.settings;
   }
 
@@ -1258,7 +1308,7 @@ function completeBossFight(s: Store, victory: boolean): void {
         if (s.progress.forgeOfTranscendenceUnlocked) {
           transcendentShardsDropped = rollShardOfTranscendence(activeFightCount);
           if (transcendentShardsDropped > 0) {
-            s.progress.shardsOfTranscendence = (s.progress.shardsOfTranscendence ?? 0) + transcendentShardsDropped;
+            awardTranscendenceShards(s.progress, transcendentShardsDropped);
             pushRewardToast(s, `+${transcendentShardsDropped} Shard${transcendentShardsDropped > 1 ? 's' : ''} of Transcendence fell from the Forge-touched boss.`);
           }
         }
@@ -1698,6 +1748,10 @@ function recordNeutralityAbilityActivation(s: Store): void {
 
 function effectCanDraw(effect: CardEffect): boolean {
   switch (effect.type) {
+    case 'inferno_threshold_draw':
+    case 'inferno_ash_cycle':
+    case 'inferno_recall':
+    case 'neutrality_abyss_reclaim':
     case 'draw':
     case 'discard_draw':
     case 'look_top_take':
@@ -1710,7 +1764,7 @@ function effectCanDraw(effect: CardEffect): boolean {
     case 'salvage_any':
       return true;
     case 'conditional':
-      return effect.then.some(sub => effectCanDraw(sub));
+      return effect.then.some(effectCanDraw) || (effect.else?.some(effectCanDraw) ?? false);
     default:
       return false;
   }
@@ -1868,6 +1922,7 @@ function endTurnInternal(s: Store): void {
     (slot as any).side = 'soph';
   }
   s.turn.limitlessLightStacks = 0;
+  resetInferno(s.turn);
   if (s.turn.divineLightEarnedThisTurn > (s.progress.bestSingleTurnDivineLight ?? 0)) {
     s.progress.bestSingleTurnDivineLight = s.turn.divineLightEarnedThisTurn;
   }
@@ -2212,6 +2267,7 @@ export const useStore = create<Store>()(
         for (const material of materials.filter((entry): entry is NonNullable<typeof entry> => entry !== undefined)) {
           recordLossEvent(s, [{ definitionId: material.definitionId }], 'board');
         }
+        recordIntensityProgress(s, result.turn);
         s.turn = result.turn;
         s.board = result.board;
         s.deck = result.deck;
@@ -2528,7 +2584,12 @@ export const useStore = create<Store>()(
           };
           const placementEffects = def.type === 'Light' ? def.sophPlacementEffects ?? [] : [];
           const cosmosBefore = s.turn.limitlessCosmosStacks ?? 0;
-          const result = CardEffectExecutor.execute(deckCard, s.turn, nextBoard, nextDeck, false, {
+          const placementTurn = { ...s.turn };
+          if (def.definitionId.includes('intensity') && (placementTurn.intensityBankedEmbers ?? 0) > 0) {
+            placementTurn.intensityBankedEmbers = (placementTurn.intensityBankedEmbers ?? 0) - 1;
+            gainInferno(placementTurn, 1);
+          }
+          const result = CardEffectExecutor.execute(deckCard, placementTurn, nextBoard, nextDeck, false, {
             effects: side === 'soph' ? placementEffects : [],
             countAsPlay: false,
             removeFromHand: false,
@@ -2536,6 +2597,7 @@ export const useStore = create<Store>()(
           if (!result.canPlay) return;
           s.board = result.board;
           s.deck = result.deck;
+          recordIntensityProgress(s, result.turn);
           s.turn = result.turn;
           recordCausalityCosmosDelta(s, (s.turn.limitlessCosmosStacks ?? 0) - cosmosBefore);
           queuePendingEffects(s.turn, result);
@@ -2624,6 +2686,7 @@ export const useStore = create<Store>()(
               { effects: def.onFlipEffects, countAsPlay: false, removeFromHand: false },
             );
             if (result.canPlay) {
+              recordIntensityProgress(s, result.turn);
               s.turn = result.turn;
               s.board = result.board;
               s.deck = result.deck;
@@ -2656,12 +2719,11 @@ export const useStore = create<Store>()(
         if (!def || def.type !== 'Light') return;
         const attack = def.ainAttack;
         if ((slot.attackCooldowns[attack.id] ?? 0) > 0) return;
-        const scaling = resolveCardScaling(attack.scaling, {
+        const basePayout = getAttackBasePayout(attack, {
           limitlessLightStacks: s.turn.limitlessLightStacks,
           asaFrontCount: s.board.frontSlots.filter(card => card?.type === 'AinSophAur').length,
           collectionPower: computeGlobalResonanceScore(s.progress),
         });
-        const basePayout = Math.max(0, Math.round(attack.baseDivineLight + scaling));
         const now = Date.now();
         s.turn.attackSequence = {
           kind: 'ain', phase: 'priming', phaseEndsAt: now + ATTACK_SEQUENCE_PRIME_MS, pauseStartedAt: now,
@@ -2681,18 +2743,26 @@ export const useStore = create<Store>()(
         if (!def || def.type !== 'Light') return;
         const attack = def.sophAttack;
         if ((slot.attackCooldowns[attack.id] ?? 0) > 0) return;
-        const cost = attack.stackCost ? resolveStackCost(attack.stackCost, s.turn.limitlessLightStacks) : 0;
+        const pool = getSophAttackPool(attack, s.turn);
+        const cost = attack.stackCost ? resolveStackCost(attack.stackCost, pool) : 0;
         const selectedSpend = spend ?? cost;
-        if (selectedSpend < cost || selectedSpend > s.turn.limitlessLightStacks) return;
+        if (!Number.isFinite(selectedSpend) || !Number.isInteger(selectedSpend) || selectedSpend < cost || selectedSpend > pool) return;
         // Scaling reads the pre-spend pool so paying the cost never shrinks the payout.
         const stacksBeforeSpend = s.turn.limitlessLightStacks;
-        s.turn.limitlessLightStacks -= selectedSpend;
-        const scaling = resolveCardScaling(attack.scaling, {
+        if (usesInferno(attack)) {
+          s.turn.limitlessInfernoStacks = pool - selectedSpend;
+          s.turn.intensityInfernoSpentThisTurn = (s.turn.intensityInfernoSpentThisTurn ?? 0) + selectedSpend;
+          if (s.trialDeck.mode !== 'active') s.progress.intensityInfernoSpent = (s.progress.intensityInfernoSpent ?? 0) + selectedSpend;
+        } else {
+          s.turn.limitlessLightStacks -= selectedSpend;
+        }
+        const tempered = usesInferno(attack) ? s.turn.intensityAttackBonus ?? 0 : 0;
+        if (usesInferno(attack)) s.turn.intensityAttackBonus = 0;
+        const basePayout = getAttackBasePayout(attack, {
           limitlessLightStacks: stacksBeforeSpend,
           asaFrontCount: s.board.frontSlots.filter(card => card?.type === 'AinSophAur').length,
           collectionPower: computeGlobalResonanceScore(s.progress),
-        });
-        const basePayout = Math.max(0, Math.round(attack.baseDivineLight + scaling));
+        }, tempered);
         const now = Date.now();
         s.turn.attackSequence = {
           kind: 'soph', phase: 'priming', phaseEndsAt: now + ATTACK_SEQUENCE_PRIME_MS, pauseStartedAt: now,
@@ -2742,6 +2812,7 @@ export const useStore = create<Store>()(
           { effects: def.sophEffects, countAsPlay: false, removeFromHand: false },
         );
         if (!result.canPlay) return;
+        recordIntensityProgress(s, result.turn);
         s.turn = result.turn;
         recordCausalityCosmosDelta(s, (s.turn.limitlessCosmosStacks ?? 0) - cosmosBefore);
         s.board = result.board;
@@ -2781,12 +2852,11 @@ export const useStore = create<Store>()(
         // Scaling reads the pre-spend pool so paying the cost never shrinks the payout.
         const stacksBeforeSpend = s.turn.limitlessLightStacks;
         s.turn.limitlessLightStacks -= selectedSpend;
-        const scaling = resolveCardScaling(attack.scaling, {
+        const basePayout = getAttackBasePayout(attack, {
           limitlessLightStacks: stacksBeforeSpend,
           asaFrontCount: s.board.frontSlots.filter(card => card?.type === 'AinSophAur').length,
           collectionPower: computeGlobalResonanceScore(s.progress),
         });
-        const basePayout = Math.max(0, Math.round(attack.baseDivineLight + scaling));
         const now = Date.now();
         s.turn.attackSequence = {
           kind: 'bridge', phase: 'priming', phaseEndsAt: now + ATTACK_SEQUENCE_PRIME_MS, pauseStartedAt: now,
@@ -2891,7 +2961,9 @@ export const useStore = create<Store>()(
             } else if (sequence.kind === 'soph' && def.type === 'Light') {
               slot.attackCooldowns[def.sophAttack.id] = def.sophAttack.cooldownCards;
               emitQuestProgressToProgress(s.progress, { kind: 'activate_soph_attack', amount: 1 });
-              emitQuestProgressToProgress(s.progress, { kind: 'spend_light_stacks', amount: sequence.stackSpend });
+              if (!usesInferno(def.sophAttack)) {
+                emitQuestProgressToProgress(s.progress, { kind: 'spend_light_stacks', amount: sequence.stackSpend });
+              }
             } else if (sequence.kind === 'bridge' && def.type === 'AinSophAur' && def.bridgeAttack) {
               slot.attackCooldowns[def.bridgeAttack.id] = def.bridgeAttack.cooldownCards;
               emitQuestProgressToProgress(s.progress, { kind: 'bridge_ain_soph_aur', amount: 1 });
@@ -2928,6 +3000,7 @@ export const useStore = create<Store>()(
           phaseEndsAt: now + SHATTER_PRIME_MS,
           pauseStartedAt: now,
           stacks: 0,
+          basePayout: getShatterBasePayout(s.board, s.turn, s.progress),
           payout: 0,
         };
       });
@@ -2988,7 +3061,7 @@ export const useStore = create<Store>()(
           return;
         }
         if (shatter.phase === 'active') {
-          const rawAmount = Math.round(Math.max(shatter.stacks, shatter.orbitPower ?? 0) * 1_000);
+          const rawAmount = Math.round(shatter.basePayout * getShatterOrbitMultiplier(shatter.orbitPower));
           const earnedBefore = s.turn.divineLightEarnedThisTurn;
           if (rawAmount > 0) grantDivineLight(s, rawAmount);
           shatter.payout = s.turn.divineLightEarnedThisTurn - earnedBefore;
@@ -3259,6 +3332,7 @@ export const useStore = create<Store>()(
             },
           );
           if (!result.canPlay) return;
+          recordIntensityProgress(s, result.turn);
           s.turn = result.turn;
           s.board = result.board;
           s.deck = result.deck;
@@ -3589,10 +3663,7 @@ export const useStore = create<Store>()(
           }
         }
         // Grant the Infinite card
-        s.progress.infiniteCollection[recipe.resultId] = (s.progress.infiniteCollection[recipe.resultId] ?? 0) + 1;
-        // Also add to main collection so it shows in deck builder / collection viewer
-        s.progress.collection[recipe.resultId] = (s.progress.collection[recipe.resultId] ?? 0) + 1;
-        syncCardOwnershipHistory(s.progress, recipe.resultId);
+        addCollectionCard(s.progress, recipe.resultId, 'holo');
       });
       return true;
     },
@@ -3771,7 +3842,7 @@ export const useStore = create<Store>()(
         if (claimed.includes(day) || s.progress.dailyLogin.streak < day) return;
         s.progress.dailyLogin.claimedStreakMilestones = [...claimed, day];
         if (milestone.kind === 'aberrated_shards') s.progress.aberratedShards += milestone.amount;
-        else s.progress.shardsOfTranscendence = (s.progress.shardsOfTranscendence ?? 0) + milestone.amount;
+        else awardTranscendenceShards(s.progress, milestone.amount);
         pushRewardToast(s, `Streak reward claimed: ${milestone.label}`);
       });
       return true;
@@ -3810,7 +3881,7 @@ export const useStore = create<Store>()(
             }
           }
         } else if (prize.kind === 'shards_of_transcendence') {
-          progress.shardsOfTranscendence = (progress.shardsOfTranscendence ?? 0) + amount;
+          awardTranscendenceShards(progress, amount);
         } else {
           amount = grantPersistentDivineLight(s, amount);
         }
@@ -3820,15 +3891,82 @@ export const useStore = create<Store>()(
       return result;
     },
 
-    debugMarkForgeBossesDefeated: () => {
+    debugMode: false,
+    activateDebugMode: () => {
+      const state = get();
+      if (isDebugSessionActive()) {
+        get().enqueueToast('Debug mode is already active. Exit Debug restores your normal session.', 'reward');
+        return;
+      }
+      if (state.turn.phase !== 'idle' || state.bossFight.mode !== 'idle' || state.battleground.mode !== 'idle'
+        || state.gardenDungeon.phase !== 'idle' || state.trialDeck.mode === 'active' || useCoopSyncStore.getState().sessionId) {
+        get().enqueueToast('Return to the main menu and finish active gameplay before enabling Debug.', 'warning');
+        return;
+      }
+      beginDebugSession(state);
       set(s => {
+        s.debugMode = true;
+        for (const card of CardRegistry.getAll()) {
+          const id = card.definitionId;
+          const holos = Math.max(s.progress.holoCollection[id] ?? 0, isHoloOnlyCard(card) ? s.progress.collection[id] ?? 0 : 0, 8);
+          s.progress.holoCollection[id] = holos;
+          s.progress.collection[id] = Math.max(s.progress.collection[id] ?? 0, holos + (isHoloOnlyCard(card) ? 0 : 8));
+          if (card.rarity === 'Infinite') s.progress.infiniteCollection[id] = s.progress.collection[id];
+          if (card.rarity === 'Transcendent') {
+            s.progress.transcendentCollection ??= {};
+            s.progress.transcendentCollection[id] = s.progress.collection[id];
+          }
+        }
+        s.progress.ownedAbilities ??= {};
+        for (const ability of ABILITY_DEFINITIONS) s.progress.ownedAbilities[ability.id] = true;
+        s.progress.divineLight = Math.max(s.progress.divineLight, 1_000_000_000);
+        s.progress.aberratedShards = Math.max(s.progress.aberratedShards, 1_000_000);
+        s.progress.fractureShards = Math.max(s.progress.fractureShards ?? 0, 1_000_000);
+        s.progress.entropicEnergyBalance = Math.max(s.progress.entropicEnergyBalance ?? 0, 1_000_000_000);
+        s.progress.keysOfTranscendence = Math.max(s.progress.keysOfTranscendence ?? 0, 100);
+        s.progress.shardsOfTranscendence = Math.max(s.progress.shardsOfTranscendence ?? 0, 100_000);
+        s.progress.forgeWheelSpins = Math.max(s.progress.forgeWheelSpins ?? 0, 100);
+        for (const currency of ['nullifiedLattice', 'nullSearedLight', 'nullifiedOblivionMatter', 'seedOfCausality', 'causalBloom', 'shatteredCausalTranscript', 'heartOfCausality', 'emberglass', 'abyssalCinder', 'solarSlag', 'heartOfTheInferno'] as const) {
+          s.progress[currency] = Math.max(s.progress[currency], 100_000);
+        }
+        s.progress.totalPacksOpened = Math.max(s.progress.totalPacksOpened ?? 0, 10);
+        s.progress.forgeOfTranscendenceUnlocked = true;
         if (!s.progress.bossCodex) s.progress.bossCodex = {};
-        for (const bossId of FORGE_EVENT_BOSS_IDS) {
+        for (const boss of BOSS_DEFINITIONS) {
+          const bossId = boss.id;
+          s.progress.bossClearCounts[bossId] = Math.max(s.progress.bossClearCounts[bossId] ?? 0, 1);
           const entry = s.progress.bossCodex[bossId] ?? {};
           if (entry.firstClearAt === undefined) entry.firstClearAt = Date.now();
           s.progress.bossCodex[bossId] = entry;
         }
-        pushRewardToast(s, 'Debug: every Forge event boss marked as defeated.');
+        s.bossFight.cooldowns = {};
+        ensureEnigmaState(s.progress);
+        for (const definition of ENIGMA_DEFINITIONS) {
+          const instance = ensureInstance(s.progress, definition.id);
+          if (!instance) throw new Error(`Missing registered Enigma: ${definition.id}`);
+          instance.status = 'completed';
+          instance.stepsComplete = definition.steps.map(() => true);
+          instance.currentStepIndex = definition.steps.length;
+          instance.completedAt ??= Date.now();
+        }
+        s.progress.profile.unlockedAvatarIds = AVATARS.map(avatar => avatar.id);
+        s.progress.profile.unlockedUiThemeIds = UI_THEMES.map(theme => theme.id);
+        s.progress.achievementUnlocks = Object.fromEntries(TITLE_BADGES.map(title => [title.id, true]));
+        recompute(s);
+        pushRewardToast(s, 'Temporary Debug active: all cards, holofoils, abilities and menus unlocked. Saves remain normal; online services are disabled.');
+      });
+    },
+    exitDebugMode: () => {
+      const original = endDebugSession();
+      if (!original) return;
+      useTranscendentUnlockStore.getState().clear();
+      set(s => {
+        Object.assign(s, cloneState(original));
+        s.debugMode = false;
+        s.toasts = [];
+        setUiPreferences(s.settings);
+        recompute(s);
+        pushRewardToast(s, 'Debug ended. Your normal session has been restored.');
       });
     },
 
@@ -3837,13 +3975,18 @@ export const useStore = create<Store>()(
       const state = get();
       if (!state.progress.forgeOfTranscendenceUnlocked) return false;
       if ((state.progress.shardsOfTranscendence ?? 0) < FORGE_CARD_SHARD_COST) return false;
+      const previousCopies = state.progress.transcendentCollection?.[definitionId] ?? 0;
       set(s => {
         s.progress.shardsOfTranscendence = (s.progress.shardsOfTranscendence ?? 0) - FORGE_CARD_SHARD_COST;
         s.progress.transcendentCollection = {
           ...(s.progress.transcendentCollection ?? {}),
           [definitionId]: ((s.progress.transcendentCollection ?? {})[definitionId] ?? 0) + 1,
         };
-        pushRewardToast(s, 'Acquired 1 copy from the Forge of Transcendence.');
+      });
+      useTranscendentUnlockStore.getState().enqueue({
+        kind: 'card', definitionId,
+        firstCopy: Math.max(previousCopies, getEverCollectionCount(state.progress, definitionId)) === 0,
+        totalOwned: previousCopies + 1,
       });
       return true;
     },
@@ -3894,7 +4037,7 @@ export const useStore = create<Store>()(
           if (reward?.kind === 'shards') s.progress.aberratedShards += reward.amount;
           if (reward?.kind === 'divine_light') grantPersistentDivineLight(s, reward.amount);
           if (reward?.kind === 'transcendent_shards') {
-            s.progress.shardsOfTranscendence = (s.progress.shardsOfTranscendence ?? 0) + reward.amount;
+            awardTranscendenceShards(s.progress, reward.amount);
           }
           if (reward?.kind === 'card') {
             for (let copy = 0; copy < reward.amount; copy += 1) {
@@ -3912,7 +4055,7 @@ export const useStore = create<Store>()(
           if (s.progress.forgeOfTranscendenceUnlocked && FORGE_CALENDAR_BONUS_DAYS.includes(day)) {
             const dropped = rollShardOfTranscendence();
             if (dropped > 0) {
-              s.progress.shardsOfTranscendence = (s.progress.shardsOfTranscendence ?? 0) + dropped;
+              awardTranscendenceShards(s.progress, dropped);
               pushRewardToast(s, `+${dropped} Shard${dropped > 1 ? 's' : ''} of Transcendence ${dropped > 1 ? 'were' : 'was'} tucked into today's reward.`);
             }
           }
@@ -3974,13 +4117,17 @@ export const useStore = create<Store>()(
         s.progress.ownedAbilities[abilityId] = true;
         syncEnigmaProgressFromBoard(s, true);
       });
+      if (ability.setId === 'Transcendent') {
+        useTranscendentUnlockStore.getState().enqueue({ kind: 'ability', abilityId });
+      }
       return true;
     },
 
     grantGardenCurrency: (currency, amount = 1) => {
       set(s => {
         const value = Number.isFinite(amount) ? Math.max(0, Math.floor(amount)) : 0;
-        s.progress[currency] += value;
+        if (currency === 'shardsOfTranscendence') awardTranscendenceShards(s.progress, value);
+        else s.progress[currency] += value;
       });
     },
 
@@ -4011,6 +4158,9 @@ export const useStore = create<Store>()(
       if (mainReward) rewards[mainReward] = nextReward ? 3 : 4;
       if (nextReward) rewards[nextReward] = (rewards[nextReward] ?? 0) + 1;
       set(s => {
+        if (isFinalEncounter && dungeon.id === 'crater-of-flames') {
+          s.progress.intensityCraterClears = (s.progress.intensityCraterClears ?? 0) + 1;
+        }
         // Forge of Transcendence: final-encounter clears can drop a Shard once the Forge is opened.
         if (isFinalEncounter && s.progress.forgeOfTranscendenceUnlocked) {
           const dropped = rollShardOfTranscendence();
@@ -4020,7 +4170,8 @@ export const useStore = create<Store>()(
           }
         }
         for (const [currency, amount] of Object.entries(rewards) as Array<[GardenRewardCurrency, number]>) {
-          s.progress[currency] = (s.progress[currency] ?? 0) + amount;
+          if (currency === 'shardsOfTranscendence') awardTranscendenceShards(s.progress, amount);
+          else s.progress[currency] = (s.progress[currency] ?? 0) + amount;
         }
         s.gardenDungeon.phase = 'victory';
         s.gardenDungeon.lastReward = mainReward;
@@ -4114,6 +4265,21 @@ export const useStore = create<Store>()(
       const now = Date.now();
       if ((state.turn.abilityCooldownUntil?.[ability.id] ?? 0) > now) {
         get().enqueueToast(`${ability.name} is on cooldown.`, 'warning', 2000);
+        return;
+      }
+      if (isIntensityAbility(ability.id)) {
+        let failure: string | undefined;
+        set(s => {
+          const before = { ...s.turn };
+          const result = activateIntensityAbility(s, ability.id, now);
+          if (!result.success) failure = result.reason;
+          else {
+            recordIntensityProgress(s, s.turn, before);
+            if (s.trialDeck.mode !== 'active') s.progress.intensityAbilityActivations = (s.progress.intensityAbilityActivations ?? 0) + 1;
+            if (result.baseDivineLight > 0) grantDivineLight(s, result.baseDivineLight);
+          }
+        });
+        if (failure) get().enqueueToast(failure, 'warning', 2500);
         return;
       }
       const reduceCausalityCooldowns = (s: Store, amount: number, refresh = false) => {
@@ -4926,10 +5092,12 @@ export const useStore = create<Store>()(
           if (saved) {
             ensureEnigmaState(s.progress);
             const raidEnigmaSnapshot = cloneState(s.progress.enigmas.instances);
+            const intensitySnapshot = captureIntensityProgress(s.progress);
             s.deck = saved.deck;
             s.board = saved.board;
             s.turn = saved.turn;
             s.progress = saved.progress;
+            mergeIntensityProgress(s.progress, intensitySnapshot);
             s.settings = saved.settings;
             mergeFightEnigmaProgress(s.progress, raidEnigmaSnapshot, (id, i) => {
               const inst = s.progress.enigmas.instances[id];
@@ -5113,7 +5281,10 @@ export const useStore = create<Store>()(
     // �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E� Save/load �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E�
 
     loadState: (loaded) => {
+      useTranscendentUnlockStore.getState().clear();
+      endDebugSession();
       set(s => {
+        s.debugMode = false;
         // Migrate collection: string[] �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E� Record<string, number>
         if (Array.isArray((loaded.progress as { collection: unknown }).collection)) {
           const rec: Record<string, number> = {};
@@ -5304,9 +5475,17 @@ export const useStore = create<Store>()(
         if (typeof op['forgeWheelLastAccruedDayIndex'] !== 'number') op['forgeWheelLastAccruedDayIndex'] = todayLocal;
         if (!Array.isArray(dailyLogin['claimedStreakMilestones'])) dailyLogin['claimedStreakMilestones'] = [];
         if (!op['ownedAbilities'] || typeof op['ownedAbilities'] !== 'object') op['ownedAbilities'] = {};
-        for (const currency of ['nullifiedLattice', 'nullSearedLight', 'nullifiedOblivionMatter', 'seedOfCausality', 'causalBloom', 'shatteredCausalTranscript', 'heartOfCausality'] as const) {
+        for (const currency of ['nullifiedLattice', 'nullSearedLight', 'nullifiedOblivionMatter', 'seedOfCausality', 'causalBloom', 'shatteredCausalTranscript', 'heartOfCausality', 'emberglass', 'abyssalCinder', 'solarSlag', 'heartOfTheInferno'] as const) {
           if (typeof op[currency] !== 'number' || !Number.isFinite(op[currency]) || op[currency] < 0) op[currency] = 0;
           else op[currency] = Math.floor(op[currency] as number);
+        }
+        if (op['intensityCardsPlayed'] === undefined) {
+          op['intensityCardsPlayed'] = Object.entries(loaded.progress.cardPlayCounts ?? {})
+            .reduce((total, [id, count]) => total + (id.includes('-intensity-') ? count : 0), 0);
+        }
+        for (const key of INTENSITY_PROGRESS_KEYS) {
+          const value = op[key];
+          op[key] = typeof value === 'number' && Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
         }
         if (!loaded.gardenDungeon || typeof loaded.gardenDungeon !== 'object') {
           loaded.gardenDungeon = { ...defaultGardenDungeon };
@@ -5378,6 +5557,18 @@ export const useStore = create<Store>()(
         delete ot['oblivionEarnedThisTurn'];
         if (ot['divineLightEarnedThisTurn'] === undefined) ot['divineLightEarnedThisTurn'] = 0;
         if (ot['limitlessCosmosStacks'] === undefined) ot['limitlessCosmosStacks'] = 0;
+        for (const key of ['limitlessInfernoStacks', 'intensityInfernoGainedThisTurn', 'intensityInfernoSpentThisTurn', 'intensityBankedEmbers', 'intensityAttackBonus'] as const) {
+          const value = ot[key];
+          ot[key] = typeof value === 'number' && Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
+        }
+        const nextGain = ot['intensityNextGainMultiplier'];
+        ot['intensityNextGainMultiplier'] = typeof nextGain === 'number' && Number.isFinite(nextGain)
+          ? Math.max(1, Math.floor(nextGain)) : 1;
+        const shatter = loaded.turn.shatterInfiniteLight;
+        if (shatter && !Number.isFinite(shatter.basePayout)) {
+          console.info('[SaveManager] Upgrading legacy Shatter payout from the saved board.');
+          shatter.basePayout = getShatterBasePayout(loaded.board, loaded.turn, loaded.progress);
+        }
         if (ot['trail'] === undefined) ot['trail'] = 0;
         if (ot['strain'] === undefined) ot['strain'] = 0;
         if (ot['turnNumber'] === undefined) ot['turnNumber'] = 0;
@@ -5647,8 +5838,10 @@ export const useStore = create<Store>()(
     },
 
     resetToDefault: () => {
+      useTranscendentUnlockStore.getState().clear();
+      endDebugSession();
       set(() => {
-        const nextState = { ...cloneState(defaultGameState), startedAt: Date.now(), lastSavedAt: Date.now() };
+        const nextState = { ...cloneState(defaultGameState), debugMode: false, startedAt: Date.now(), lastSavedAt: Date.now() };
         setUiPreferences(nextState.settings);
         return nextState;
       });
@@ -5679,14 +5872,3 @@ export const selectAchievementClaims = (s: Store) => s.progress.achievementClaim
 export const selectCardPlayCounts = (s: Store) => s.progress.cardPlayCounts;
 export const selectCanEmbraceInfinite = (s: Store): boolean => canEmbraceInfinite(s);
 export const selectRadiance = (s: Store): number => s.turn.radiance;
-
-
-
-
-
-
-
-
-
-
-

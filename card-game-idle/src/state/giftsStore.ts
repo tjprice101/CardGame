@@ -10,7 +10,8 @@ import { getSupabase } from '@/net/supabaseClient';
 import { useSocialStore } from '@/state/socialStore';
 import { useStore } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
-import { syncCardOwnershipHistory } from '@/systems/progression/ownershipHistory';
+import { getEverCollectionCount, syncCardOwnershipHistory } from '@/systems/progression/ownershipHistory';
+import { useTranscendentUnlockStore } from '@/state/transcendentUnlockStore';
 import type { CardFinish } from '@/types/cards';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
@@ -263,7 +264,14 @@ export const useGiftsStore = create<GiftsState>((set, get) => ({
     }
 
     // Credit the local save.
+    const firstCopy = getEverCollectionCount(useStore.getState().progress, gift.payload.definitionId) === 0;
     creditCollection(gift.payload.definitionId, gift.payload.finish, gift.payload.count);
+    if (CardRegistry.get(gift.payload.definitionId)?.rarity === 'Eternal') {
+      useTranscendentUnlockStore.getState().enqueue({
+        kind: 'card', definitionId: gift.payload.definitionId, firstCopy,
+        amount: gift.payload.count, totalOwned: useStore.getState().progress.collection[gift.payload.definitionId],
+      });
+    }
 
     const updated = mapRow(data as Parameters<typeof mapRow>[0]);
     set(s => ({

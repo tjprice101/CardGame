@@ -7,6 +7,26 @@ export type BoardEffect =
 export type CardSubtypeFilter = 'AinSophAur' | 'Light' | 'Dark';
 
 export type ImmediateEffect =
+  | { type: 'neutrality_stack_resonance'; perStack: number; cap: number }
+  | { type: 'neutrality_abyss_reclaim'; count: number }
+  | { type: 'neutrality_charge_release'; cap: number; divineLightPerCharge: number }
+  | { type: 'neutrality_charge_grant'; value: number }
+  | { type: 'neutrality_cooldown_reduction'; value: number; stackPerCard: number; cap: number }
+  | { type: 'neutrality_equilibrium'; divineLightPerPair: number; stacksPerPair: number }
+  | { type: 'inferno_gain'; value: number }
+  | { type: 'inferno_board_kindle'; perCard: number; side: 'ain' | 'soph' | 'any' }
+  | { type: 'inferno_embers'; value: number }
+  | { type: 'inferno_charge_forge'; charge: number; perCharged: number }
+  | { type: 'inferno_ash_cycle'; count: number; perCard: number }
+  | { type: 'inferno_recall'; count: number; minInferno: number; perCard: number }
+  | { type: 'inferno_threshold_draw'; threshold: number; belowGain: number; draw: number }
+  | { type: 'inferno_rekindle'; fraction: number; minimum: number }
+  | { type: 'inferno_next_gain'; multiplier: number; kindle: number }
+  | { type: 'inferno_pressure'; divisor: number; perStep: number; cap: number }
+  | { type: 'inferno_temper'; perStack: number; cap: number }
+  | { type: 'inferno_balance'; perPair: number; unmatchedGain: number }
+  | { type: 'inferno_eruption'; threshold: number; divineLight: number; kindle: number }
+  | { type: 'inferno_memory'; perDistinct: number; cap: number }
   | { type: 'divine_light_flat'; value: number }
   | { type: 'cosmos_flat'; value: number }
   | { type: 'convert_light_to_cosmos'; lightCost: number; cosmosGain: number }
@@ -30,7 +50,8 @@ export type ImmediateEffect =
   | { type: 'salvage_by_type_count'; filter: CardSubtypeFilter[]; count: number }
   | { type: 'salvage_either_light_or_dark'; count: number; lightStacks: number }
   | { type: 'salvage_any' }
-  | { type: 'salvage_by_id'; targetId: string; label?: string };
+  | { type: 'salvage_by_id'; targetId: string; label?: string }
+  | { type: 'consume_limitless_light_stacks'; value: number };
 
 export type EffectCondition =
   | { type: 'cards_played_gte'; value: number }
@@ -42,6 +63,7 @@ export interface ConditionalEffect {
   type: 'conditional';
   condition: EffectCondition;
   then: CardEffect[];
+  else?: CardEffect[];
 }
 
 export type CoreCardEffect = BoardEffect | ImmediateEffect | ConditionalEffect;

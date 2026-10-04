@@ -8,6 +8,107 @@
   --ui-text-legibility-shadow: -0.6px 0 #000, 0.6px 0 #000, 0 -0.6px #000, 0 0.6px #000, 0 1px 2px rgba(0,0,0,0.85);
 }
 
+.arena-underlay { display: contents; }
+.game-scene-root[data-attack-active="true"] .arena-underlay {
+  display: none;
+}
+.game-scene-root[data-attack-active="true"] .arena-underlay *,
+.game-scene-root[data-attack-active="true"] .arena-underlay *::before,
+.game-scene-root[data-attack-active="true"] .arena-underlay *::after,
+.deck-builder-screen .live-card-shimmer[data-card-visible="false"],
+.deck-builder-screen .live-card-shimmer[data-card-visible="false"]::before,
+.deck-builder-screen .live-card-shimmer[data-card-visible="false"]::after,
+.deck-builder-screen .live-card-shimmer[data-card-visible="false"] *,
+.deck-builder-screen .live-card-shimmer[data-card-visible="false"] *::before,
+.deck-builder-screen .live-card-shimmer[data-card-visible="false"] *::after {
+  animation-play-state: paused !important;
+}
+.deck-builder-screen .collection-card-tile {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 176px;
+}
+
+.transcendent-unlock-screen {
+  --reward-bright: #ffd6ed; --reward-accent: #ff6da8; --reward-glow: #b06aff;
+  position: fixed; inset: 0; z-index: 200000; overflow-y: auto; isolation: isolate;
+  display: grid; place-items: center; padding: 28px 18px; box-sizing: border-box;
+  color: #ffe8f4; background: radial-gradient(ellipse at 50% 42%, #701339 0%, #300d37 38%, #08030d 78%);
+  font-family: Georgia, serif; text-align: center;
+}
+.transcendent-unlock-content { position: relative; z-index: 1; width: min(100%, 760px); }
+.transcendent-unlock-eyebrow { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: #e3a6ff; }
+.transcendent-unlock-content h1 { font-size: clamp(26px, 5vw, 52px); margin: 12px 0 24px; text-shadow: 0 0 30px #f86aad; }
+.transcendent-unlock-content h2 { font-size: clamp(20px, 3vw, 30px); margin: 20px 0 10px; }
+.transcendent-unlock-content p { line-height: 1.6; color: #f1c4df; margin: 10px auto; max-width: 620px; }
+.transcendent-unlock-reveal { position: relative; width: fit-content; margin: auto; animation: transcendentUnlockReveal 1.8s cubic-bezier(.16,.84,.3,1) both; }
+.transcendent-unlock-card { width: clamp(160px, 25vw, 250px); aspect-ratio: 148 / 204; border-radius: 14px; box-shadow: 0 0 45px #ef65b477, 0 0 100px #a05cff55; }
+.transcendent-unlock-ability { display: block; width: clamp(140px, 22vw, 220px); height: auto; max-height: 280px; object-fit: contain; box-shadow: 0 0 60px #a05cff88; }
+.transcendent-unlock-plus { position: absolute; right: -28px; bottom: 10px; font-size: clamp(60px, 9vw, 94px); font-weight: 900; color: #fff; text-shadow: 0 0 20px #ff78bd, 0 0 40px #ad61ff; animation: transcendentUnlockCopy 1.2s .2s ease-out both; }
+.transcendent-unlock-duplicate .transcendent-unlock-reveal { animation-duration: 1s; }
+.transcendent-unlock-continue { margin-top: 22px; padding: 13px 42px; border: 1px solid #f6b6dc; border-radius: 8px; background: linear-gradient(115deg, #710e35, #4a1c6e); color: #fff; font: bold 16px Georgia, serif; cursor: pointer; }
+.transcendent-unlock-continue:focus-visible { outline: 3px solid #fff; outline-offset: 5px; }
+.transcendent-unlock-rays { position: fixed; inset: -80%; pointer-events: none; z-index: 0; opacity: .35; background: repeating-conic-gradient(from 12deg, transparent 0 12deg, #f1b0e533 14deg, transparent 18deg 30deg); animation: transcendentUnlockRays 38s linear infinite; }
+.transcendent-unlock-particles { position: fixed; inset: 0; pointer-events: none; }
+.transcendent-unlock-particles i { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #ffd6ed; box-shadow: 0 0 10px #ff6da8, 0 0 24px #b06aff; animation: transcendentUnlockParticle 3.8s ease-in-out infinite; }
+@keyframes transcendentUnlockReveal { from { transform: translateY(55px) scale(.5) rotate(-9deg); opacity: 0; filter: brightness(3); } to { transform: none; opacity: 1; filter: brightness(1); } }
+@keyframes transcendentUnlockCopy { from { transform: scale(2.4) translateY(20px); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes transcendentUnlockRays { to { transform: rotate(360deg); } }
+@keyframes transcendentUnlockParticle { 0%, 100% { transform: translateY(20px) scale(.6); opacity: .2; } 50% { transform: translateY(-35px) scale(1.3); opacity: 1; } }
+html.reduced-motion .transcendent-unlock-screen *,
+html.reduced-motion .transcendent-unlock-screen *::before,
+html.reduced-motion .transcendent-unlock-screen *::after { animation: none !important; }
+
+.reward-ceremony-infinite {
+  --reward-bright: #e0ffff; --reward-accent: #63dfff; --reward-glow: #a98aff;
+  background: radial-gradient(ellipse at 20% 25%, #5b1548, transparent 55%), radial-gradient(ellipse at 80% 70%, #064846, transparent 55%), linear-gradient(145deg, #050610, #241140, #031720);
+}
+.reward-ceremony-eternal {
+  --reward-bright: #ffd1df; --reward-accent: #ed3259; --reward-glow: #742baf;
+  background: radial-gradient(ellipse at 50% 42%, #70112e, #2d0e45 42%, #08030d 80%);
+}
+.reward-ceremony-shards {
+  --reward-bright: #fff; --reward-accent: #ff2f92; --reward-glow: #e0102e;
+  background: radial-gradient(ellipse at 50% 42%, #961039, #3b091d 40%, #08030d 80%);
+}
+.reward-ceremony-intensity.reward-ceremony-eternal {
+  --reward-bright: #fff3ed; --reward-accent: #ff4817; --reward-glow: #bd1029;
+  background: radial-gradient(ellipse at 50% 42%, #93142a, #39100a 42%, #080808 80%);
+}
+.transcendent-unlock-content h1 { text-shadow: 0 0 30px var(--reward-accent); }
+.transcendent-unlock-eyebrow { color: var(--reward-bright); }
+.transcendent-unlock-card, .transcendent-unlock-ability { box-shadow: 0 0 45px var(--reward-accent), 0 0 100px var(--reward-glow); }
+.transcendent-unlock-plus { color: var(--reward-bright); text-shadow: 0 0 20px var(--reward-accent), 0 0 40px var(--reward-glow); }
+.transcendent-unlock-continue { background: linear-gradient(115deg, #150714, #300d37); border-color: var(--reward-accent); }
+.transcendent-unlock-particles i { background: var(--reward-bright); box-shadow: 0 0 10px var(--reward-accent), 0 0 24px var(--reward-glow); }
+.reward-ceremony-eternal .transcendent-unlock-rays, .reward-ceremony-shards .transcendent-unlock-rays {
+  background: repeating-conic-gradient(from 12deg, transparent 0 12deg, var(--reward-accent) 14deg, transparent 18deg 30deg);
+  opacity: .16;
+}
+.reward-ceremony-infinite .transcendent-unlock-rays {
+  background: repeating-conic-gradient(from 12deg, #ff527e22 0 12deg, #ffad4844 12deg 24deg, #fff08a22 24deg 36deg, #64ffbd44 36deg 48deg, #63cfff22 48deg 60deg, #bf83ff44 60deg 72deg);
+}
+.reward-ceremony-infinite .transcendent-unlock-particles i:nth-child(6n) { background: #ff527e; box-shadow: 0 0 16px #ff527e; }
+.reward-ceremony-infinite .transcendent-unlock-particles i:nth-child(6n + 1) { background: #ffad48; box-shadow: 0 0 16px #ffad48; }
+.reward-ceremony-infinite .transcendent-unlock-particles i:nth-child(6n + 2) { background: #fff08a; box-shadow: 0 0 16px #fff08a; }
+.reward-ceremony-infinite .transcendent-unlock-particles i:nth-child(6n + 3) { background: #64ffbd; box-shadow: 0 0 16px #64ffbd; }
+.reward-ceremony-infinite .transcendent-unlock-particles i:nth-child(6n + 4) { background: #63cfff; box-shadow: 0 0 16px #63cfff; }
+.reward-ceremony-infinite .transcendent-unlock-particles i:nth-child(6n + 5) { background: #bf83ff; box-shadow: 0 0 16px #bf83ff; }
+
+/* Preserve supplied item artwork, including its background, over legacy inline icon styles. */
+img[src*="/assets/resource-icons/"],
+img[src*="/assets/dungeons/items/"],
+img[src*="/assets/forge/key-of-transcendence.png"],
+img[src*="/assets/forge/shards-of-transcendence.png"] {
+  object-fit: contain !important;
+  border-radius: 0 !important;
+  clip-path: none !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+  mix-blend-mode: normal !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
 html[data-button-color-mode="dark"] {
   --button-mode-gradient: linear-gradient(110deg, #242424 0%, #111111 54%, #000000 100%);
   --button-mode-background: #111111;
@@ -2760,6 +2861,7 @@ html.reduced-motion .arena-flash-active {
 .login-calendar-screen {
   color: var(--calendar-text);
   background: radial-gradient(ellipse at 50% 18%,color-mix(in srgb,var(--calendar-accent-soft) 16%,var(--calendar-surface-strong)) 0%,var(--calendar-surface-muted) 53%,var(--calendar-surface-strong) 100%);
+  background-color: var(--calendar-base, #000000);
 }
 .login-calendar-header { border-bottom-color: var(--calendar-border); background: linear-gradient(90deg,var(--calendar-surface-muted),var(--calendar-surface)); }
 .login-calendar-eyebrow { color: var(--calendar-accent-soft); }
@@ -2807,6 +2909,11 @@ html.reduced-motion .arena-flash-active {
 .login-wheel-pointer { background: linear-gradient(var(--calendar-accent-soft),var(--calendar-accent)); }
 .login-wheel-result { color: var(--calendar-success); }
 .login-wheel-prize-number { border-color: var(--calendar-border-strong); color: var(--calendar-accent-soft); }
+.login-wheel-prize-row strong { color: var(--calendar-text); font-size: 13px; font-weight: 600; }
+.login-wheel-prize-row > em { color: var(--calendar-text-muted); font-size: 12px; font-style: normal; }
+.login-wheel-prize-row { min-height: 42px; }
+.login-wheel-history .login-calendar-next { font-size: 12px; line-height: 1.4; }
+.login-wheel-controls p { font-size: 13px; }
 
 html.reduced-motion .login-wheel-rotor { transition-duration: 0.01ms; }
 @media (max-width: 1080px) {
@@ -3297,6 +3404,87 @@ html.reduced-motion .hand-card-hover-edge::before { background: rgba(255,255,255
 .attack-sequence-overlay-ain .attack-sequence-star { filter: drop-shadow(0 0 10px #ffbd38) drop-shadow(0 0 28px rgba(255,242,185,.9)); }
 .attack-sequence-overlay-soph .attack-sequence-star { filter: drop-shadow(0 0 10px #fff) drop-shadow(0 0 28px rgba(196,146,255,.75)); }
 .attack-sequence-soph-card::before { content:''; position:absolute; inset:-28px; z-index:-1; border:1px solid rgba(255,220,130,.55); border-radius:50%; box-shadow:0 0 35px rgba(180,120,255,.45),inset 0 0 25px rgba(255,215,100,.28); animation:shatterStarRays 7s linear infinite; }
+
+.attack-sequence-theme-infinite {
+  --attack-primary: #63cfff;
+  --attack-secondary: #ff527e;
+  --attack-core: #efffff;
+  --attack-field: radial-gradient(ellipse at 20% 24%, #62182c, transparent 45%), radial-gradient(ellipse at 78% 72%, #153d45, transparent 48%), linear-gradient(145deg, #040511, #211039, #031216);
+  --attack-spectrum: conic-gradient(from 20deg, transparent, #ff527e66, #ffad4855, #fff08a55, #64ffbd66, #63cfff66, #bf83ff66, transparent);
+}
+.attack-sequence-theme-eternal {
+  --attack-primary: #ff3d64;
+  --attack-secondary: #6c248d;
+  --attack-core: #ff9bb6;
+  --attack-field: radial-gradient(ellipse at 50% 45%, #72112e, transparent 52%), linear-gradient(145deg, #09030c, #32104f, #170511);
+  --attack-spectrum: conic-gradient(from 20deg, transparent, #a5103877, transparent, #6c248d88, #ff3d6444, transparent);
+}
+.attack-sequence-theme-transcendent {
+  --attack-primary: #ff9bcf;
+  --attack-secondary: #9c143e;
+  --attack-core: #ffd0e9;
+  --attack-field: radial-gradient(ellipse at 50% 45%, #65142d, transparent 48%), radial-gradient(ellipse at 80% 24%, #46145e, transparent 48%), linear-gradient(145deg, #160815, #38091c, #14051d);
+  --attack-spectrum: conic-gradient(from 20deg, transparent, #ffd0e966, #9c143e88, transparent, #b478ff66, transparent);
+}
+.attack-sequence-overlay[class*="attack-sequence-theme-"] .attack-sequence-field {
+  background: var(--attack-field);
+}
+.attack-sequence-overlay[class*="attack-sequence-theme-"] .attack-sequence-field::before,
+.attack-sequence-overlay[class*="attack-sequence-theme-"] .attack-sequence-field::after {
+  background-image: radial-gradient(circle, var(--attack-primary) 0 1px, transparent 1.7px), radial-gradient(circle, var(--attack-secondary) 0 1px, transparent 1.5px);
+  filter: none;
+}
+.attack-sequence-overlay[class*="attack-sequence-theme-"] .attack-sequence-nebula {
+  background: var(--attack-spectrum);
+  filter: blur(18px);
+}
+.attack-sequence-overlay[class*="attack-sequence-theme-"] .attack-sequence-energy-bands {
+  background-image: repeating-linear-gradient(118deg, transparent 0 38px, var(--attack-primary) 40px, transparent 43px 82px), repeating-linear-gradient(62deg, transparent 0 55px, var(--attack-secondary) 57px, transparent 60px 110px);
+  filter: none;
+}
+.attack-sequence-overlay[class*="attack-sequence-theme-"] .attack-sequence-signature {
+  color: var(--attack-primary);
+  opacity: .12;
+  text-shadow: 0 0 80px var(--attack-secondary);
+}
+.attack-sequence-overlay[class*="attack-sequence-theme-"] .attack-sequence-orbit {
+  border-color: var(--attack-secondary);
+  opacity: .4;
+}
+.attack-sequence-overlay[class*="attack-sequence-theme-"] .shatter-ambient-star {
+  box-shadow: 0 0 7px currentColor, 0 0 16px currentColor;
+}
+.attack-sequence-overlay[class*="attack-sequence-theme-"] .attack-sequence-orbit-target {
+  border-color: var(--attack-primary);
+  box-shadow: 0 0 28px var(--attack-secondary), inset 0 0 30px var(--attack-secondary);
+}
+.attack-sequence-overlay[class*="attack-sequence-theme-"] .attack-sequence-orbit-target span {
+  color: var(--attack-core);
+  text-shadow: 0 0 16px var(--attack-primary), 0 0 38px var(--attack-secondary);
+}
+.attack-sequence-theme-infinite .attack-sequence-orbit-target {
+  background: var(--attack-spectrum);
+}
+.attack-sequence-overlay[class*="attack-sequence-theme-"] .attack-sequence-soph-card {
+  box-shadow: 0 18px 70px var(--attack-secondary) !important;
+}
+.attack-sequence-overlay[class*="attack-sequence-theme-"] .attack-sequence-soph-card::before {
+  border-color: var(--attack-primary);
+  box-shadow: 0 0 35px var(--attack-secondary), inset 0 0 25px var(--attack-primary);
+}
+.attack-sequence-wisps { position: absolute; inset: 0; pointer-events: none; }
+.attack-sequence-wisps i {
+  position: absolute; left: 50%; top: 52%; width: 58vmin; height: 24vmin;
+  translate: -50% -50%; border-radius: 50%; border-top: 3px solid #b478ff;
+  border-bottom: 1px solid #e3baff; filter: drop-shadow(0 0 12px #9b45ed) blur(1px);
+  animation: attackSequenceWispDance 6.8s ease-in-out infinite;
+}
+@keyframes attackSequenceWispDance {
+  0%, 100% { transform: rotate(-28deg) scale(.8); opacity: .15; }
+  45% { transform: rotate(130deg) scale(1.16, .7); opacity: .85; }
+  75% { transform: rotate(245deg) scale(.95, 1.15); opacity: .45; }
+}
+html.reduced-motion .attack-sequence-wisps i { animation: none; opacity: .4; }
 @keyframes attackSequenceStarGoldWhite { from { color: #ffc53d; filter: drop-shadow(0 0 8px #ffaf1f); } to { color: #fff; filter: drop-shadow(0 0 10px #fff) drop-shadow(0 0 20px #ffd66c); } }
 @keyframes shatterFadeToBlack {
   from { opacity: 0; }

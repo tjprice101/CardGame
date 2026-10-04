@@ -64,6 +64,7 @@ function colorToRgbChannels(color: string): string {
 export default function DailyRewardModal({ onClose, onOpenForge }: Props) {
   useThemeVersion();
   const progress = useStore(selectProgress);
+  const colorMode = useStore(state => state.settings.buttonColorMode);
   const claimDailyReward = useStore(state => state.claimDailyReward);
   const claimDailyStreakMilestone = useStore(state => state.claimDailyStreakMilestone);
   const spinForgeWheel = useStore(state => state.spinForgeWheel);
@@ -175,6 +176,7 @@ export default function DailyRewardModal({ onClose, onOpenForge }: Props) {
 
   return (
     <div className="login-calendar-screen" style={{
+      ['--calendar-base' as string]: colorMode === 'light' ? '#ffffff' : '#000000',
       ['--ui-accent' as string]: colorToRgbChannels(warmTheme.accent),
       ['--ui-accent-soft' as string]: colorToRgbChannels(warmTheme.accentSoft),
       ['--calendar-accent' as string]: warmTheme.accent,
@@ -330,7 +332,7 @@ export default function DailyRewardModal({ onClose, onOpenForge }: Props) {
                       return (
                         <g key={segment.prize.id}>
                           <path d={wheelSegmentPath(segment.startAngle, segment.endAngle)} fill={segment.prize.color} stroke="var(--calendar-border-strong)" strokeWidth="0.8" />
-                          <text x={labelPosition[0]} y={labelPosition[1]} fill="var(--calendar-text)" stroke="var(--calendar-surface-strong)" strokeWidth="1.4" paintOrder="stroke" textAnchor="middle" dominantBaseline="middle" fontSize="9" fontWeight="700">
+                          <text x={labelPosition[0]} y={labelPosition[1]} fill="#ffffff" stroke="#111111" strokeWidth="1.4" paintOrder="stroke" textAnchor="middle" dominantBaseline="middle" fontSize="9" fontWeight="700">
                             {segment.index}
                           </text>
                         </g>
@@ -358,7 +360,7 @@ export default function DailyRewardModal({ onClose, onOpenForge }: Props) {
                 <h3>Prize odds</h3>
                 {FORGE_WHEEL_PRIZES.map((prize, index) => (
                   <div className="login-calendar-next login-wheel-prize-row" key={prize.id}>
-                    <span><b className="login-wheel-prize-number">{index + 1}</b><img src={wheelPrizeIcon(prize)} alt="" /><strong>{prize.label}</strong></span>
+                    <span><b className="login-wheel-prize-number" style={{ backgroundColor: prize.color, borderColor: prize.color, color: '#ffffff' }}>{index + 1}</b><img src={wheelPrizeIcon(prize)} alt="" /><strong>{prize.label}</strong></span>
                     <em>{(prize.weight / FORGE_WHEEL_TOTAL_WEIGHT * 100).toFixed(1)}%</em>
                   </div>
                 ))}

@@ -416,26 +416,25 @@ function withAlpha(color: unknown, alpha: number): string {
 function AchievStat({ icon, label, value, sub, accent, pulse }: {
   icon: string; label: string; value: string; sub?: string; accent: string; pulse?: boolean;
 }) {
+  const P = getThemePalette();
   return (
-    <div style={{
+    <div className="achievement-summary-stat" style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       padding: '7px 16px', gap: 4,
       boxShadow: pulse ? `0 0 24px ${withAlpha(accent, 0.2)}` : 'none',
     }}>
       <div style={{
-        fontSize: 8, letterSpacing: 3, textTransform: 'uppercase',
-        color: '#f7e8ed', fontWeight: 600, whiteSpace: 'nowrap',
-        fontFamily: uiTypography.display,
-        textShadow: '0 1px 3px rgba(0,0,0,0.9)',
+        fontSize: 11, letterSpacing: 1, textTransform: 'uppercase',
+        color: P.text, fontWeight: 700, whiteSpace: 'nowrap',
+        fontFamily: uiTypography.body,
       }}>{icon} {label}</div>
       <div style={{
-        fontSize: 22, fontWeight: 700, letterSpacing: 0.5, color: '#ffffff',
+        fontSize: 22, fontWeight: 700, letterSpacing: 0.5, color: P.text,
         fontVariantNumeric: 'tabular-nums',
-        textShadow: `0 0 16px ${withAlpha(accent, 0.55)}, 0 1px 3px rgba(0,0,0,0.95)`,
         fontFamily: uiTypography.display,
       }}>
         {value}
-        {sub && <span style={{ fontSize: 12, fontWeight: 400, marginLeft: 3, color: '#b9efc1', fontFamily: uiTypography.body }}>{sub}</span>}
+        {sub && <span style={{ fontSize: 12, fontWeight: 500, marginLeft: 4, color: P.textMuted, fontFamily: uiTypography.body }}>{sub}</span>}
       </div>
     </div>
   );

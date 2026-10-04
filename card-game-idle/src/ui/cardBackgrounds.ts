@@ -3,6 +3,7 @@ import type { CardDefinition, CardFaceState } from '@/types/cards';
 import type { CardFinish } from '@/types/cards';
 import { warmTheme } from '@/ui/theme';
 import { getCardThemePackStyle, getFontScale } from '@/ui/preferences';
+import { INTENSITY_CARD_ART, INTENSITY_CARD_BACK_FILE, isIntensityCardId } from '@/data/cards/intensityArt';
 
 const CARD_BACKGROUND_ROOT = `${import.meta.env.BASE_URL}assets/card-backgrounds`;
 const CARD_FRONT_FRAME_IMAGE = `url("${CARD_BACKGROUND_ROOT}/card-front-frame-splotched-ink.png")`;
@@ -321,6 +322,10 @@ function getCardBackUrl(card: CardDefinition | null | undefined): string | null 
     return `${CARD_BACKGROUND_ROOT}/${ENIGMATIC_CARD_BACK_ASSET.folder}/${encodeURI(ENIGMATIC_CARD_BACK_ASSET.file)}`;
   }
 
+  if (isIntensityCardId(card.definitionId)) {
+    return `${CARD_BACKGROUND_ROOT}/intensity/${INTENSITY_CARD_BACK_FILE}`;
+  }
+
   const element = card.definitionId.includes('causality')
     ? 'Causality'
     : card.type === 'AinSophAur' ? 'AinSophAur' : 'Neutrality';
@@ -458,6 +463,11 @@ function getDenseCardFaceCacheKey(
 
 export function getCardBackgroundUrl(card: CardDefinition | null | undefined): string | null {
   if (!card) return null;
+
+  if (isIntensityCardId(card.definitionId)) {
+    const fileName = INTENSITY_CARD_ART[card.definitionId];
+    return fileName ? `${CARD_BACKGROUND_ROOT}/intensity/${encodeURI(fileName)}` : null;
+  }
 
   if (card.definitionId.includes('causality')) {
     const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;

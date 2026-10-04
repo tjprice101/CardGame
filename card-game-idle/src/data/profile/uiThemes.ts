@@ -247,6 +247,14 @@ const SET_LABELS: Record<string, string> = {
 
 const ELEMENT_THEME_PALETTE: Record<string, UiPalette> = {
   Neutrality: NEUTRALITY,
+  Intensity: makePalette({
+    appBackground: 'radial-gradient(circle at 30% -10%, #650b12 0%, rgba(101,11,18,0) 55%), linear-gradient(180deg, #080808 0%, #160406 48%, #000000 100%)',
+    surface: 'rgba(12, 12, 12, 0.94)', surfaceStrong: '#080808', surfaceMuted: 'rgba(6, 6, 6, 0.9)',
+    border: 'rgba(174, 19, 36, 0.44)', borderStrong: 'rgba(255, 91, 31, 0.68)',
+    text: '#ffffff', textSoft: 'rgba(255,255,255,0.9)', textMuted: 'rgba(255,255,255,0.74)', textFaint: 'rgba(255,255,255,0.56)',
+    accent: '#a30d22', accentSoft: '#ff5b1f', accentDeep: '#360308',
+    button: 'linear-gradient(180deg, #a30d22 0%, #650b12 100%)', glow: '0 12px 30px rgba(174,19,36,0.32)',
+  }),
   Causality: makePalette({
     appBackground: 'radial-gradient(circle at 50% -10%, #24114a 0%, rgba(36,17,74,0) 55%), linear-gradient(180deg, #090612 0%, #1a0d28 48%, #05030b 100%)',
     surface: 'rgba(28, 14, 44, 0.94)', surfaceStrong: 'rgba(44, 20, 66, 0.97)', surfaceMuted: 'rgba(18, 8, 30, 0.9)',
@@ -340,7 +348,15 @@ function shadeColor(value: string, amount: number): string {
   return mixColor(value, '#000000', clamp01(amount));
 }
 
-function buildRewardTierPalette(base: UiPalette, kind: 'base-set' | 'infinite-full' | 'eternal-full'): UiPalette {
+function buildRewardTierPalette(base: UiPalette, kind: 'base-set' | 'infinite-full' | 'eternal-full', setId: string): UiPalette {
+  if (setId === 'Intensity') {
+    const accent = kind === 'base-set' ? '#a30d22' : kind === 'eternal-full' ? '#bd1029' : '#8f071b';
+    const accentSoft = kind === 'base-set' ? '#ff5b1f' : kind === 'eternal-full' ? '#ff7028' : '#ff4817';
+    return {
+      ...base, accent, accentSoft,
+      button: `linear-gradient(180deg, ${accent} 0%, #650b12 100%)`,
+    };
+  }
   const accentLift = kind === 'base-set' ? 0.08 : kind === 'infinite-full' ? 0.18 : 0.28;
   const borderLift = kind === 'base-set' ? 0.06 : kind === 'infinite-full' ? 0.15 : 0.24;
   const textLift = kind === 'base-set' ? 0.04 : kind === 'infinite-full' ? 0.08 : 0.12;
@@ -375,7 +391,7 @@ function getThemeSetSpecs(): ThemeSetSpec[] {
   const cards = CardRegistry.getAll();
 
   for (const card of cards) {
-    const setId = card.definitionId.includes('causality') ? 'Causality' : 'Neutrality';
+    const setId = card.definitionId.includes('intensity') ? 'Intensity' : card.definitionId.includes('causality') ? 'Causality' : 'Neutrality';
 
     let spec = grouped.get(setId);
     if (!spec) {
@@ -409,8 +425,10 @@ function getThemeSetSpecs(): ThemeSetSpec[] {
   return sorted;
 }
 
-function buildOscillation(from: UiPalette, kind: 'base-set' | 'infinite-full' | 'eternal-full') {
-  const toneTarget = kind === 'infinite-full'
+function buildOscillation(from: UiPalette, kind: 'base-set' | 'infinite-full' | 'eternal-full', setId: string) {
+  const toneTarget = setId === 'Intensity'
+    ? '#ff4817'
+    : kind === 'infinite-full'
     ? '#68e8ff'
     : kind === 'eternal-full'
       ? '#ffd98d'
@@ -432,7 +450,7 @@ function buildOscillation(from: UiPalette, kind: 'base-set' | 'infinite-full' | 
       accentSoft: tintColor(from.accentSoft, toneTarget, amount * 0.9),
       border: tintColor(from.border, toneTarget, amount * 0.6),
       borderStrong: tintColor(from.borderStrong, toneTarget, amount * 0.7),
-      surfaceStrong: tintColor(from.surfaceStrong, toneTarget, amount * 0.35),
+      surfaceStrong: setId === 'Intensity' ? from.surfaceStrong : tintColor(from.surfaceStrong, toneTarget, amount * 0.35),
     },
     periodMs,
   };
@@ -443,9 +461,9 @@ function buildRewardThemes(): UiThemeDefinition[] {
   const specs = getThemeSetSpecs();
 
   for (const spec of specs) {
-    const baseTierPalette = buildRewardTierPalette(spec.palette, 'base-set');
-    const infiniteTierPalette = buildRewardTierPalette(spec.palette, 'infinite-full');
-    const eternalTierPalette = buildRewardTierPalette(spec.palette, 'eternal-full');
+    const baseTierPalette = buildRewardTierPalette(spec.palette, 'base-set', spec.setId);
+    const infiniteTierPalette = buildRewardTierPalette(spec.palette, 'infinite-full', spec.setId);
+    const eternalTierPalette = buildRewardTierPalette(spec.palette, 'eternal-full', spec.setId);
 
     rewardThemes.push({
       id: `theme-reward-base-${spec.slug}`,
@@ -456,7 +474,7 @@ function buildRewardThemes(): UiThemeDefinition[] {
       group: 'reward',
       rewardKind: 'base-set',
       setId: spec.setId,
-      oscillation: buildOscillation(baseTierPalette, 'base-set'),
+      oscillation: buildOscillation(baseTierPalette, 'base-set', spec.setId),
       isUnlocked: (progress) => hasAllEverOwned(progress, spec.baseIds, 'collection'),
     });
 
@@ -469,7 +487,7 @@ function buildRewardThemes(): UiThemeDefinition[] {
       group: 'reward',
       rewardKind: 'infinite-full',
       setId: spec.setId,
-      oscillation: buildOscillation(infiniteTierPalette, 'infinite-full'),
+      oscillation: buildOscillation(infiniteTierPalette, 'infinite-full', spec.setId),
       isUnlocked: (progress) => hasAllEverOwned(progress, spec.infiniteIds, 'infinite'),
     });
 
@@ -482,7 +500,7 @@ function buildRewardThemes(): UiThemeDefinition[] {
       group: 'reward',
       rewardKind: 'eternal-full',
       setId: spec.setId,
-      oscillation: buildOscillation(eternalTierPalette, 'eternal-full'),
+      oscillation: buildOscillation(eternalTierPalette, 'eternal-full', spec.setId),
       isUnlocked: (progress) => hasAllEverOwned(progress, spec.eternalIds, 'collection'),
     });
   }

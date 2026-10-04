@@ -2,6 +2,7 @@ import { ainSophAurCards } from '@/data/cards/ainSophAurCards';
 import { darkCards } from '@/data/cards/darkCards';
 import { lightCards } from '@/data/cards/lightCards';
 import { CAUSALITY_PACK_POOL } from '@/data/cards/causalityCards';
+import { INTENSITY_PACK_POOL } from '@/data/cards/intensityCards';
 
 export interface PackDefinition {
   id: string;
@@ -35,6 +36,11 @@ const BASE_PACK_DEFINITIONS: PackDefinition[] = [
     cardsPerOpen: 5,
     cardPool: NEUTRALITY_PACK_POOL,
     locked: false,
+  },
+  {
+    id: 'pack-intensity', name: 'Intensity Pack',
+    description: 'Build Limitless Inferno through ash, charge, embers and the Last Seam. Spend it on high-level Light Soph attacks.',
+    setId: 'Intensity', cost: 6500, cardsPerOpen: 5, cardPool: INTENSITY_PACK_POOL, locked: false,
   },
   {
     id: 'pack-causality',

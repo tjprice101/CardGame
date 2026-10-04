@@ -42,6 +42,11 @@ const LIGHT_TEXT = '#f4ecd8';
 const LIGHT_TEXT_MUTED = 'rgba(244, 236, 216, 0.78)';
 
 export const BOSS_SET_THEMES: Record<BossCategory, BossSetTheme> = {
+  'Intensity': {
+    background: 'radial-gradient(circle at 72% 12%, rgba(255,215,156,0.2), transparent 38%), radial-gradient(circle at 18% 92%, rgba(232,74,30,0.24), transparent 42%), linear-gradient(180deg, #140c0b 0%, #281312 52%, #090609 100%)',
+    accent: '#ffab62', accentSoft: '#ffe0ad', pulseInner: 'rgba(255,183,105,1)', pulseOuter: 'rgba(174,43,24,1)',
+    panelBorder: 'rgba(255,171,98,0.55)', panelTint: 'rgba(34,15,14,0.94)', text: '#fff2de', textMuted: 'rgba(255,226,196,0.8)',
+  },
   // Hollow voids; deep slate + bone, faint violet rift.
   'Neutrality': {
     background:

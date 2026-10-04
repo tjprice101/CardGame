@@ -72,7 +72,7 @@ Attack actions now reserve costs and create `turn.attackSequence`; payout and co
 
 1. `priming`: the arena fades completely to black for 1.1 seconds; attack visuals remain hidden.
 2. `active`: a 10-second event-horizon orbit field tracks pointer movement. Each full, consistent circle around the core adds one Limitless Infinity stack; straight, random, or reversing movement does not score.
-3. `result`: each stack grants 1,000 base Divine Light through the central Collection Power-scaled grant path, followed by a 2.6-second result reveal.
+3. `result`: the activation-time sum of current Soph and Bridge attacks is multiplied by `(1 + orbitPower)` and granted through the central Collection Power-scaled path, followed by a 2.6-second result reveal. The usual front-row ASA bonus remains. No individual attack cost is consumed; cooldowns do not exclude an on-board card. Zero orbit pays the full snapshot, and displayed completed-circle stacks do not independently multiply it.
 
 All gameplay mutations and encounter timers pause while the sequence is active. Resolution returns front-row Ain Soph Aur to the Extra Deck, returns back-row and discarded cards to the shuffled draw pile, preserves the hand, clears Light Stacks and board effects, and resets cards played this turn. It does not advance the turn or open a mulligan. In boss encounters it also triggers a stagger and restores the full encounter duration; in Battleground it restores the timer to 180 seconds.
 

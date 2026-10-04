@@ -1,4 +1,5 @@
 import { CardRegistry } from '@/cards/CardRegistry';
+import { getSophAttackPool, usesInferno } from '@/systems/cards/IntensityRuntime';
 import { SET_ACCENT, getCardSetLabel } from '@/data/elements';
 import { useStore, selectBoard, selectProgress, selectTurn } from '@/state/store';
 import { resolveCardScaling } from '@/systems/cards/CardScaling';
@@ -27,7 +28,7 @@ function previewStackCost(cost: StackCostDefinition | undefined, stacks: number)
   return Math.max(0, cost.value ?? 0);
 }
 
-function AttackStat({ label, payout, cooldown, cost }: { label: string; payout: number; cooldown: number; cost?: number }) {
+function AttackStat({ label, payout, cooldown, cost, resource = 'Light' }: { label: string; payout: number; cooldown: number; cost?: number; resource?: string }) {
   return (
     <div style={{ minWidth: 0, padding: '5px 7px', borderRadius: 6, background: 'rgba(74,48,21,0.06)', border: '1px solid rgba(74,48,21,0.12)' }}>
       <div style={{ color: 'rgba(74,48,21,0.68)', fontSize: 8, fontWeight: 700, letterSpacing: 0.9, textTransform: 'uppercase' }}>{label}</div>
@@ -39,7 +40,7 @@ function AttackStat({ label, payout, cooldown, cost }: { label: string; payout: 
       </div>
       {!!cost && (
         <div style={{ marginTop: 2, color: 'rgba(52,36,20,0.76)', fontSize: 9, lineHeight: 1.3 }}>
-          Cost: {cost} Limitless Light {cost === 1 ? 'Stack' : 'Stacks'}
+          Cost: {cost} Limitless {resource} {cost === 1 ? 'Stack' : 'Stacks'}
         </div>
       )}
     </div>
@@ -163,12 +164,13 @@ export default function CardInspectorPanel({ definitionId }: CardInspectorPanelP
                   return <AttackStat label="Ain Attack" payout={projected} cooldown={definition.ainAttack.cooldownCards} />;
                 })()}
                 {(() => {
-                  const cost = previewStackCost(definition.sophAttack.stackCost, turn.limitlessLightStacks);
+                  const cost = previewStackCost(definition.sophAttack.stackCost, getSophAttackPool(definition.sophAttack, turn));
                   const projected = Math.max(0, Math.round(
                     definition.sophAttack.baseDivineLight
-                    + resolveCardScaling(definition.sophAttack.scaling, scalingContext),
+                    + resolveCardScaling(definition.sophAttack.scaling, scalingContext)
+                    + (usesInferno(definition.sophAttack) ? turn.intensityAttackBonus ?? 0 : 0),
                   ));
-                  return <AttackStat label="Soph Attack" payout={projected} cooldown={definition.sophAttack.cooldownCards} cost={cost} />;
+                  return <AttackStat label="Soph Attack" payout={projected} cooldown={definition.sophAttack.cooldownCards} cost={cost} resource={usesInferno(definition.sophAttack) ? 'Inferno' : 'Light'} />;
                 })()}
               </div>
             )}

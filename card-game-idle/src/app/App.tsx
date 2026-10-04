@@ -57,6 +57,8 @@ import { TITLE_BADGES } from '@/data/profile/titleBadges';
 import { initAccountSync } from '@/social/accountSync';
 import { initStatsSync } from '@/social/statsSync';
 import { initCloudSaveSync } from '@/social/cloudSaveSync';
+import { useDebugShortcut } from '@/ui/useDebugShortcut';
+import TranscendentUnlockScreen from '@/ui/components/TranscendentUnlockScreen';
 import { initSocialNotifications } from '@/social/notificationsService';
 import { useSocialStore } from '@/state/socialStore';
 import { useMessagesStore } from '@/state/messagesStore';
@@ -615,6 +617,8 @@ export default function App() {
   // ─────────────────────────────────────────────────────────────────────
 
   const [saveHydrated, setSaveHydrated] = useState(false);
+  const debugMode = useStore(state => state.debugMode);
+  useDebugShortcut(scene === 'menu' || scene === 'arena');
   useEffect(() => {
     if (!canvasRef.current) return;
     engine.init(canvasRef.current).then(() => setSaveHydrated(true)).catch((err) => {
@@ -633,6 +637,7 @@ export default function App() {
   // keep re-priming the ref; only after hydration do we start comparing.
   const unlockedTitlesRef = useRef<Set<string> | null>(null);
   useEffect(() => {
+    if (debugMode) return;
     const currentlyUnlocked = new Set<string>();
     for (const title of TITLE_BADGES) {
       try {
@@ -658,7 +663,7 @@ export default function App() {
       }
     }
     unlockedTitlesRef.current = currentlyUnlocked;
-  }, [progress, saveHydrated]);
+  }, [progress, saveHydrated, debugMode]);
 
   // Surface the daily login reward only after the saved state has hydrated.
   // Checking the default state first can incorrectly open Day 1 for an existing
@@ -702,6 +707,7 @@ export default function App() {
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
+      if (e.target instanceof HTMLElement && e.target.closest('[aria-modal="true"]')) return;
       const tag = (e.target as HTMLElement | null)?.tagName;
       const isTyping = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || tag === 'SELECT' || (e.target as HTMLElement | null)?.isContentEditable;
 
@@ -821,6 +827,11 @@ export default function App() {
   const bossResultVisible = bossFight.mode === 'victory' || bossFight.mode === 'defeat';
   const gardenResultVisible = gardenDungeon.phase === 'victory' || gardenDungeon.phase === 'defeat';
   const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showTutorial || showEternitysWake || showInfinitude || showPlayerInfo || showQuests || showAchievements || showMastery || showEnigma || showCausalityEvent || showBattleground || showGardenOfCards || showForge || showInventory || bossResultVisible || gardenResultVisible;
+  const attackActive = Boolean(turn.attackSequence || turn.shatterInfiniteLight);
+  const arenaRenderingActive = scene === 'arena' && !isMenuOpen && !attackActive;
+  useEffect(() => {
+    engine.setRenderingActive(arenaRenderingActive);
+  }, [arenaRenderingActive]);
   const radioScreenVisible = (scene === 'menu' && !isMenuOpen && radioActive)
     || (scene === 'arena' && !inBossFight && !isMenuOpen && turnRadioActive);
 
@@ -895,6 +906,7 @@ export default function App() {
   return (
     <div
       className="game-scene-root"
+      data-attack-active={attackActive || undefined}
       style={{
         position: 'relative',
         width: '100%',
@@ -904,11 +916,21 @@ export default function App() {
         overflow: 'hidden',
       }}
     >
+      {debugMode && (
+        <div role="status" style={{ position: 'fixed', bottom: 12, left: 12, zIndex: 100000, padding: '10px 14px', border: '1px solid #ff5b1f', borderRadius: 8, background: '#080808', color: '#fff', maxWidth: 'calc(100vw - 24px)' }}>
+          <strong>Temporary Debug</strong> - normal save protected; online disabled.{' '}
+          <button type="button" onClick={() => {
+            useStore.getState().exitDebugMode();
+            setScene('menu');
+          }}>Exit Debug</button>
+        </div>
+      )}
       <canvas
         ref={canvasRef}
-        style={{ display: 'block', width: '100%', height: '100%' }}
+        style={{ display: arenaRenderingActive ? 'block' : 'none', width: '100%', height: '100%' }}
       />
       <React.Fragment>
+      <div className="arena-underlay">
       <div className="game-bg-pattern game-bg-pattern--grain" />
       <div className="game-bg-pattern game-bg-pattern--sigils" />
 
@@ -958,7 +980,7 @@ export default function App() {
       )}
 
       {/* Ambient arena backdrop — element-tinted gradient under the HUD. */}
-      {!isMenuOpen && scene === 'arena' && (
+      {!isMenuOpen && scene === 'arena' && !attackActive && (
         <Suspense fallback={null}><ArenaShell /></Suspense>
       )}
 
@@ -983,6 +1005,7 @@ export default function App() {
       {!isMenuOpen && scene === 'arena' && gardenDungeon.phase === 'active' && (
         <Suspense fallback={null}><GardenDungeonHUD /></Suspense>
       )}
+      </div>
 
       {/* "Shatter the Infinite Light" full-screen cutscene/minigame */}
       {scene === 'arena' && turn.shatterInfiniteLight && (
@@ -1253,6 +1276,7 @@ export default function App() {
           <TitleScreen onAdvance={() => setScene('menu')} />
         </Suspense>
       )}
+      <TranscendentUnlockScreen />
       <Suspense fallback={null}><ToastQueue /></Suspense>
       {/* Main menu radio — now-playing toast and control bar (home menu only, hidden when any submenu is open) */}
       {scene === 'menu' && !isMenuOpen && !hideRadioUi && (

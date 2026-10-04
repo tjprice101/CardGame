@@ -8,6 +8,10 @@ export const GARDEN_REWARD_LABELS: Record<GardenRewardCurrency, string> = {
   causalBloom: 'Causal Bloom',
   shatteredCausalTranscript: 'Shattered Causal Transcript',
   heartOfCausality: 'Heart of Causality',
+  emberglass: 'Emberglass',
+  abyssalCinder: 'Abyssal Cinder',
+  solarSlag: 'Solar Slag',
+  heartOfTheInferno: 'Heart of the Inferno',
   divineLight: 'Divine Light',
   shardsOfTranscendence: 'Shards of Transcendence',
 };
@@ -32,6 +36,10 @@ export const GARDEN_MATERIAL_METADATA: Record<GardenMaterialCurrency, { name: st
   causalBloom: { name: 'Causal Bloom', artAssetKey: 'causal-bloom', description: 'A chromatic flower whose petals open into mutually exclusive futures. Used in Causality Infinite construction.' },
   shatteredCausalTranscript: { name: 'Shattered Causal Transcript', artAssetKey: 'shattered-causal-transcript', description: 'A broken manuscript page preserving outcomes that never occurred. Used in Causality Infinite construction.' },
   heartOfCausality: { name: 'Heart of Causality', artAssetKey: 'heart-of-causality', description: 'The pearlescent core of a collapsed event horizon. Used in apex Causality Infinite construction.' },
+  emberglass: { name: 'Emberglass', artAssetKey: 'emberglass', description: 'Translucent volcanic glass holding the first pulse of an eruption. Used in Intensity ability materialization and Infinite construction.' },
+  abyssalCinder: { name: 'Abyssal Cinder', artAssetKey: 'abyssal-cinder', description: 'A black ember drawn from the pressure beneath the crater. Used in Intensity ability materialization and Infinite construction.' },
+  solarSlag: { name: 'Solar Slag', artAssetKey: 'solar-slag', description: 'Pale molten metal cooled around a fragment of unbearable noon. Used in Intensity ability materialization and Infinite construction.' },
+  heartOfTheInferno: { name: 'Heart of the Inferno', artAssetKey: 'heart-of-the-inferno', description: 'A dense white-hot core suspended inside its own dark shell. Used in Intensity Infinite abilities and construction.' },
 };
 
 export const GARDEN_DUNGEONS: readonly GardenDungeonDefinition[] = [
@@ -72,6 +80,21 @@ export const GARDEN_DUNGEONS: readonly GardenDungeonDefinition[] = [
       { id: 'rift-of-causality-2', name: 'Entrance of the Rift', maxHp: 250_000, reward: { currency: 'causalBloom', artAssetKey: 'causal-bloom' } },
       { id: 'rift-of-causality-3', name: 'Journey Through Causality', maxHp: 380_000, reward: { currency: 'shatteredCausalTranscript', artAssetKey: 'shattered-causal-transcript' } },
       { id: 'rift-of-causality-4', name: 'Core of Causality', maxHp: 600_000, reward: { currency: 'heartOfCausality', artAssetKey: 'heart-of-causality' } },
+    ],
+  },
+  {
+    id: 'crater-of-flames',
+    name: 'Crater of Flames',
+    subtitle: 'A four-encounter volcanic expedition',
+    description: 'Descend from cooling emberglass to the white-hot heart beneath the crater. Each encounter grants three of its material and one from the next encounter; the final encounter grants four.',
+    coverArt: `${import.meta.env.BASE_URL}assets/dungeons/crater-of-flames.png`,
+    available: true,
+    category: 'Intensity',
+    encounters: [
+      { id: 'crater-of-flames-1', name: 'The Emberglass Rim', maxHp: 30_000, reward: { currency: 'emberglass', artAssetKey: 'emberglass' } },
+      { id: 'crater-of-flames-2', name: 'The Cinder Descent', maxHp: 40_000, reward: { currency: 'abyssalCinder', artAssetKey: 'abyssal-cinder' } },
+      { id: 'crater-of-flames-3', name: 'The White Furnace', maxHp: 50_000, reward: { currency: 'solarSlag', artAssetKey: 'solar-slag' } },
+      { id: 'crater-of-flames-4', name: 'The Heart Beneath the Crater', maxHp: 60_000, reward: { currency: 'heartOfTheInferno', artAssetKey: 'heart-of-the-inferno' } },
     ],
   },
 ];

@@ -61,7 +61,7 @@ describe('card background asset audit', () => {
   it('resolves every collection-only Infinite card to an existing background file', () => {
     const root = path.resolve(process.cwd(), 'public');
     const legacyInfinite = infiniteCards.filter(card => !CardRegistry.has(card.definitionId));
-    expect(legacyInfinite).toHaveLength(8);
+    expect(legacyInfinite).toHaveLength(0);
 
     const missing = legacyInfinite.filter(card => {
       const url = getCardBackgroundUrl(card as unknown as Parameters<typeof getCardBackgroundUrl>[0]);

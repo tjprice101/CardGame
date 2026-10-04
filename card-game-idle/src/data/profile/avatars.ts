@@ -4,6 +4,8 @@ import { CardRegistry } from '@/cards/CardRegistry';
 import { infiniteCards } from '@/data/cards/infiniteCards';
 import { NEUTRALITY_PACK_POOL } from '@/data/packs/packDefinitions';
 import { isAchievementUnlocked } from '@/systems/progression/achievements';
+import { INTENSITY_PROFILE_REWARDS, getIntensityPortraitArt } from './intensityProfileRewards';
+import { getCardSetId } from '@/data/elements';
 import {
   getEverCollectionCount,
   getEverCollectionTotal,
@@ -60,20 +62,20 @@ function _sigilByIds(ids: readonly string[]): (p: ProgressState) => boolean {
 
 const _coreInfiniteCards = Object.freeze([...infiniteCards]);
 
-const INF_NEUTRALITY = Object.freeze(_coreInfiniteCards.map(c => c.definitionId));
-const INF_ALL_CORE   = INF_NEUTRALITY;
+const INF_NEUTRALITY = Object.freeze(_coreInfiniteCards.filter(c => getCardSetId(c.definitionId) === 'Neutrality').map(c => c.definitionId));
+const INF_ALL_CORE = Object.freeze(_coreInfiniteCards.map(c => c.definitionId));
 
 // Pre-computed Eternal card ID list so isUnlocked closures don't scan the
 // full registry on every recompute() latch cycle.
 const _eternalIds = Object.freeze(
-  CardRegistry.getAll().filter(c => c.definitionId.startsWith('btei-')).map(c => c.definitionId),
+  CardRegistry.getAll().filter(c => c.rarity === 'Eternal').map(c => c.definitionId),
 );
 
 // ── Eternal card ID sets per set, precomputed at module load ─────────────
 
-// All Neutrality Eternals are every btei-* card (only Neutrality remains in eternalCards)
+// Causality Eternals share the historical btei namespace.
 const ET_NEUTRALITY = Object.freeze(
-  eternalCards.filter(c => c.definitionId.startsWith('btei-')).map(c => c.definitionId),
+  eternalCards.filter(c => getCardSetId(c.definitionId) === 'Neutrality').map(c => c.definitionId),
 );
 const CAUSALITY_INFINITE_IDS = Object.freeze(
   CardRegistry.getAll().filter(c => c.definitionId.startsWith('inf-causality-')).map(c => c.definitionId),
@@ -82,6 +84,11 @@ const CAUSALITY_INFINITE_IDS = Object.freeze(
 export const DEFAULT_AVATAR_ID = 'pic-classic-acolyte';
 
 export const AVATARS: AvatarDefinition[] = [
+  ...INTENSITY_PROFILE_REWARDS.map(reward => ({
+    id: reward.id, name: reward.name, glyph: reward.glyph, imageUrl: getIntensityPortraitArt(reward.file),
+    description: `Defeat the matching Intensity boss. ${getIntensityPortraitArt(reward.file) ? '' : 'Portrait artwork pending; sigil shown until installed.'}`.trim(),
+    isUnlocked: (progress: ProgressState) => (progress.bossClearCounts[reward.bossId] ?? 0) > 0,
+  })),
   {
     id: 'avatar-acolyte',
     name: 'Acolyte',
@@ -538,4 +545,3 @@ export function resolveAvatar(id: string | null | undefined, progress: ProgressS
   if (id && isAvatarUnlocked(id, progress)) return AVATAR_BY_ID[id];
   return AVATAR_BY_ID[DEFAULT_AVATAR_ID];
 }
-

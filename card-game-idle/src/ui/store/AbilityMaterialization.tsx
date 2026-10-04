@@ -12,7 +12,7 @@ const abilityIconFallbackUrl = (key: string) => {
   return fallback ? `${import.meta.env.BASE_URL}assets/${fallback.folder}/${encodeURIComponent(fallback.file)}` : null;
 };
 
-type SetFilter = 'all' | 'Neutrality' | 'Causality' | 'Transcendent';
+type SetFilter = 'all' | 'Neutrality' | 'Causality' | 'Intensity' | 'Transcendent';
 type TierFilter = 'all' | 'foundational' | 'eternal' | 'infinite' | 'transcendent';
 type TypeFilter = 'all' | 'buff' | 'instant' | 'summon' | 'utility';
 type OwnershipFilter = 'all' | 'unowned' | 'owned';
@@ -21,7 +21,7 @@ type SortOption = 'cost-asc' | 'cost-desc' | 'name-asc' | 'tier';
 function getAbilityType(ability: AbilityDefinition): 'buff' | 'instant' | 'summon' | 'utility' {
   if (ability.buff) return 'buff';
   if (ability.id === 'phantom-matrix') return 'summon';
-  if (ability.id === 'null-horizon' || ability.id.includes('causality-')) return 'utility';
+  if (ability.id === 'null-horizon' || ability.id.includes('causality-') || ability.id.includes('intensity-')) return 'utility';
   return 'instant';
 }
 
@@ -31,6 +31,9 @@ function getGateRequirementLabel(gate?: AbilityDefinition['ownershipGate']): str
   if (gate === 'allCausalityBase') return 'Requires every base Causality card';
   if (gate === 'anyCausalityEternal') return 'Requires any Causality Eternal card';
   if (gate === 'anyCausalityInfinite') return 'Requires any Causality Infinite card';
+  if (gate === 'allIntensityBase') return 'Requires every base Intensity card';
+  if (gate === 'anyIntensityEternal') return 'Requires any Intensity Eternal card';
+  if (gate === 'anyIntensityInfinite') return 'Requires any Intensity Infinite card';
   return null;
 }
 
@@ -104,7 +107,7 @@ export default function AbilityMaterialization() {
 
         {/* Primary Set Sub-menu */}
         <div style={{ marginTop: 18, display: 'flex', gap: 8, flexWrap: 'wrap', borderBottom: '1px solid var(--profile-border)', paddingBottom: 10 }}>
-          {(['Neutrality', 'Causality', 'Transcendent', 'all'] as const).map(setName => (
+          {(['Neutrality', 'Causality', 'Intensity', 'Transcendent', 'all'] as const).map(setName => (
             <button
               key={setName}
               type="button"

@@ -132,17 +132,17 @@ describe.each(['light', 'dark'] as const)('Collection appearance in %s mode', mo
     const registered = CardRegistry.getAll().filter(entry => entry.rarity === 'Infinite');
     const archived = infiniteCards.filter(entry => !CardRegistry.has(entry.definitionId));
     const expected = [...registered, ...archived];
-    expect(headings()).toEqual(['Neutrality', 'Causality']);
+    expect(headings()).toEqual(['Neutrality', 'Intensity', 'Causality']);
     expect(tileCount()).toBe(expected.length);
     expect(headings()).not.toContain('Light');
     expect(headings()).not.toContain('Dark');
     expect(headings()).not.toContain('AinSophAur');
 
-    for (const set of ['Causality', 'Neutrality']) {
+    for (const set of ['Causality', 'Neutrality', 'Intensity']) {
       await act(async () => button(set).click());
       expect(headings()).toEqual([set]);
       expect(tileCount()).toBe(expected.filter(entry =>
-        entry.definitionId.includes('causality') === (set === 'Causality'),
+        (entry.definitionId.includes('intensity') ? 'Intensity' : entry.definitionId.includes('causality') ? 'Causality' : 'Neutrality') === set,
       ).length);
       expect(button(set).getAttribute('aria-pressed')).toBe('true');
     }

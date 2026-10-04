@@ -2,9 +2,11 @@
 
 ## Scope and prompt derivation
 
-A new proposed art roster: **19 leveled cards, 5 Eternal cards, and 5 Infinity cards (29 total)**. Level 3 has three cards, as confirmed. This replaces the previous Seraphim/Chaos/Seeker/Angel art roster; those legacy classes are no longer this set's organizing identity.
+The implemented, registered Intensity roster contains **19 leveled cards, 5 Eternal cards, and 5 Infinite cards (29 total)**. Level 3 has three cards. The asset audit verifies a one-to-one match between all 29 gameplay identities and installed faces. This replaces the previous Seraphim/Chaos/Seeker/Angel art roster; those legacy classes are no longer this set's organizing identity.
 
-These are artwork concepts, not registered gameplay definitions. Levels and Light/Dark/ASA alignments are design labels. Output filenames below are proposed art targets, not existing runtime asset mappings; no effects, save IDs, reward tables, or game assets are changed by this document.
+All **31 supplied PNGs are installed**: the 29 card faces, the pack banner, and the shared card back. Card output filenames below are canonical runtime assets under `card-game-idle/public/assets/card-backgrounds/intensity/`; the banner is under `card-game-idle/public/assets/pack-art/`. The standalone `src/data/cards/intensityArt.ts` maps persistent gameplay IDs to these filenames, so changing a display name does not change its art. All Intensity cards use the supplied shared back, including Eternal and Infinite rarities. SHA-256 integrity tests preserve the original supplied bytes; the Herald's accidental doubled `.png.png` extension was corrected during installation.
+
+The world-art section records 17 additional installed assets, four optional scene targets, and eight new cosmetic prompts. Prompt text alone does not generate or install an image.
 
 The prompt structure derives from [Splotched Ink Replacement Prompts](./Splotched%20Ink%20Replacement%20Prompts.md), [Splotched Art Updated Prompts](./Splotched%20Art%20Updated%20Prompts.md), and the graphic subject treatment in [Forge of Transcendence Prompts](./Forge%20of%20Transcendence%20Prompts.md). Use their physical-subject-first format, explicit paper/ink treatment, readable composition, controlled accent palette, and consistent closing restrictions. Do not borrow their characters, pink-scarlet palette, or repeat the same aperture around every card.
 
@@ -12,7 +14,7 @@ The prompt structure derives from [Splotched Ink Replacement Prompts](./Splotche
 
 Before the first dawn, the world was a white mountain suspended over a black sea without a floor. Each eruption created land; each tide erased it. Neither force could leave a lasting history.
 
-When the mountain split, molten gold entered the fracture. It hardened into **the Last Seam**, a living bond that remembers everything the fire destroys and the abyss conceals. The seam did not end the conflict: it gave the world enough continuity for its inhabitants to choose what deserved to survive.
+When the mountain split, molten magma entered the fracture. It hardened into **the Last Seam**, a living bond that remembers everything the fire destroys and the abyss conceals. The seam did not end the conflict: it gave the world enough continuity for its inhabitants to choose what deserved to survive.
 
 The white mountain's heralds want to reveal every buried memory, even if revelation burns the continent apart. The black sea's choir wants to shelter those memories, even if nothing ever reaches daylight again. The divided crown commands both. Between them, beings of opposing white and black discover that preservation requires neither endless exposure nor endless burial.
 
@@ -20,21 +22,37 @@ The leveled cards follow the awakening of the seam, the struggle for its memorie
 
 ## Intensity style lock
 
-**Shared medium:** grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush marks, splattered edges, expressive painterly smears, imperfect engraved details, visible paper fibers, and tactile hand-printed texture. Ink forms the subject and its surroundings; it is not a filter on polished fantasy painting.
+**Direction:** Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, and rough brushwork on white parchment. Flaming infernos and volcanic molten obsidian bring each subject to life. White and black dominate; hot orange and deep red flames are the color accents, with white-hot cores and tips; avoid yellow or golden fire.
 
-**Set palette:** parchment-white, ivory ash, absolute black, obsidian, and controlled antique-gold to incandescent molten-gold accents. Gold is the Last Seam: use it as a precise scar, lava channel, flame ribbon, engraved memory, or rupture edge. White and black carry the majority of every image. No pink-scarlet Forge flames, purple void washes, rainbow effects, or broad orange-red backgrounds.
+**Prompt template:** simple subject + one action or setting + shared ink-manuscript tags + aspect ratio and Midjourney parameters. Keep lore and game terms outside the prompt. Let Midjourney interpret the brushwork instead of specifying every stroke, surface, and camera detail.
 
-**Set forms:** volcanoes, white-hot eruptions, black infernos, abyssal water, ash, fractured obsidian, and gold-bound stone. Fire must be a physical painted shape with torn edges, not a soft digital glow. Each card has a different dominant silhouette, viewpoint, and gold path.
+**Composition:** one readable focal subject. Banners retain useful quiet space; icons keep empty margins; the card back stays balanced upside down. The notes below are context, not extra text to append to prompts.
 
-**Alignment:** Light reveals through white radiance; Dark shelters through black depth; ASA (Ain Soph Aur) holds both forces in one composition. ASA is not a gray compromise or an automatic split-screen portrait. Alignments stay in labels; prompts translate them into physical white/black subjects.
+**Parameters:** cards/back `--ar 2:3`, banners/scenes `--ar 16:9`, icons `--ar 1:1`; retain `--niji 6 --stylize 900`. Use `--no text logo watermark border yellow` for exclusions.
 
-**Vocabulary:** do not put card names, levels, Light/Dark/ASA, gameplay mechanics, or invented lore terms inside generation prompts. Describe winged figures, volcanic stone, luminous ivory energy, black water, and molten-gold seams directly.
+## Set presentation artwork
 
-**Composition:** vertical full-art card illustration, one dominant subject occupying roughly 80 percent of the frame. Distressed paper remains visible. Keep a clear focal silhouette amid expressive splatter; no decorative border, readable writing, logo, watermark, or interface.
+These two installed supporting assets are separate from the 29-card roster. They share the Last Seam mythology and the white/black/orange-red style lock, but use compositions tailored to a landscape store banner and a face-down card back. `pack-intensity` uses the supplied banner; every Intensity identity uses the supplied card back before generic rarity routing.
 
-**Spectacle progression:** Levels 0-1 show intimate witnesses and local events; Levels 2-3 expand to monumental landscapes and competing forces; Levels 4-5 reshape the continent. Eternal cards depict singular mythic rulers. Infinity cards transform recognizable Eternal motifs into repeating impossible structures while retaining this set's white/black/gold identity, deliberately not adopting the older chrome-only Infinite guide.
+### Intensity Set Banner - Where the Mountain Meets the Deep
 
-**Card parameters:** `--ar 2:3 --niji 6 --stylize 900`
+**Concept:** A white volcano creates a continent above the black sea; a single orange-red magma fracture binds the eruption to the abyss. The landscape introduces the whole set rather than enlarging one card character.
+**Output:** `intensity-set-banner.png`
+**Composition:** Wide landscape. Concentrate the volcanic silhouette and eruption in the right two-thirds, with a quieter parchment-white ash field on the left for separately rendered pack text. Keep the mountain, orange-red seam, and opposing black tide readable within the central horizontal band so banner cropping does not remove the identity.
+
+```text
+wide cinematic illustration, a white volcano erupting above a black ocean, molten obsidian waves, orange-red lava, quiet space on the left, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 16:9 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### Intensity Card Back - Seal of the Last Seam
+
+**Concept:** A magma-bound volcanic seal holds orange-red fire with white-hot accents and black depth together. This is a shared set emblem, not a portrait of Palevent Herald or an illustration that reveals a card's identity.
+**Output:** `intensity-card-back.png`
+**Composition:** Vertical 2:3. A centered, two-ended obsidian seal has matching volcanic peaks above and below, mirrored orange-red flame fans with white-hot cores, and a continuous orange-red fracture. Keep the structural silhouette balanced under a 180-degree turn while allowing irregular splotches and distressed texture. Leave a quiet outer paper margin; no rarity badge, card name, or generated border.
+
+```text
+vertical full-art illustration, symmetrical obsidian volcanic seal, mirrored orange-red infernos with white-hot cores above and below, orange-red lava cracks, balanced upside down, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
 
 ## Roster
 
@@ -56,20 +74,20 @@ The leveled cards follow the awakening of the seam, the struggle for its memorie
 
 ### Palevent Herald | Level 0 | Light
 
-**Lore:** The mountain's first messenger carries a single drop of living gold in its hollow chest.
+**Lore:** The mountain's first messenger carries a single drop of living magma in its hollow chest.
 **Output:** `intensity-l0-palevent-herald.png`
 
 ```text
-vertical full-art fantasy card illustration, a small white masked herald unfolding six ash-fan wings above a sleeping volcanic vent, a single molten-gold drop suspended inside its hollow black chest, branching obsidian wing ribs and drifting ivory ash, front-facing composition with the figure as the dominant readable silhouette, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush marks around the wings, expressive splattered edges and imperfect engraved stone details, restrained gold flame threading through the vent below, visible paper fibers, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, white masked herald with six ash wings emerging from a volcanic vent, a orange-red ember in its chest, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ### Nacreless Choir | Level 0 | Dark
 
-**Lore:** An eyeless singer rises from the sea to warn that the gold remembers voices the tide had hidden.
+**Lore:** An eyeless singer rises from the sea to warn that the magma remembers voices the tide had hidden.
 **Output:** `intensity-l0-nacreless-choir.png`
 
 ```text
-vertical full-art fantasy card illustration, an eyeless black ribbon creature rising from a drowned volcanic trench, four broad membrane fins containing small ivory throat-like cavities, one thin gold seam tracing the creature's curved spine, low-angle S-curve with deep black water beneath and distressed parchment-white paper above, grand high-contrast anime ink illustration, dense black splotched dry-brush masses forming the body, splattered water edges, painterly smears and imperfect engraved fin ridges, pale ash caught in the current, one unmistakable continuous creature silhouette, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, black serpent with four flowing fins rising from a volcanic trench, orange-red flames with white-hot tips in its throat, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ### Handful of Daybreak | Level 0 | Light
@@ -78,7 +96,7 @@ vertical full-art fantasy card illustration, an eyeless black ribbon creature ri
 **Output:** `intensity-l0-handful-of-daybreak.png`
 
 ```text
-vertical full-art fantasy card illustration, two ash-covered hands catching three small white volcanic fragments above a distant black ridge, a narrow molten-gold thread joining the fragments across the palms, upward close perspective with heavy black knuckle strokes and luminous ivory skin, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush smoke behind the hands, expressive splatter and tactile hand-printed texture, one gold flame flicker emerging from the largest fragment, broad quiet paper around the intimate focal gesture, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, two pale hands holding three burning volcanic stones, orange-red fire joining the stones, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ### Relics Beneath the Burn | Level 0 | Dark
@@ -87,7 +105,7 @@ vertical full-art fantasy card illustration, two ash-covered hands catching thre
 **Output:** `intensity-l0-relics-beneath-the-burn.png`
 
 ```text
-vertical full-art fantasy card illustration, two small obsidian relic tablets rising from black abyssal water toward one waiting pale hand, thin antique-gold scars revealing their blank surfaces, a white volcanic fire ceiling far above reflected as broken ivory ripples, diagonal retrieval composition, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush pools around the relics, feathered ink edges, granular ash and imperfect engraved stone corners, clear two-object silhouette against deep water, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, obsidian relic tablets rising from an abyss toward a pale hand, orange-red inferno with white-hot highlights overhead, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ## Level 1 - Mountain and Sea Answer
@@ -98,7 +116,7 @@ vertical full-art fantasy card illustration, two small obsidian relic tablets ri
 **Output:** `intensity-l1-calderas-first-breath.png`
 
 ```text
-vertical full-art fantasy card illustration, a white volcanic stone ram lifting its horned head through a small erupting caldera, four fractured ash-rock wings opening like lungs, black obsidian armor divided by a flowing molten-gold chest seam, heroic low-angle composition, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush marks shaping the armor and crater, white eruption fans with gold flame edges, scraped geological strata and tactile hand-printed ash, dominant readable ram silhouette rather than a crowded landscape, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, white stone ram emerging from an erupting caldera, ash wings, molten obsidian armor, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ### Maw Beneath Morning | Level 1 | Dark
@@ -107,16 +125,16 @@ vertical full-art fantasy card illustration, a white volcanic stone ram lifting 
 **Output:** `intensity-l1-maw-beneath-morning.png`
 
 ```text
-vertical full-art fantasy card illustration, a heavy black soot hound crouching below a broken ivory horizon at the edge of a volcanic abyss, six ash-wing sails hanging from its spine, open jaws containing a narrow white furnace cavern crossed by gold teeth, three-quarter close portrait with scratched pale claws in the foreground, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush fur, ragged flame-shaped mane and splattered ash, one restrained molten-gold breath curling from the mouth, unmistakable predatory silhouette, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, black volcanic hound with six smoke wings, orange-red furnace jaws with white-hot edges and orange-red teeth, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ### The Unburning Boundary | Level 1 | Light
 
-**Lore:** The pilgrim lays the first gold-bound stones between the exposed land and the consuming tide.
+**Lore:** The pilgrim lays the first magma-bound stones between the exposed land and the consuming tide.
 **Output:** `intensity-l1-the-unburning-boundary.png`
 
 ```text
-vertical full-art fantasy card illustration, an irregular fan of white volcanic-glass plates shielding a small ash valley from black pyroclastic surf, molten-gold joints binding the plates into one broken defensive arch, upward perspective with an untouched ivory hollow behind the barrier, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush impact marks thrown sideways, splattered edges, scraped glass facets and imperfect engraving, one dominant readable shield silhouette and a restrained gold flame along its top edge, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, white volcanic-glass shield holding back a black inferno, orange-red lava between its plates, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ### Vestment of the Buried Sun | Level 1 | Dark
@@ -125,7 +143,7 @@ vertical full-art fantasy card illustration, an irregular fan of white volcanic-
 **Output:** `intensity-l1-vestment-of-the-buried-sun.png`
 
 ```text
-vertical full-art fantasy card illustration, wearerless black stone armor hovering above an extinguished volcanic throne, broad shoulder slabs enclosing an empty circular chest, a thin antique-gold rim around the hollow like the memory of a buried sun, three-quarter view with ivory ash ground, grand high-contrast anime ink illustration on distressed parchment-white paper, dense black splotched dry-brush pools beneath the armor, scraped obsidian joints, ragged hem fragments and upward-floating white cinders, gold furnace cracks confined to two deep armor seams, simple monumental empty silhouette, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, empty obsidian armor above a volcanic throne, a buried orange-red flame with a white-hot core burning in its chest, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ## Level 2 - The Struggle for Memory
@@ -136,7 +154,7 @@ vertical full-art fantasy card illustration, wearerless black stone armor hoveri
 **Output:** `intensity-l2-throat-of-the-deep.png`
 
 ```text
-vertical full-art fantasy card illustration, a towering black cylindrical monolith rising from a drowned volcano, its open crown breathing an enormous soot inferno, antique-gold spiral fissures carved into the stone without writing, five broken ivory discharge strokes shaking distant crater walls, deep low-angle composition, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush pillars and water pools, expressive pigment runs, scraped lightning and tactile ash grain, the monolith remains the single dominant silhouette with molten-gold fire deep inside its throat, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, black volcanic monolith breathing a towering inferno, orange-red lava spiraling through its cracks, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ### A Horizon Set Alight | Level 2 | Light
@@ -145,7 +163,7 @@ vertical full-art fantasy card illustration, a towering black cylindrical monoli
 **Output:** `intensity-l2-a-horizon-set-alight.png`
 
 ```text
-vertical full-art fantasy card illustration, a sequence of white volcanic eruptions advancing diagonally across a black obsidian continent, one molten-gold fault linking a small foreground ignition to a towering distant plume, the horizon lifting under pressure, ground-level view with the largest eruption as the focal event, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush ridges, broad ivory brushstroke fire, imperfect engraved geology and flung soot, gold confined to the connecting lava path and torn flame edges, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, white volcanoes erupting across an obsidian continent, one orange-red lava river joining them, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ### What the Depths Remember | Level 2 | Dark
@@ -154,7 +172,7 @@ vertical full-art fantasy card illustration, a sequence of white volcanic erupti
 **Output:** `intensity-l2-what-the-depths-remember.png`
 
 ```text
-vertical full-art fantasy card illustration, a long black stone arm reaching from an abyssal caldera toward one white relic resting on a shelf of discarded ash tablets, antique-gold geological impressions inside the arm like preserved memories, vertical composition with immense black depth below and a quiet ivory relic above the fingertips, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush water, gravity drips, scraped knuckles and imperfect engraved strata, one gold seam running from the wrist to the retrieved fragment, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, an enormous obsidian arm lifting a white relic from a volcanic abyss, flames rising around it, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ## Level 3 - Opposing Truths
@@ -165,7 +183,7 @@ vertical full-art fantasy card illustration, a long black stone arm reaching fro
 **Output:** `intensity-l3-the-chosen-remnant.png`
 
 ```text
-vertical full-art fantasy card illustration, an ivory-robed pilgrim lifting one white stone relic from a vast suspended archive of black tablets, a precise molten-gold flame ribbon joining the relic to the pilgrim's palm, distant volcano light opening a narrow paper-white corridor through the archive, oblique upward composition, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush tablet masses, torn paper edges and imperfect engraved folds, clear figure-and-relic focal silhouette amid sweeping ash, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, white-robed pilgrim lifting a burning relic among black stone tablets, orange-red fire in one hand, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ### The Earth Refuses Silence | Level 3 | Dark
@@ -174,7 +192,7 @@ vertical full-art fantasy card illustration, an ivory-robed pilgrim lifting one 
 **Output:** `intensity-l3-the-earth-refuses-silence.png`
 
 ```text
-vertical full-art fantasy card illustration, an enormous black inferno erupting through sealed white volcanic slabs, obsidian closure stones thrown toward the viewer, a jagged molten-gold fault exposed beneath the explosion, ground-level upshot with the black column cutting across pale paper sky, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush plumes, expressive ink fragments, scraped white pressure cuts and granular ash, strong single eruption silhouette, gold flame confined to the broken seal and exposed geological seam, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, black inferno bursting through white volcanic slabs, flying obsidian and orange-red lava, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ### The Unsevered Contradiction | Level 3 | ASA
@@ -183,7 +201,7 @@ vertical full-art fantasy card illustration, an enormous black inferno erupting 
 **Output:** `intensity-l3-the-unsevered-contradiction.png`
 
 ```text
-vertical full-art fantasy card illustration, one faceless winged witness standing between an ivory volcanic eruption and an upward tide of black abyssal water, eight unequal wings woven from white ash blades and black smoke sails, a jagged molten-gold seam joining the torso, opposing hands holding one broken obsidian crown, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush currents, expressive splattered edges and imperfect engraved regalia, readable unified figure rather than a split-screen portrait, white and black equally forceful, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, faceless eight-winged guardian between a white volcano and a black ocean, holding a broken obsidian crown, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ## Level 4 - The Approaching Rupture
@@ -194,7 +212,7 @@ vertical full-art fantasy card illustration, one faceless winged witness standin
 **Output:** `intensity-l4-fifth-pulse-open-heaven.png`
 
 ```text
-vertical full-art fantasy card illustration, five irregular pressure hearts ascending from a black volcanic abyss toward a white sky rupture, lower hearts closed in obsidian and upper hearts split by molten-gold cracks, the fifth opening into an enormous ivory eruption canopy, a crooked gold filament connecting the five stages, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush foundation, torn white pigment fans, imperfect engraved stone and falling ash, distinct five-heart structure inside a monumental vertical ascent, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, five cracked obsidian hearts rising from a volcanic abyss, the highest bursting into orange-red inferno with white-hot highlights, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ### Night That Burns Forever | Level 4 | Dark
@@ -203,7 +221,7 @@ vertical full-art fantasy card illustration, five irregular pressure hearts asce
 **Output:** `intensity-l4-night-that-burns-forever.png`
 
 ```text
-vertical full-art fantasy card illustration, a huge broken stone hourglass trapped inside a continent-wide black volcanic firestorm, pale ash flowing upward through its narrow throat, antique-gold flame threads looping from the bottom chamber into the top, distant white furnace fissures beneath the soot plumes, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush inferno, expressive painterly smears and scraped geological edges, hourglass as the clear dominant silhouette, gold showing the impossible repeating current without numerals or clock faces, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, broken obsidian hourglass inside a black volcanic firestorm, white ash flowing upward, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ## Level 5 - Both Ends Meet
@@ -214,7 +232,7 @@ vertical full-art fantasy card illustration, a huge broken stone hourglass trapp
 **Output:** `intensity-l5-the-weight-of-all-horizons.png`
 
 ```text
-vertical full-art fantasy card illustration, an enormous black obsidian world-heart holding a fractured white volcanic star, eight colossal wing-limbs supporting broken horizon shelves at different heights, molten-gold seams binding each shelf to the central mass, white ash cosmos above and black abyss below, colossal low-angle composition, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush gravity currents, torn white eruptions and imperfect engraved geological layers, unmistakable eight-limbed silhouette carrying impossible weight, gold flame concentrated at the burdened joints, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, colossal winged obsidian heart holding a white volcanic star, orange-red lava binding floating mountain ranges, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ### When Both Ends Meet | Level 5 | ASA
@@ -223,7 +241,7 @@ vertical full-art fantasy card illustration, an enormous black obsidian world-he
 **Output:** `intensity-l5-when-both-ends-meet.png`
 
 ```text
-vertical full-art fantasy card illustration, a newborn white volcanic continent colliding diagonally with a black ocean of erased worlds, one brilliant molten-gold seam holding the collision apart, two tiny ivory relics resting calmly at the meeting point, mountain ranges bending into impossible folded shelves, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush waves, explosive white pigment eruptions and tactile engraved rock, clear opposing world masses with a single golden focal junction, white and black equally dominant rather than blended gray, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, white volcanic continent colliding with a black ocean, orange-red inferno blazing along their meeting point, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ### Center of the Unmaking | Level 5 | ASA
@@ -232,7 +250,7 @@ vertical full-art fantasy card illustration, a newborn white volcanic continent 
 **Output:** `intensity-l5-center-of-the-unmaking.png`
 
 ```text
-vertical full-art fantasy card illustration, white volcanic ridges and black abyss waters folding inward around one narrow molten-gold seed, obsidian shards and ivory ash converging along crooked paths, a white rupture cutting through a black reservoir while gold flame curls outward from the compressed center, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush masses, torn pigment blooms, scraped pressure seams and hand-printed grain, one unmistakable seed at the center of a monumental implosion, no neat concentric rings, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, white mountains and black abyss folding around a orange-red flame, obsidian fragments spiraling inward, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ## Eternal - The Five Powers
@@ -243,7 +261,7 @@ vertical full-art fantasy card illustration, white volcanic ridges and black aby
 **Output:** `intensity-eternal-cathedral-below-all-seas.png`
 
 ```text
-vertical full-art fantasy card illustration, a colossal black furnace serpent coiling into a cathedral beneath an abyss ocean, obsidian spine ridges forming towers and rib vaults sheltering small white memory stones, antique-gold lava seams illuminating the creature from within, low-angle view from the trench floor, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush water and scales, scraped ivory currents, imperfect engraved arches and granular ash, one monumental living-cathedral silhouette, controlled gold flame breathing through the submerged vents, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, colossal obsidian serpent forming a submerged cathedral, orange-red inferno with white-hot highlights burning between its ribs, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ### The Crown Divided Against Itself | Eternal | ASA
@@ -252,7 +270,7 @@ vertical full-art fantasy card illustration, a colossal black furnace serpent co
 **Output:** `intensity-eternal-the-crown-divided-against-itself.png`
 
 ```text
-vertical full-art fantasy card illustration, two distinct volcanic monarchs reaching toward one broken gold-bound crown, black abyss ruler against ivory ash sky and white inferno ruler emerging from pooled black smoke, mismatched obsidian and pale lava throne armor, narrow gold fault dividing a ruined citadel beneath them, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush shadows, expressive ink fragments, imperfect engraved regalia and torn white flame, asymmetric dual-figure composition organized around the single crown, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, two volcanic monarchs grasping one broken crown, orange-red fire with white-hot accents against black smoke, orange-red lava joining the crown, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ### Sovereign of Unbearable Noon | Eternal | Light
@@ -261,7 +279,7 @@ vertical full-art fantasy card illustration, two distinct volcanic monarchs reac
 **Output:** `intensity-eternal-sovereign-of-unbearable-noon.png`
 
 ```text
-vertical full-art fantasy card illustration, a black humanoid monarch standing inside an immense white volcanic sun, fractured obsidian throne arms orbiting at uneven angles, a restrained molten-gold crown casting blade-shaped flame across the ivory eruption, distant temples reduced to tiny soot silhouettes, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush fragments around a clear central figure, scraped stellar fractures and imperfect engraved armor, overwhelming white radiance with visible paper grain rather than smooth digital glow, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, obsidian monarch before an enormous white volcanic sun, orange-red flame crown, shattered throne, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ### The Bell That Buries Distance | Eternal | Dark
@@ -270,7 +288,7 @@ vertical full-art fantasy card illustration, a black humanoid monarch standing i
 **Output:** `intensity-eternal-the-bell-that-buries-distance.png`
 
 ```text
-vertical full-art fantasy card illustration, a gigantic cracked black volcanic-glass bell above a city folding into an abyss, molten-gold scars tracing the bell's fracture and pulling a distant tower toward its mouth, broken white pressure crescents crossing deep soot masses, dramatic overhead composition with the bell dominating the foreground, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush pools, gravity drips, scraped glass and imperfect engraved chains, gold flame confined to the spatial fracture, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, cracked obsidian bell swallowing a city into a volcanic abyss, orange-red fire with white-hot accents and orange-red lava pouring from its mouth, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ### Verdict After the Last Dawn | Eternal | ASA
@@ -279,12 +297,12 @@ vertical full-art fantasy card illustration, a gigantic cracked black volcanic-g
 **Output:** `intensity-eternal-verdict-after-the-last-dawn.png`
 
 ```text
-vertical full-art fantasy card illustration, a colossal white phoenix judge ascending from its own black ash body over a volcanic tribunal, obsidian armor and wings assembled from blank broken stone tablets, one talon lifting an ivory mountain seed while the other releases a black world fragment, molten-gold flame joining the two gestures, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush smoke, scraped tablet edges and expressive white eruption fans, diagonal opposing forces with one clear judge silhouette, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, white phoenix rising from black volcanic ash, obsidian armor, one talon holding a burning mountain seed, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ## Infinity - Decisions Without End
 
-Infinity is the requested art tier; the game's existing rarity terminology is Infinite. These five concepts are not registered crafting recipes.
+Infinity is the artwork label used in these output filenames; the gameplay rarity is Infinite. These five installed faces use `infinite-intensity-` persistent IDs.
 
 ### The Unfathomed Return | Infinity | Dark
 
@@ -293,7 +311,7 @@ Infinity is the requested art tier; the game's existing rarity terminology is In
 **Output:** `intensity-infinity-the-unfathomed-return.png`
 
 ```text
-vertical full-art fantasy card illustration, one enormous black serpent cathedral whose rib vaults contain smaller receding versions of the same sanctuary, a continuous antique-gold seam descending through every nested depth, white memory stones rising against the downward abyss current, extreme low-angle perspective, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush architecture, imperfect engraved obsidian scales, tactile splatter and scraped ivory water, a clear outer serpent silhouette enclosing impossible repetition, gold flame marking the returning path rather than filling the background, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, endless obsidian serpent cathedrals nested beneath a black sea, orange-red infernos with white-hot cores and one continuous orange-red lava vein, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ### Crown With No Final King | Infinity | ASA
@@ -303,7 +321,7 @@ vertical full-art fantasy card illustration, one enormous black serpent cathedra
 **Output:** `intensity-infinity-crown-with-no-final-king.png`
 
 ```text
-vertical full-art fantasy card illustration, a single fractured obsidian crown floating above two empty white and black thrones, antique-gold seams joining its halves through a descending procession of smaller crown-shaped shadows, volcanic ridges and abyss terraces alternating into impossible depth, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush shadows, torn ivory flame shapes and imperfect engraved throne edges, the main crown remains the unmistakable focal object while repetition recedes behind it, balanced white and black masses with controlled gold flame connections, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, broken obsidian crown above empty white and black thrones, smaller burning crowns receding into the abyss, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ### Daybreak Without End | Infinity | Light
@@ -313,7 +331,7 @@ vertical full-art fantasy card illustration, a single fractured obsidian crown f
 **Output:** `intensity-infinity-daybreak-without-end.png`
 
 ```text
-vertical full-art fantasy card illustration, an ivory volcanic sun containing an endless succession of rising black mountain horizons, one small dark monarch at the foremost ridge, molten-gold flame threading upward through the nested eruptions like a continuous sunrise, monumental upward perspective, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush ridges, broad scraped white flare shapes, imperfect engraved strata and visible paper grain, white-dominant composition organized around one great sun silhouette, no smooth glowing spheres, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, white volcanic sun containing endless erupting black mountains, a lone monarch beneath orange-red flames, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ### A Furnace Outside Time | Infinity | ASA
@@ -323,7 +341,7 @@ vertical full-art fantasy card illustration, an ivory volcanic sun containing an
 **Output:** `intensity-infinity-a-furnace-outside-time.png`
 
 ```text
-vertical full-art fantasy card illustration, one black volcanic bell with a white furnace interior folding an ivory city through its own hollow body, broken gold flame arcs carrying the same streets inward and outward, architecture returning at impossible scales beneath a frozen ash eruption, oblique overhead composition, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush shadows, scraped glass fractures, imperfect engraved stone and expressive ink fragments, clear bell silhouette holding the repeating city, white and black equally forceful with one controlled molten-gold circulation path, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, obsidian bell with a orange-red furnace inside, a burning city folding through its mouth again and again, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```
 
 ### The Seam That Holds Eternity | Infinity | ASA
@@ -333,5 +351,294 @@ vertical full-art fantasy card illustration, one black volcanic bell with a whit
 **Output:** `intensity-infinity-the-seam-that-holds-eternity.png`
 
 ```text
-vertical full-art fantasy card illustration, a monumental white phoenix whose wing bones form a continuous gold-bound seam between a black abyss ocean and a chain of newborn ivory volcanoes, each torn feather holding a smaller beginning beside a darker ending, black ash afterimages returning into the tail, sweeping diagonal composition, grand high-contrast anime ink illustration on distressed parchment-white ground, dense black splotched dry-brush tides, scraped feather fractures, imperfect engraving and tactile white pigment splashes, one readable phoenix silhouette carrying immense repeating worlds, controlled molten-gold flame only along the joining bones, no readable text, no logo, no watermark, no interface, no decorative frame, Intensity Splotched Ink style lock, white and black dominant, only antique-gold through molten-gold flame accents --ar 2:3 --niji 6 --stylize 900
+vertical full-art illustration, white phoenix bridging a black ocean and newborn volcanoes, orange-red fire running through its wings, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 2:3 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+## Expansion world artwork
+
+These filenames are relative to `card-game-idle/public/assets/`:
+
+| Artwork | Install folder | Runtime status |
+| --- | --- | --- |
+| Five boss banners | `card-backgrounds/intensity/` | Exact human-readable boss filenames below are loaded by the Wake |
+| Crater of Flames banner | `dungeons/` | `crater-of-flames.png` is wired |
+| Four encounter scenes | `dungeons/` | `crater-of-flames-1.png` through `-4.png` are reserved outputs, not yet loaded as scene art |
+| Four material icons | `dungeons/items/` | Exact lowercase filenames below are wired |
+| Seven ability icons | `ability-icons/` | Exact ability-ID filenames below are wired |
+
+Of these 21 world targets, 17 are installed: all five bosses, the dungeon cover, all four materials, and all seven abilities. The four encounter scenes remain optional reserved outputs, not runtime requirements.
+
+The supplied `The Ignited Cathedral.png` is installed as `The Drowned Cathedral Boss Art.png` without renaming the gameplay boss. Emberglass, Abyssal Cinder, and Heart of the Inferno received border-connected parchment alpha cleanup with protected centers and inward edge feathering. Solar Slag retains its integral fiery backdrop; removing it would risk cutting away the subject. Unmodified material originals are retained in the session artifacts.
+
+Use the same short Chinese mythological ink-manuscript template for every pending image. Keep the subject distinct, the inferno unmistakable, and the white/black/orange-red palette consistent.
+
+### Boss banner - The Drowned Cathedral
+
+**Installed output:** `The Drowned Cathedral Boss Art.png`
+**Composition:** Underwater side elevation of a moving basalt sanctuary; a tiny suspended bell establishes impossible scale.
+
+```text
+wide cinematic illustration, colossal obsidian serpent carrying a drowned cathedral, underwater volcanic infernos, white steam and orange-red lava, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 16:9 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### Boss banner - The Divided Crown
+
+**Installed output:** `The Divided Crown Boss Art.png`
+**Composition:** Two opposed sovereigns brace the same broken crown across a collapsed throne hall.
+
+```text
+wide cinematic illustration, two volcanic sovereigns holding a broken crown across ruined obsidian thrones, white and black infernos, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 16:9 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### Boss banner - The Sovereign of Unbearable Noon
+
+**Installed output:** `The Sovereign of Unbearable Noon Boss Art.png`
+**Composition:** A monarch advances across a nearly white ash plain; compressed volcanic ridges form a distant orange-red-edged horizon.
+
+```text
+wide cinematic illustration, pale crowned monarch crossing a volcanic ash plain, molten obsidian mountains and towering orange-red flames with white-hot tips, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 16:9 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### Boss banner - The Bell That Buries Distance
+
+**Installed output:** `The Bell That Buries Distance Boss Art.png`
+**Composition:** A tilted monumental bell drags mountains and roads through its opening rather than emitting ordinary sound rings.
+
+```text
+wide cinematic illustration, colossal obsidian bell swallowing mountains above a flaming caldera, orange-red inferno with white-hot highlights in its mouth, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 16:9 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### Boss banner - The Arbiter After the Last Dawn
+
+**Installed output:** `The Arbiter After the Last Dawn Boss Art.png`
+**Composition:** A twin-aspected arbiter holds opposing remnants apart above a sloping continent of ash.
+
+```text
+wide cinematic illustration, white-winged judge in black volcanic armor, holding a first flame and a last ember above a burning continent, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 16:9 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### Dungeon banner - Crater of Flames
+
+**Installed output:** `crater-of-flames.png`
+**Composition:** A cutaway descent through four distinct strata; the expedition's route is a descending orange-red seam.
+
+```text
+wide cinematic illustration, vast volcanic crater descending into a orange-red inferno with white-hot highlights, molten obsidian terraces and orange-red lava rivers, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 16:9 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### Encounter scene - The Emberglass Rim
+
+**Pending output:** `crater-of-flames-1.png`
+**Composition:** Ground-level traverse across translucent volcanic blades, before the descent begins.
+
+```text
+wide cinematic illustration, jagged volcanic-glass cliffs around an erupting crater, orange-red flames with white-hot tips and orange-red lava beneath the path, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 16:9 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### Encounter scene - The Cinder Descent
+
+**Pending output:** `crater-of-flames-2.png`
+**Composition:** A steep zigzag stair passes under suspended cinder shelves and pressure-black water.
+
+```text
+wide cinematic illustration, steep obsidian stairs descending through volcanic smoke, orange-red infernos with white-hot cores and orange-red magma below, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 16:9 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### Encounter scene - The White Furnace
+
+**Pending output:** `crater-of-flames-3.png`
+**Composition:** Horizontal stone baffles force sculptural orange-red fire with white-hot accents through a chamber of cooled pale metal.
+
+```text
+wide cinematic illustration, underground obsidian furnace, orange-red fire with white-hot accents blasting between stone slabs, molten metal flowing in orange-red streams, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 16:9 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### Encounter scene - The Heart Beneath the Crater
+
+**Pending output:** `crater-of-flames-4.png`
+**Composition:** An elongated white-hot geological heart hangs inside an opened, ribbed dark shell.
+
+```text
+wide cinematic illustration, orange-red volcanic heart with a white-hot core suspended inside a split obsidian shell, a cavern filled with inferno, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clear focal silhouette --ar 16:9 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### Material icon - Emberglass
+
+**Installed output:** `emberglass.png`
+**Composition:** A single folded volcanic-glass flake holds the first eruption pulse as an internal scar.
+
+```text
+centered material icon, single jagged volcanic-glass shard holding a orange-red flame, molten obsidian edges, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clean silhouette, empty margins --ar 1:1 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### Material icon - Abyssal Cinder
+
+**Installed output:** `abyssal-cinder.png`
+**Composition:** A hooked porous ember with a white pressure-cut interior, not an ordinary coal ball.
+
+```text
+centered material icon, hooked black volcanic cinder with a orange-red inferno with white-hot highlights inside, orange-red lava glowing through its pores, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clean silhouette, empty margins --ar 1:1 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### Material icon - Solar Slag
+
+**Installed output:** `solar-slag.png`
+**Composition:** A cooled folded metal pour retains one sharp red-hot edge.
+
+```text
+centered material icon, folded pale-metal slag with a molten obsidian underside, orange-red flame with a white-hot core and red-hot edges, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clean silhouette, empty margins --ar 1:1 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### Material icon - Heart of the Inferno
+
+**Installed output:** `heart-of-the-inferno.png`
+**Composition:** A split, angular obsidian shell suspends a white-hot core on narrow orange-red ligaments, shown as a tangible mineral rather than a glowing orb.
+
+```text
+centered material icon, split obsidian shell holding an angular orange-red inferno with white-hot highlights heart, orange-red lava joining the broken halves, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clean silhouette, empty margins --ar 1:1 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### Ability icon - Kindle the Depths
+
+**Installed output:** `intensity-kindle-the-depths.png`
+**Composition:** An orange-red flame hook with a white-hot core pierces a black submerged stone shelf from below.
+
+```text
+centered ability icon, orange-red flame with a white-hot core erupting through a molten obsidian shelf, volcanic fragments flying upward, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clean silhouette, empty margins --ar 1:1 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### Ability icon - Bank the Flame
+
+**Installed output:** `intensity-bank-the-flame.png`
+**Composition:** Two overlapping obsidian shutters shelter a narrow surviving orange-red flame with a white-hot core.
+
+```text
+centered ability icon, two obsidian shutters enclosing a fierce orange-red inferno with white-hot highlights, orange-red lava along their hinges, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clean silhouette, empty margins --ar 1:1 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### Ability icon - Temper the Hand
+
+**Installed output:** `intensity-temper-the-hand.png`
+**Composition:** A white gauntlet presses two blank basalt plates into one magma-bound fan.
+
+```text
+centered ability icon, white armored hand forging two obsidian plates in volcanic fire, orange-red molten seams, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clean silhouette, empty margins --ar 1:1 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### Ability icon - Cinder Recall
+
+**Installed output:** `intensity-cinder-recall.png`
+**Composition:** Two recognizable burned fragments lift out of ash on separate orange-red flame with a white-hot core strands.
+
+```text
+centered ability icon, two burned obsidian fragments rising from ash on orange-red flames with white-hot tips, orange-red fire repairing their cracks, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clean silhouette, empty margins --ar 1:1 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### Ability icon - White-hot Reprieve
+
+**Installed output:** `intensity-white-hot-reprieve.png`
+**Composition:** A white thermal blade severs the jammed links of a black mechanism.
+
+```text
+centered ability icon, orange-red flame with a white-hot core blade cutting a jammed obsidian mechanism, volcanic sparks and molten magma, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clean silhouette, empty margins --ar 1:1 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### Ability icon - Unquenched Reserve
+
+**Installed output:** `intensity-unquenched-reserve.png`
+**Composition:** A tall ribbed black reservoir contains folded orange-red flame with a white-hot core sheets beneath a broken lid.
+
+```text
+centered ability icon, black volcanic reservoir holding twin orange-red infernos with white-hot cores, orange-red lava cracks beneath its lid, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clean silhouette, empty margins --ar 1:1 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### Ability icon - Crucible Without End
+
+**Installed output:** `intensity-crucible-without-end.png`
+**Composition:** A tilted open crucible pours a magma-bound strip back through its own fractured underside.
+
+```text
+centered ability icon, broken obsidian crucible pouring an endless loop of orange-red fire with white-hot accents and orange-red lava back into itself, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, white and black dominant, hot orange and red flames, white-hot highlights, clean silhouette, empty margins --ar 1:1 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+## Intensity completion splash rewards
+
+Install these PNGs in `card-game-idle/src/assets/main-menu-backgrounds/`. These three backgrounds already have cosmetic-only achievement gates, each using lifetime ownership of the corresponding roster: 19 base, five Eternal, or five Infinite cards. A missing image is explicitly unavailable, not replaced with unrelated art. Keep the dramatic subject away from the left menu area.
+
+### The First Unbroken Eruption - every base card
+
+**Pending output:** `intensity-base-completion-splash.png`
+
+```text
+wide volcanic landscape, enormous white mountain erupting above a black obsidian sea, orange-red infernos spilling down its slopes, scattered ink islands, quiet empty space on the left, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, hot orange and red flames, white-hot highlights --ar 16:9 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### The Five Who Command the Flame - every Eternal card
+
+**Pending output:** `intensity-eternal-completion-splash.png`
+
+```text
+five volcanic sovereign silhouettes surrounding a cracked obsidian crown, drowned temple, split crown, white sun, hanging bell, dawn judge, orange-red infernos linking their thrones, empty space on the left, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, hot orange and red flames, white-hot highlights --ar 16:9 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### The Inferno Without a Last Dawn - every Infinite card
+
+**Pending output:** `intensity-infinite-completion-splash.png`
+
+```text
+enormous white phoenix carrying five erupting volcanic worlds across a black abyss, endless orange-red inferno flowing between obsidian islands, wings breaking into ink, quiet empty space on the left, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, hot orange and red flames, white-hot highlights --ar 16:9 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+## Intensity boss trophy profile portraits
+
+One portrait per boss, unlocked on its first clear. Install these PNGs in `card-game-idle/src/assets/profile-pictures/intensity/`. Each is also represented by a named achievement. Until the artwork is supplied, the earned portrait uses an explicitly labeled sigil, never a broken image or another set's portrait.
+
+Like the existing Wake trophies, keep the silhouette inside the central 75%; use the outer 25% as a crop-safe ink corona. No important details in the corners.
+
+### The Cathedral in Flame - The Drowned Cathedral
+
+**Pending output:** `wake-profile-intensity-cathedral.png`
+
+```text
+centered boss trophy portrait, white drowned temple rising from molten black obsidian, orange-red fire pouring through its broken arches, crown of volcanic smoke, silhouette inside central 75 percent, outer ink corona, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, hot orange and red flames, white-hot highlights --ar 1:1 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### Bearer of the Burning Crown - The Divided Crown
+
+**Pending output:** `wake-profile-intensity-divided-crown.png`
+
+```text
+centered boss trophy portrait, divided obsidian crown floating above twin volcanic faces, orange-red inferno filling the split, white-hot crown tips, silhouette inside central 75 percent, outer ink corona, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, hot orange and red flames, white-hot highlights --ar 1:1 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### The Noon That Burns - The Sovereign of Unbearable Noon
+
+**Pending output:** `wake-profile-intensity-unbearable-noon.png`
+
+```text
+centered boss trophy portrait, white volcanic sun deity wearing an obsidian mask, orange-red inferno halo, molten cracks across its black shoulders, silhouette inside central 75 percent, outer ink corona, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, hot orange and red flames, white-hot highlights --ar 1:1 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### Voice of the Volcanic Bell - The Bell That Buries Distance
+
+**Pending output:** `wake-profile-intensity-distance-bell.png`
+
+```text
+centered boss trophy portrait, ancient obsidian bell hanging in volcanic smoke, orange-red inferno spilling from its mouth, white shockwave curling around the bell, silhouette inside central 75 percent, outer ink corona, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, hot orange and red flames, white-hot highlights --ar 1:1 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+### The Last Dawn Ascendant - The Arbiter After the Last Dawn
+
+**Pending output:** `wake-profile-intensity-last-dawn.png`
+
+```text
+centered boss trophy portrait, white dawn judge with cracked obsidian antlers, orange-red inferno rising behind its faceless mask, molten volcanic mantle, silhouette inside central 75 percent, outer ink corona, Chinese mythological manuscript art, expressive ink-wash painting, heavy black ink splotches, rough brushwork on white parchment, flaming infernos and volcanic molten obsidian, hot orange and red flames, white-hot highlights --ar 1:1 --niji 6 --stylize 900 --no text logo watermark border yellow
+```
+
+## Intensity artstyle tuner - Flaming Leviathan
+
+Art test only. Do not implement this card or add it to the game roster.
+
+```text
+colossal black leviathan rising from a black ink sea, vibrant red and hot orange flames curling around its body with white-hot accents, black and white molten paint, white parchment sky and black volcanic scenery, heavy ink splotches and sweeping paint strokes, Chinese mythological manuscript art, cinematic anime ink illustration, Intensity Splotched Ink style lock, white and black dominant, only red and orange flame accents --ar 3:4 --niji 6 --stylize 900 --no text logo watermark border yellow
 ```

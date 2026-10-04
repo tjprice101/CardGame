@@ -1,5 +1,6 @@
 export type GardenMaterialCurrency = 'nullifiedLattice' | 'nullSearedLight' | 'nullifiedOblivionMatter'
-  | 'seedOfCausality' | 'causalBloom' | 'shatteredCausalTranscript' | 'heartOfCausality';
+  | 'seedOfCausality' | 'causalBloom' | 'shatteredCausalTranscript' | 'heartOfCausality'
+  | 'emberglass' | 'abyssalCinder' | 'solarSlag' | 'heartOfTheInferno';
 
 export type GardenRewardCurrency = GardenMaterialCurrency
   | 'divineLight' | 'shardsOfTranscendence';
@@ -22,7 +23,7 @@ export interface GardenDungeonDefinition {
   readonly coverArt: string;
   readonly encounters: readonly GardenEncounterDefinition[];
   readonly available: boolean;
-  readonly category: 'Neutrality' | 'Causality';
+  readonly category: 'Neutrality' | 'Causality' | 'Intensity';
 }
 
 export interface GardenDungeonState {

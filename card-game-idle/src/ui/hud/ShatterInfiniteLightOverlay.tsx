@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore, selectTurn, selectDivineLight } from '@/state/store';
 import { formatNumber } from '@/utils/bignum';
 import { uiTypography } from '@/ui/theme';
-import { SHATTER_ACTIVE_MS } from '@/systems/cards/ShatterTheInfiniteLight';
+import { getShatterOrbitMultiplier, SHATTER_ACTIVE_MS } from '@/systems/cards/ShatterTheInfiniteLight';
 import { toOrbitSpace } from '@/systems/cards/AttackSequence';
 
 const AMBIENT_STAR_COUNT = 120;
@@ -157,7 +157,12 @@ export default function ShatterInfiniteLightOverlay() {
           </div>
           {phase === 'active' && (
             <div style={{ fontFamily: uiTypography.display, fontSize: 14, letterSpacing: 1.5, color: '#ffd7c4', marginTop: 2 }}>
-              ◌ {(shatter.orbitPower ?? 0).toFixed(1)} orbit power
+              ◌ {(shatter.orbitPower ?? 0).toFixed(1)} orbit power · ×{getShatterOrbitMultiplier(shatter.orbitPower).toFixed(1)}
+            </div>
+          )}
+          {phase === 'active' && (
+            <div style={{ fontFamily: uiTypography.display, fontSize: 12, color: '#ffd7c4', marginTop: 2 }}>
+              Board attack total: {formatNumber(shatter.basePayout)} · Collection Power applies at payout
             </div>
           )}
           {phase === 'active' && (

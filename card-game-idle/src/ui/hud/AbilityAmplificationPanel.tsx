@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { ABILITY_REGISTRY } from '@/data/abilities/abilityDefinitions';
+import { ABILITY_REGISTRY, meetsAbilityOwnershipGate } from '@/data/abilities/abilityDefinitions';
+import { getIntensityAbilityReadiness, isIntensityAbility } from '@/systems/abilities/intensityAbilities';
 import { useStore, selectProgress, selectTurn } from '@/state/store';
 import { uiTypography } from '@/ui/theme';
 
@@ -15,6 +16,8 @@ export default function AbilityAmplificationPanel() {
   }, []);
   const progress = useStore(selectProgress);
   const turn = useStore(selectTurn);
+  const board = useStore(state => state.board);
+  const deck = useStore(state => state.deck);
   const activateAbility = useStore(state => state.activateAbility);
   const activeDeck = progress.savedDecks.find(deck => deck.id === progress.activeDeckId);
   const loadout = activeDeck?.abilityLoadout ?? {};
@@ -38,6 +41,9 @@ export default function AbilityAmplificationPanel() {
       ? { id: 'confluence-attack', text: `Next attack: +${turn.transcendentConfluenceAttackBonus} multiplier` }
       : null,
   ].filter((effect): effect is { id: string; text: string } => effect !== null);
+  if ((turn.intensityNextGainMultiplier ?? 1) > 1) {
+    transcendentEffects.push({ id: 'intensity-unquenched-reserve', text: `Next positive Inferno gain: ×${turn.intensityNextGainMultiplier} this turn` });
+  }
 
   return (
     <section style={{ color: 'rgba(244,244,248,0.9)', fontFamily: uiTypography.body }}>
@@ -48,12 +54,19 @@ export default function AbilityAmplificationPanel() {
           const abilityId = loadout[slot];
           const ability = abilityId ? ABILITY_REGISTRY.get(abilityId) : undefined;
           const cooldown = ability ? Math.max(0, (turn.abilityCooldownUntil?.[ability.id] ?? 0) - Date.now()) : 0;
+          const busy = turn.phase !== 'playing' || Boolean(turn.pendingEffect || turn.attackSequence || turn.shatterInfiniteLight);
+          const gateMet = ability && progress.ownedAbilities?.[ability.id]
+            && meetsAbilityOwnershipGate(ability, progress.collection, progress.infiniteCollection);
+          const readiness = ability && isIntensityAbility(ability.id)
+            ? getIntensityAbilityReadiness({ turn, board, deck }, ability.id)
+            : undefined;
+          const disabled = !ability || busy || cooldown > 0 || !gateMet || readiness?.success === false;
           return (
             <div key={slot} style={{ padding: 9, borderRadius: 7, border: '1px solid rgba(110,185,240,0.25)', background: 'rgba(18,38,62,0.5)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
-                {ability && <img src={abilityIconUrl(ability.iconAssetKey)} alt="" aria-hidden="true" width={44} height={44} style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 5, marginRight: 2 }} />}
+                {ability && <img src={abilityIconUrl(ability.iconAssetKey)} alt="" aria-hidden="true" onError={event => { event.currentTarget.style.visibility = 'hidden'; }} width={44} height={44} style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 5, marginRight: 2 }} />}
                 <span style={{ color: '#7dd4f8', fontSize: 10 }}>Slot {slot}</span>
-                <button type="button" disabled={!ability || turn.phase !== 'playing' || cooldown > 0} onClick={() => activateAbility(slot)} style={{ padding: '4px 7px', borderRadius: 5, border: '1px solid rgba(110,185,240,0.45)', background: 'rgba(78,160,220,0.18)', color: '#d8f0ff', cursor: !ability || cooldown > 0 ? 'not-allowed' : 'pointer', opacity: !ability || cooldown > 0 ? 0.45 : 1, fontSize: 9 }}>Use</button>
+                <button type="button" disabled={disabled} title={readiness?.success === false ? readiness.reason.replaceAll('-', ' ') : undefined} onClick={() => activateAbility(slot)} style={{ padding: '4px 7px', borderRadius: 5, border: '1px solid rgba(110,185,240,0.45)', background: 'rgba(78,160,220,0.18)', color: '#d8f0ff', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.45 : 1, fontSize: 9 }}>Use</button>
               </div>
               <div style={{ marginTop: 5, fontSize: 11 }}>{ability?.name ?? 'Empty slot'}</div>
               {ability && <div style={{ marginTop: 4, color: 'rgba(244,244,248,0.6)', fontSize: 9, lineHeight: 1.35 }}>{cooldown > 0 ? `Cooldown ${Math.ceil(cooldown / 1000)}s` : ability.description}</div>}

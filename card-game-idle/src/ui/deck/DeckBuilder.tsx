@@ -2,7 +2,7 @@
 import { useStore, selectDeck } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { DeckSystem } from '@/systems/cards/DeckSystem';
-import { SET_ACCENT, getCardSetLabel } from '@/data/elements';
+import { CARD_SET_COLORS, getCardSetId, getCardSetLabel, type CardSetId } from '@/data/elements';
 import {
   getLiveCardFaceBackgroundStyle,
   getLiveCardShimmerClassName,
@@ -13,6 +13,7 @@ import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { warmTheme } from '@/ui/theme';
 import { useThemeVersion } from '@/ui/useThemeVersion';
+import { useVisibleCardAnimations } from '@/ui/useVisibleCardAnimations';
 import { isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import type { DeckEntry, ExtraDeckEntry } from '@/types/game';
 import type { CardDefinition, CardFinish } from '@/types/cards';
@@ -35,9 +36,8 @@ const EXTRA_DECK_SIZE = 10;
 const CARD_LIBRARY_CARD_WIDTH = CARD_COLLECTION_TILE_WIDTH;
 const CARD_LIBRARY_CARD_HEIGHT = CARD_COLLECTION_TILE_HEIGHT;
 
-function getCardSet(definitionId: string): 'Neutrality' | 'Causality' {
-  if (definitionId.includes('causality')) return 'Causality';
-  return 'Neutrality';
+function getCardSet(definitionId: string): CardSetId {
+  return getCardSetId(definitionId) ?? 'Neutrality';
 }
 
 const RARITY_ORDER = { Common: 0, Rare: 1, Epic: 2, Legendary: 3 };
@@ -380,6 +380,8 @@ function ProgressRing({ value, max, color, size = 44, label }: { value: number; 
 
 export default function DeckBuilder({ onClose }: Props) {
   useThemeVersion();
+  const screenRef = useRef<HTMLDivElement>(null);
+  useVisibleCardAnimations(screenRef);
   const { initDeck, saveCurrentDeck, updateSavedDeck, loadSavedDeck, deleteSavedDeck } = useStore.getState();
   const currentDeck = useStore(selectDeck);
   const collection = useStore(s => s.progress.collection);
@@ -475,7 +477,7 @@ export default function DeckBuilder({ onClose }: Props) {
       }
       return variants;
     });
-    const availableElements = ['Neutrality', 'Causality'];
+    const availableElements: CardSetId[] = ['Neutrality', 'Causality', 'Intensity'];
     const query = cardSearch.trim().toLowerCase();
     const filtered = ownedCards.filter(card => {
       if (elementFilter !== null && getCardSet(card.def.definitionId) !== elementFilter) return false;
@@ -542,7 +544,7 @@ export default function DeckBuilder({ onClose }: Props) {
   );
   const totalCards = deckList.reduce((sum, e) => sum + e.copies, 0);
   const deckSetName = useMemo(() => {
-    const setCounts = { Neutrality: 0, Causality: 0 };
+    const setCounts: Record<CardSetId, number> = { Neutrality: 0, Causality: 0, Intensity: 0 };
     for (const entry of deckList) {
       const setId = getCardSet(entry.definitionId);
       setCounts[setId] += entry.copies;
@@ -551,7 +553,9 @@ export default function DeckBuilder({ onClose }: Props) {
       const setId = getCardSet(entry.definitionId);
       setCounts[setId] += 1;
     }
-    return setCounts.Causality > setCounts.Neutrality ? 'Causality' : 'Neutrality';
+    return (['Neutrality', 'Causality', 'Intensity'] as CardSetId[]).reduce(
+      (best, current) => setCounts[current] > setCounts[best] ? current : best, 'Neutrality',
+    );
   }, [deckList, extraDeckList]);
   const validation = DeckSystem.validate(deckList);
   // Aggregate deck stats: element distribution + rarity breakdown.
@@ -565,7 +569,7 @@ export default function DeckBuilder({ onClose }: Props) {
     for (const entry of deckList) {
       const def = CardRegistry.get(entry.definitionId);
       if (!def) continue;
-      const el = 'Neutrality';
+      const el = getCardSet(def.definitionId);
       elementCounts[el] = (elementCounts[el] ?? 0) + entry.copies;
       rarityCounts[def.rarity] = (rarityCounts[def.rarity] ?? 0) + entry.copies;
       const level = getCardSpectrumLevel(def);
@@ -787,7 +791,7 @@ export default function DeckBuilder({ onClose }: Props) {
   }
 
   return (
-    <div className="ui-panel-intro deck-builder-screen" style={styles.overlay}>
+    <div ref={screenRef} className="ui-panel-intro deck-builder-screen" style={styles.overlay}>
       {isLocked && (
         <div style={{
           position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.92)', zIndex: 10,
@@ -882,7 +886,7 @@ export default function DeckBuilder({ onClose }: Props) {
             onClick={() => setElementFilter(el === elementFilter ? null : el)}
           >
             {elementFilter === el && (
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: el === 'Causality' ? '#d66a52' : SET_ACCENT, display: 'inline-block', flexShrink: 0 }} />
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: CARD_SET_COLORS[el], display: 'inline-block', flexShrink: 0 }} />
             )}
             {el}
           </button>

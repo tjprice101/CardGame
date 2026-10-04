@@ -7,7 +7,7 @@ import { useThemeVersion } from '@/ui/useThemeVersion';
 
 interface Props { onClose: () => void }
 
-const CATEGORY_ORDER = ['Neutrality', 'Light', 'Fire', 'Wind', 'Ice', 'Lightning', 'Nature', 'Water', 'Dark'] as const;
+const CATEGORY_ORDER = ['Neutrality', 'Causality', 'Intensity', 'Light', 'Fire', 'Wind', 'Ice', 'Lightning', 'Nature', 'Water', 'Dark'] as const;
 
 function formatSeconds(s: number): string {
   if (!Number.isFinite(s) || s <= 0) return '—';

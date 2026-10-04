@@ -20,7 +20,7 @@ import { listAchievements, isAchievementUnlocked } from '@/systems/progression/a
 import { TITLE_BADGE_BY_ID } from '@/data/profile/titleBadges';
 import * as backgroundRewards from '@/data/profile/customMainMenuBackgrounds';
 
-const rewards = CUSTOM_MAIN_MENU_BACKGROUND_REWARDS;
+const rewards = CUSTOM_MAIN_MENU_BACKGROUND_REWARDS.filter(reward => reward.rarity === 'Transcendent');
 const volumeOne = transcendentCardDefinitions.filter(card => card.subset === 'Vol. 1');
 const forgeAbilities = ABILITY_DEFINITIONS.filter(ability => ability.setId === 'Transcendent');
 const initialState = useStore.getState();
@@ -210,7 +210,7 @@ describe('background artwork loading and gates', () => {
     vi.stubGlobal('pantheonAssets', { listMainMenuBackgrounds: list });
     await expect(loadMainMenuBackgroundEntries(true)).rejects.toThrow('Unable to load imported main menu backgrounds.');
     const retry = await loadMainMenuBackgroundEntries();
-    expect(retry.filter(entry => entry.unlockAchievementId)).toHaveLength(11);
+    expect(retry.filter(entry => entry.unlockAchievementId)).toHaveLength(14);
     expect(list).toHaveBeenCalledTimes(2);
   });
 });

@@ -5,6 +5,9 @@ import { AIN_SOPH_AUR_SUMMON_STACK_REWARD, SOPH_FLIP_CHARGE_REQUIRED } from '@/s
 import { ainSophAurCards } from '@/data/cards/ainSophAurCards';
 import { causalityCards } from '@/data/cards/causalityCards';
 import { causalityInfiniteCards } from '@/data/cards/causalityInfiniteCards';
+import { intensityCards } from '@/data/cards/intensityCards';
+import { neutralityInfiniteCards } from '@/data/cards/neutralityInfiniteCards';
+import { getSophAttackPool, usesInferno } from '@/systems/cards/IntensityRuntime';
 import { darkCards } from '@/data/cards/darkCards';
 import { enigmaRewardCards } from '@/data/cards/enigmaRewardCards';
 import { eternalCards } from '@/data/cards/eternalCards';
@@ -46,7 +49,7 @@ function predictLightStackDelta(
           : condition.type === 'cards_played_gte' ? state.cardsPlayed >= (condition.value ?? 0)
             : condition.type === 'first_card_this_turn' ? state.cardsPlayed === 0
               : false;
-      if (met) predictLightStackDelta(effect.then as Array<{ type: string; [key: string]: unknown }>, state);
+      predictLightStackDelta((met ? effect.then : effect.else ?? []) as Array<{ type: string; [key: string]: unknown }>, state);
       continue;
     }
     if (effect.type === 'convert_light_to_cosmos') {
@@ -54,6 +57,7 @@ function predictLightStackDelta(
       state.cosmos += effect.cosmosGain as number;
     }
     if (effect.type === 'light_stacks_flat') state.stacks += effect.value as number;
+    if (effect.type === 'consume_limitless_light_stacks') state.stacks -= effect.value as number;
     if (effect.type === 'salvage_either_light_or_dark' && (state.discardLights ?? 0) >= (effect.count as number)) {
       state.stacks += effect.lightStacks as number;
     }
@@ -109,6 +113,8 @@ describe('complete card runtime wiring', () => {
       ...ainSophAurCards,
       ...causalityCards,
       ...causalityInfiniteCards,
+      ...intensityCards,
+      ...neutralityInfiniteCards,
       ...eternalCards,
       ...enigmaRewardCards,
       ...transcendentCardDefinitions,
@@ -166,7 +172,7 @@ describe('complete card runtime wiring', () => {
         const instanceId = `${definition.definitionId}-${attack}`;
         useStore.setState(state => ({
           ...state,
-          turn: { ...state.turn, phase: 'playing', limitlessLightStacks: 1_000 },
+          turn: { ...state.turn, phase: 'playing', limitlessLightStacks: 1_000, limitlessInfernoStacks: 1_000 },
           board: {
             ...state.board,
             backSlots: [activeMainDeckCard(definition, instanceId), null, null, null],
@@ -182,7 +188,8 @@ describe('complete card runtime wiring', () => {
         expect(state.progress.divineLight, `${definition.definitionId} ${attack}`).toBeGreaterThan(before);
         expect(state.board.backSlots[0]?.attackCooldowns[attack === 'ain' ? definition.ainAttack.id : definition.sophAttack.id]).toBeGreaterThan(0);
         if (attack === 'soph' && definition.sophAttack.stackCost) {
-          expect(state.turn.limitlessLightStacks).toBeLessThan(1_000);
+          expect(getSophAttackPool(definition.sophAttack, state.turn)).toBeLessThan(1_000);
+          if (usesInferno(definition.sophAttack)) expect(state.turn.limitlessLightStacks).toBe(1_000);
         }
         const afterFirstAttack = state.progress.divineLight;
         if (attack === 'ain') useStore.getState().activateLightAinAttack(instanceId);
@@ -218,6 +225,10 @@ describe('complete card runtime wiring', () => {
       const utilityChanged = state.progress.divineLight !== before.progress.divineLight
         || state.turn.limitlessLightStacks !== before.turn.limitlessLightStacks
         || state.turn.limitlessCosmosStacks !== before.turn.limitlessCosmosStacks
+        || state.turn.limitlessInfernoStacks !== before.turn.limitlessInfernoStacks
+        || state.turn.intensityNextGainMultiplier !== before.turn.intensityNextGainMultiplier
+        || state.turn.intensityAttackBonus !== before.turn.intensityAttackBonus
+        || state.turn.intensityBankedEmbers !== before.turn.intensityBankedEmbers
         || state.turn.pendingEffect !== before.turn.pendingEffect
         || JSON.stringify(state.deck.drawPile) !== JSON.stringify(before.deck.drawPile)
         || JSON.stringify(state.deck.discardPile) !== JSON.stringify(before.deck.discardPile);
@@ -289,6 +300,7 @@ describe('complete card runtime wiring', () => {
       deckCard('discard-light-1', 'light-neutrality-1'),
       deckCard('discard-light-2', 'light-neutrality-2'),
       deckCard('discard-dark-1', 'dark-neutrality-1'),
+      deckCard('discard-intensity', 'light-intensity-palevent-herald'),
     ];
 
     for (const definition of darkDefinitions) {
@@ -299,9 +311,11 @@ describe('complete card runtime wiring', () => {
         discardPile: structuredClone(discardPile),
       };
       const beforeDeck = JSON.stringify(deck);
+      const turn = { ...structuredClone(defaultGameState.turn), phase: 'playing' as const, limitlessLightStacks: 20, limitlessInfernoStacks: 10, intensityInfernoGainedThisTurn: 10 };
+      const beforeTurn = JSON.stringify(turn);
       const result = CardEffectExecutor.execute(
         deckCard(`source-${definition.definitionId}`, definition.definitionId),
-        { ...structuredClone(defaultGameState.turn), phase: 'playing' },
+        turn,
         structuredClone(defaultGameState.board),
         deck,
         false,
@@ -310,6 +324,7 @@ describe('complete card runtime wiring', () => {
 
       expect(result.canPlay, definition.definitionId).toBe(true);
       const changed = JSON.stringify(result.deck) !== beforeDeck
+        || JSON.stringify(result.turn) !== beforeTurn
         || result.pendingEffects.length > 0
         || result.divineLightBonus > 0;
       expect(changed, `${definition.definitionId} must produce a runtime result`).toBe(true);

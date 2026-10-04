@@ -94,7 +94,8 @@ describe('Codex tutorial navigation', () => {
       expect(copy).toContain('up to 200 characters');
       expect(copy).toContain('Save UI Theme');
       expect(copy).toContain('Reduced motion switches swatches without fading');
-      expect(copy).toContain('Their artwork is installed');
+      expect(copy).toContain('The first eleven images are installed');
+      expect(copy).toContain('the three Intensity splashes await dedicated artwork');
       expect(copy).toContain('it is not required to equip the art');
       expect(copy).toContain('not by Light, Dark, or Ain Soph Aur');
       expect(copy).not.toContain('custom theme from the Settings');
@@ -107,9 +108,9 @@ describe('Codex tutorial navigation', () => {
       button.textContent?.includes('Modes'),
     ) ?? null);
     const modeCopy = container.querySelector('.codex-content')!.textContent!;
-    expect(modeCopy).toContain('current boss sets are Neutrality and Causality');
+    expect(modeCopy).toContain('current boss sets are Neutrality, Causality, and Intensity');
     expect(modeCopy).not.toContain('Pyroabyss');
-    expect(modeCopy).not.toContain('Intensity');
+    expect(modeCopy).toContain('Crater of Flames');
   });
 
   it('filters topics without discarding the current chapter and reports empty search results', async () => {

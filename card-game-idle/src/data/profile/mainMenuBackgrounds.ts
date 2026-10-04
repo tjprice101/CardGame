@@ -18,7 +18,7 @@ export interface MainMenuBackgroundEntry {
   unlockThemeId?: string;
   unlockHint?: string;
   unlockAchievementId?: string;
-  rarity?: 'Eternal' | 'Infinite' | 'Transcendent';
+  rarity?: 'Legendary' | 'Eternal' | 'Infinite' | 'Transcendent';
 }
 
 export const DEFAULT_MAIN_MENU_BACKGROUND_ID = 'main-menu-bg-default';
@@ -99,6 +99,8 @@ function buildRewardBackgroundSlots(): MainMenuBackgroundEntry[] {
     .filter((theme) => theme.group === 'reward')
     // Hide base-set placeholders for now; only show Eternal/Infinite rewards.
     .filter((theme) => theme.rewardKind === 'eternal-full' || theme.rewardKind === 'infinite-full')
+    // Intensity has set art, but no Eternal/Infinite crown splash art yet.
+    .filter((theme) => theme.setId !== 'Intensity')
     .sort((a, b) => {
       const rankA = setRank[a.setId ?? ''] ?? Number.MAX_SAFE_INTEGER;
       const rankB = setRank[b.setId ?? ''] ?? Number.MAX_SAFE_INTEGER;

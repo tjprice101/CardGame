@@ -25,6 +25,7 @@ export interface StackCostDefinition {
 export interface LightAttackDefinition extends AttackDefinition {
   readonly scaling: CardScalingExpr;
   readonly stackCost?: StackCostDefinition;
+  readonly stackResource?: 'light' | 'inferno';
 }
 
 export interface LightCardDefinition {

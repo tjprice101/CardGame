@@ -32,12 +32,12 @@ function formatCount(value: number, singular: string, plural = `${singular}s`): 
   return `${value} ${Math.abs(value) === 1 ? singular : plural}`;
 }
 
-function formatStackCost(cost: LightCardDefinition['sophAttack']['stackCost'] | DarkCardDefinition['activationCost']): string | null {
+function formatStackCost(cost: LightCardDefinition['sophAttack']['stackCost'] | DarkCardDefinition['activationCost'], resource = 'Light'): string | null {
   if (!cost) return null;
   if (cost.kind === 'fixed' && (cost.value ?? 0) === 0) return null;
-  if (cost.kind === 'fixed') return `${formatExactValue(cost.value ?? 0)} Limitless Light Stack${cost.value === 1 ? '' : 's'}`;
-  if (cost.kind === 'percentage') return `${formatExactValue(cost.value ?? 0)}% of current Limitless Light Stacks`;
-  return `${formatExactValue(cost.min ?? 0)}-${formatExactValue(cost.max ?? cost.min ?? 0)} Limitless Light Stacks`;
+  if (cost.kind === 'fixed') return `${formatExactValue(cost.value ?? 0)} Limitless ${resource} Stack${cost.value === 1 ? '' : 's'}`;
+  if (cost.kind === 'percentage') return `${formatExactValue(cost.value ?? 0)}% of current Limitless ${resource} Stacks`;
+  return `${formatExactValue(cost.min ?? 0)}-${formatExactValue(cost.max ?? cost.min ?? 0)} Limitless ${resource} Stacks`;
 }
 
 function formatSubtypeList(filters: ReadonlyArray<CardSubtypeFilter>): string {
@@ -95,6 +95,26 @@ function formatCondition(condition: EffectCondition): string {
 function formatEffect(effect: CardEffect, definitionId?: string): string {
   if (!effect || typeof effect !== 'object' || !("type" in effect)) return 'Unknown effect';
   switch (effect.type) {
+    case 'neutrality_stack_resonance': return `Gain ${effect.perStack} base Divine Light per held Light Stack, up to ${effect.cap.toLocaleString()}`;
+    case 'neutrality_abyss_reclaim': return `Recover up to ${effect.count} Neutrality Light/Dark cards from the Light-bound Abyss`;
+    case 'neutrality_charge_release': return `Release up to ${effect.cap} Neutrality Soph charge into Light Stacks and ${effect.divineLightPerCharge} base Divine Light per charge`;
+    case 'neutrality_charge_grant': return `Give every Neutrality Soph support ${effect.value} charge`;
+    case 'neutrality_cooldown_reduction': return `Reduce Neutrality cooldowns by ${effect.value}; gain ${effect.stackPerCard} Light Stacks per accelerated card, up to ${effect.cap}`;
+    case 'neutrality_equilibrium': return `Gain ${effect.divineLightPerPair.toLocaleString()} base Divine Light and ${effect.stacksPerPair} Light Stacks per remaining Neutrality Light/Dark support pair`;
+    case 'inferno_gain': return `Kindle ${effect.value} Limitless Inferno Stacks`;
+    case 'inferno_board_kindle': return `Kindle ${effect.perCard} Inferno per ${effect.side === 'any' ? 'board' : effect.side} card`;
+    case 'inferno_embers': return `Store ${effect.value} embers; each future Intensity hand play kindles 1 Inferno until exhausted`;
+    case 'inferno_charge_forge': return `Give each Soph support ${effect.charge} charge and kindle ${effect.perCharged} Inferno per charged support`;
+    case 'inferno_ash_cycle': return `Cycle up to ${effect.count} leftmost other hand cards to deck bottom, draw replacements, kindle ${effect.perCard} Inferno each`;
+    case 'inferno_recall': return `At ${effect.minInferno}+ Inferno return up to ${effect.count} oldest Intensity Light/Dark discards to hand; kindle ${effect.perCard} each`;
+    case 'inferno_threshold_draw': return `At ${effect.threshold}+ Inferno draw ${effect.draw}; otherwise kindle ${effect.belowGain}`;
+    case 'inferno_rekindle': return `Rekindle ${effect.fraction * 100}% of Inferno spent this turn, rounded down (minimum ${effect.minimum})`;
+    case 'inferno_next_gain': return `Kindle ${effect.kindle}; multiply your next positive Inferno gain by ${effect.multiplier} (does not stack)`;
+    case 'inferno_pressure': return `Kindle ${effect.perStep} per complete ${effect.divisor} Inferno generated this turn, up to ${effect.cap}`;
+    case 'inferno_temper': return `Bank ${effect.perStack} bonus Divine Light per current Inferno, up to ${effect.cap}, for your next Inferno Soph attack`;
+    case 'inferno_balance': return `Kindle ${effect.perPair} per remaining Light/Dark support pair and ${effect.unmatchedGain} per unpaired support`;
+    case 'inferno_eruption': return `At ${effect.threshold}+ Inferno gain ${effect.divineLight} Divine Light without spending stacks; then kindle ${effect.kindle}`;
+    case 'inferno_memory': return `Kindle ${effect.perDistinct} per distinct Intensity discard, up to ${effect.cap}`;
     case 'divine_light_flat': return `+${effect.value} Divine Light`;
     case 'cosmos_flat': return `Gain ${formatCount(effect.value, 'Limitless Cosmos Stack')}`;
     case 'convert_light_to_cosmos': return `Convert ${formatCount(effect.lightCost, 'Limitless Light Stack')} into ${formatCount(effect.cosmosGain, 'Limitless Cosmos Stack')}`;
@@ -120,10 +140,23 @@ function formatEffect(effect: CardEffect, definitionId?: string): string {
     case 'salvage_any': return 'Salvage any 1 card';
     case 'salvage_by_id': return `Salvage ${effect.label ?? CardRegistry.get(effect.targetId)?.name ?? effect.targetId} from discard`;
     case 'score_multiplier': return `+${effect.value}% of this turn's Divine Light`;
+    case 'consume_limitless_light_stacks':
+      return `Consume ${formatCount(
+        effect.value,
+        'Limitless Light Stack',
+      )}`;
     case 'conditional':
-      return `If ${formatCondition(effect.condition)}, ${formatEffectsInline(effect.then.filter(Boolean), definitionId)}`;
-    default:
-      return (effect as { type: string }).type;
+      const main = `If ${formatCondition(effect.condition)}, ${
+        formatEffectsInline(effect.then.filter(Boolean), definitionId)
+      }`;
+
+      if (!effect.else?.length) {
+        return main;
+      }
+
+      return `${main}; otherwise, ${
+        formatEffectsInline(effect.else.filter(Boolean), definitionId)
+      }`;
   }
 }
 
@@ -251,7 +284,8 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
     ]);
     pushSummarySection(sections, 'Soph Attack', [
       `${light.sophAttack.baseDivineLight} base Divine Light`,
-      ...(formatStackCost(light.sophAttack.stackCost) ? [`Costs ${formatStackCost(light.sophAttack.stackCost)}`] : []),
+      ...(formatStackCost(light.sophAttack.stackCost, light.sophAttack.stackResource === 'inferno' ? 'Inferno' : 'Light')
+        ? [`Costs ${formatStackCost(light.sophAttack.stackCost, light.sophAttack.stackResource === 'inferno' ? 'Inferno' : 'Light')}`] : []),
       `Cooldown: ${formatCount(light.sophAttack.cooldownCards, 'card played', 'cards played')}`,
     ]);
     pushSummarySection(sections, 'Charge', [
@@ -358,4 +392,3 @@ export function getCardFullStatLines(card: CardDefinition): string[] {
 export function getCardFullStatText(card: CardDefinition): string {
   return getCardFullStatLines(card).join('\n');
 }
-

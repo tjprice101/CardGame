@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { UI_THEMES } from '@/data/profile/uiThemes';
+import { UI_THEMES, getThemePreviewPalette } from '@/data/profile/uiThemes';
 import {
   applyUiPalette,
   DEFAULT_WARM_PALETTE,
@@ -23,6 +23,42 @@ const slotMs = PROFILE_COLOR_HOLD_MS + PROFILE_COLOR_FADE_MS;
 
 describe('profile palette rotation', () => {
   afterEach(() => resetUiPalette());
+
+  it('keeps all three Intensity rewards deep red, orange, black, and white throughout animation', () => {
+    const themes = UI_THEMES.filter(theme => theme.setId === 'Intensity');
+    expect(themes).toHaveLength(3);
+    expect(new Set(themes.map(theme => theme.palette.accent)).size).toBe(3);
+    const channels = (color: string): number[] => color.startsWith('#')
+      ? [1, 3, 5].map(start => parseInt(color.slice(start, start + 2), 16))
+      : color.match(/[\d.]+/g)!.slice(0, 3).map(Number);
+    for (const theme of themes) {
+      const [red, green, blue] = channels(theme.palette.accent);
+      expect(red).toBeGreaterThanOrEqual(140);
+      expect(red).toBeLessThanOrEqual(190);
+      expect(green).toBeLessThan(25);
+      expect(blue).toBeLessThan(45);
+      for (const phase of [0, 0.25, 0.5, 0.75]) {
+        const palette = getThemePreviewPalette(theme, theme.oscillation!.periodMs * phase);
+        const [r, g, b] = channels(palette.accent);
+        expect(r).toBeGreaterThan(g * 3);
+        expect(r).toBeGreaterThan(b * 3);
+        const [orangeR, orangeG, orangeB] = channels(palette.accentSoft);
+        expect(orangeR).toBeGreaterThan(240);
+        expect(orangeG).toBeGreaterThan(orangeB);
+        expect(orangeG).toBeLessThan(120);
+        expect(palette.surfaceStrong).toBe('rgba(8, 8, 8, 1)');
+        expect(palette.text).toBe('#ffffff');
+        for (const mode of ['light', 'dark'] as const) {
+          for (let slot = 0; slot < 4; slot++) {
+            const rotating = getRotatingUiPalette(palette, slot * slotMs);
+            const effective = getUiColorModePalette(rotating, mode);
+            expect(effective.appBackground).toBe(mode === 'light' ? '#ffffff' : '#000000');
+            expect(getReadableUiColor(effective.accent, mode === 'light' ? '#e6e6e6' : '#1a1a1a')).toBe(effective.accent);
+          }
+        }
+      }
+    }
+  });
 
   it('keeps every theme neutral in both modes, including all four swatches and their fades', () => {
     for (const theme of UI_THEMES) {

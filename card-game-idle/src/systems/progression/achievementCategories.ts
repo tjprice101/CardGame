@@ -16,10 +16,11 @@ export const ACHIEVEMENT_CATEGORIES = [
   { id: 'battleground', section: 'Battles', label: 'Battleground', description: 'Competitive matches, victories, and best scores.' },
   { id: 'forge', section: 'Progression', label: 'Forge & Transcendence', description: 'Open the Forge, acquire Transcendent cards, and gather Shards of Transcendence.' },
   { id: 'causality', section: 'Progression', label: 'Causality', description: 'Causality collection, card play, Enigmas, and rare rewards.' },
+  { id: 'intensity', section: 'Progression', label: 'Intensity', description: 'Inferno generation and spending, volcanic expeditions, card play, and ability mastery.' },
   { id: 'garden', section: 'Progression', label: 'Garden Expeditions', description: 'Recover and stockpile materials from Garden expeditions.' },
   { id: 'abilities', section: 'Progression', label: 'Ability Materialization', description: 'Materialize abilities and build your arsenal.' },
   { id: 'social', section: 'Social', label: 'Friends & Co-op', description: 'Friendships, messages, gifts, and invitations to shared battles.' },
-  { id: 'background', section: 'Cosmetics', label: 'Custom Backgrounds', description: 'Eternal and Infinite set crowns plus Transcendent Forge backgrounds. Earned rewards appear in Player Information > Main Menu Background.' },
+  { id: 'background', section: 'Cosmetics', label: 'Custom Backgrounds', description: 'Set completion crowns, three Intensity completion splashes, and Transcendent Forge backgrounds. Earned rewards appear in Player Information > Main Menu Background.' },
 ] as const;
 
 export type AchievementCategoryId = typeof ACHIEVEMENT_CATEGORIES[number]['id'];
@@ -64,6 +65,13 @@ const MILESTONE_IDS: Partial<Record<AchievementCategoryId, readonly string[]>> =
     'title-causality-eternal-pantheon', 'title-causality-grand-scribe',
   ],
   garden: ['title-garden-initiate', 'title-garden-provisioner'],
+  intensity: [
+    'title-intensity-first-spark', 'title-intensity-ashwalker', 'title-intensity-volcanic-script',
+    'title-intensity-kindler', 'title-intensity-unquenchable', 'title-intensity-eruption',
+    'title-intensity-white-fire', 'title-intensity-pressure', 'title-intensity-crater',
+    'title-intensity-crater-master', 'title-intensity-materials', 'title-intensity-first-ability',
+    'title-intensity-foundation', 'title-intensity-arsenal', 'title-intensity-ability-master',
+  ],
   abilities: ['title-first-materialization', 'title-ability-arsenal'],
   social: [
     'title-social-first-friend', 'title-social-circle', 'title-social-messenger',

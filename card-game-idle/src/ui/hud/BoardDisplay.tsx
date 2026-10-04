@@ -3,6 +3,7 @@ import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
 import { useStore, selectBoard, selectBossFight, selectDeck, selectGardenDungeon, selectCanEmbraceInfinite, selectProgress, selectTurn } from '@/state/store';
 import { useThemeVersion } from '@/ui/useThemeVersion';
 import { CardRegistry } from '@/cards/CardRegistry';
+import { getSophAttackPool, usesInferno } from '@/systems/cards/IntensityRuntime';
 import GameEmblem from '@/ui/components/GameEmblem';
 import {
   cardFacePalette,
@@ -591,6 +592,8 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
             let ainPreview = 0;
             let sophPreview = 0;
             let sophCost = 0;
+            const sophPool = mainDef?.type === 'Light' ? getSophAttackPool(mainDef.sophAttack, turn) : turn.limitlessLightStacks;
+            const sophResource = mainDef?.type === 'Light' && usesInferno(mainDef.sophAttack) ? 'Inferno' : 'Light';
             let darkCooldown = 0;
             let darkCost = 0;
             let darkRequirement: string | null = null;
@@ -598,8 +601,9 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
               ainCooldown = mainCard.attackCooldowns[mainDef.ainAttack.id] ?? 0;
               sophCooldown = mainCard.attackCooldowns[mainDef.sophAttack.id] ?? 0;
               ainPreview = Math.max(0, Math.round(mainDef.ainAttack.baseDivineLight + resolveCardScaling(mainDef.ainAttack.scaling, scalingCtx)));
-              sophCost = mainDef.sophAttack.stackCost ? previewStackCost(mainDef.sophAttack.stackCost, turn.limitlessLightStacks) : 0;
-              sophPreview = Math.max(0, Math.round(mainDef.sophAttack.baseDivineLight + resolveCardScaling(mainDef.sophAttack.scaling, scalingCtx) + sophCost));
+              sophCost = mainDef.sophAttack.stackCost ? previewStackCost(mainDef.sophAttack.stackCost, sophPool) : 0;
+              sophPreview = Math.max(0, Math.round(mainDef.sophAttack.baseDivineLight + resolveCardScaling(mainDef.sophAttack.scaling, scalingCtx)
+                + (usesInferno(mainDef.sophAttack) ? turn.intensityAttackBonus ?? 0 : 0)));
             }
             if (mainDef?.type === 'Dark' && isAin) {
               darkCooldown = mainDef.persistent ? (mainCard.attackCooldowns[`${mainDef.definitionId}:activation`] ?? 0) : 0;
@@ -669,8 +673,8 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
                       <div style={{ fontSize: SUPPORT_FACE_METRICS.descSize, color: ainCooldown <= 0 ? warmTheme.success : cardFacePalette.textMuted, letterSpacing: 0.4, textAlign: 'center', textTransform: 'uppercase' }}>
                         Ain Attack: {mainDef?.type === 'Light' ? (ainCooldown <= 0 ? 'Ready' : 'Not Ready') : 'Not Ready'}
                       </div>
-                      <div style={{ fontSize: SUPPORT_FACE_METRICS.descSize, color: sophCooldown <= 0 && turn.limitlessLightStacks >= sophCost ? warmTheme.success : cardFacePalette.textMuted, letterSpacing: 0.4, textAlign: 'center', textTransform: 'uppercase', marginTop: 2 }}>
-                        Soph Attack: {mainDef?.type === 'Light' ? (sophCooldown > 0 ? 'Not Ready' : turn.limitlessLightStacks < sophCost ? 'No Stacks' : 'Ready') : 'Not Ready'}
+                      <div style={{ fontSize: SUPPORT_FACE_METRICS.descSize, color: sophCooldown <= 0 && sophPool >= sophCost ? warmTheme.success : cardFacePalette.textMuted, letterSpacing: 0.4, textAlign: 'center', textTransform: 'uppercase', marginTop: 2 }}>
+                        Soph Attack: {mainDef?.type === 'Light' ? (sophCooldown > 0 ? 'Not Ready' : sophPool < sophCost ? `No ${sophResource}` : 'Ready') : 'Not Ready'}
                       </div>
                       <div style={{
                         fontSize: mainDescMetrics.fontSize,
@@ -732,14 +736,14 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
                         >Ain Attack (~{ainPreview})</button>
                         <button
                           type="button"
-                          disabled={sophCooldown > 0 || turn.limitlessLightStacks < sophCost}
+                          disabled={sophCooldown > 0 || sophPool < sophCost}
                           onClick={(e) => { e.stopPropagation(); activateLightSophAttack(mainCard.instanceId); setNewActionSlot(null); }}
-                          style={actionBtnStyle('rgba(160,200,255,0.6)', 'rgba(14,30,60,0.85)', '#a0c8ff', sophCooldown > 0 || turn.limitlessLightStacks < sophCost)}
+                          style={actionBtnStyle('rgba(160,200,255,0.6)', 'rgba(14,30,60,0.85)', '#a0c8ff', sophCooldown > 0 || sophPool < sophCost)}
                         >{sophCooldown > 0
                           ? `Soph recharging (${sophCooldown})`
-                          : turn.limitlessLightStacks < sophCost
-                            ? `Need ${sophCost} Limitless Light Stacks`
-                            : `Soph Attack (~${sophPreview}${sophCost > 0 ? `, -${sophCost} Stacks` : ''})`}</button>
+                          : sophPool < sophCost
+                            ? `Need ${sophCost} Limitless ${sophResource} Stacks`
+                            : `Soph Attack (~${sophPreview}${sophCost > 0 ? `, -${sophCost} ${sophResource}` : ''})`}</button>
                       </>
                     )}
                     {isAin && mainDef?.type === 'Dark' && (

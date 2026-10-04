@@ -60,7 +60,8 @@ const RARITY_ORDER: Record<string, number> = {
   Common: 0, Rare: 1, Epic: 2, Legendary: 3, Eternal: 4, Infinite: 5,
 };
 
-function getCardSet(definitionId: string): 'Neutrality' | 'Causality' | null {
+function getCardSet(definitionId: string): 'Neutrality' | 'Causality' | 'Intensity' | null {
+  if (definitionId.includes('intensity')) return 'Intensity';
   if (definitionId.includes('causality')) return 'Causality';
   if (definitionId.includes('neutral')) return 'Neutrality';
   return null;
@@ -83,7 +84,7 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
 
   const collectionPower = useMemo(() => computeGlobalResonanceScore(progress), [progress]);
   const [selectedId, setSelectedId] = useState<string>(activeDeckId ?? savedDecks[0]?.id ?? '');
-  const [setFilter, setSetFilter] = useState<'All' | 'Neutrality' | 'Causality'>('All');
+  const [setFilter, setSetFilter] = useState<'All' | 'Neutrality' | 'Causality' | 'Intensity'>('All');
   const [cardSearch, setCardSearch] = useState('');
 
   const selectedDeck = savedDecks.find(d => d.id === selectedId) ?? null;
@@ -369,7 +370,7 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
                       aria-label="Search deck cards"
                       style={{ flex: '1 1 220px', minWidth: 190, maxWidth: 300, padding: '5px 9px', borderRadius: 7, border: `1px solid ${P.borderStrong}`, background: P.panelActive, color: P.text, fontSize: 11, outline: 'none' }}
                     />
-                    {(['All', 'Neutrality', 'Causality'] as const).map(setName => (
+                    {(['All', 'Neutrality', 'Causality', 'Intensity'] as const).map(setName => (
                       <button key={setName} onClick={() => setSetFilter(setName)} style={{ padding: '3px 9px', borderRadius: 20, border: `1px solid ${setFilter === setName ? P.borderStrong : P.border}`, background: setFilter === setName ? P.panelActive : 'transparent', color: setFilter === setName ? P.accent : P.textMuted, fontSize: 11, cursor: 'pointer' }}>{setName}</button>
                     ))}
                     {[...elements].map(el => (
